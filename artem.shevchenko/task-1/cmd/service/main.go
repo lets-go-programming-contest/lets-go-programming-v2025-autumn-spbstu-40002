@@ -3,8 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	var num1 int
-	var num2 int
+	var num1, num2 int
 	var operator string
 
 	// Read the first operand
@@ -27,25 +26,20 @@ func main() {
 		return
 	}
 
-
 	// Сalculate the expression depending on the operator
 	switch operator {
 	case "+":
 		fmt.Println(num1 + num2)
-
 	case "-":
 		fmt.Println(num1 - num2)
-
 	case "*":
 		fmt.Println(num1 * num2)
-
 	case "/":
 		if num2 == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
 		fmt.Println(num1 / num2)
-
 	default:
 		fmt.Println("Invalid operation")
 		return
