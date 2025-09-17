@@ -21,7 +21,7 @@ func main() {
 	var operator string
 	_, err = fmt.Scan(&operator)
 	if err != nil {
-		return;
+		return
 	}
 
 	var answer int
