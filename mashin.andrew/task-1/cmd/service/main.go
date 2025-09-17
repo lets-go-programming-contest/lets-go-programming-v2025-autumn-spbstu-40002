@@ -26,18 +26,18 @@ func main() {
 
 	switch operator {
 	case "+":
-		fmt.Print(number1 + number2)
+		fmt.Print(number1 + number2, "\n")
 	case "-":
-		fmt.Print(number1 - number2)
+		fmt.Print(number1 - number2, "\n")
 	case "/":
 		if number2 != 0 {
-			fmt.Print(number1 / number2)
+			fmt.Print(number1 / number2, "\n")
 		} else {
 			fmt.Printf("Division by zero\n")
 		}
 	case "*":
-		fmt.Print(number1 * number2)
+		fmt.Print(number1 * number2, "\n")
 	default:
-		fmt.Print("Invalid operation")
+		fmt.Printf("Invalid operation\n")
 	}
 }
