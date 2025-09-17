@@ -5,14 +5,14 @@ import "fmt"
 func main() {
 	var first_number int
 
-	_, err := fmt.Scan(&first_number)
+	_, err := fmt.Scan(&firstNumber)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
 	var second_number int
-	_, err = fmt.Scan(&second_number)
+	_, err = fmt.Scan(&secondNumber)
 	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
@@ -24,17 +24,17 @@ func main() {
 	var answer int
 	switch operator {
 	case "+":
-		answer = first_number + second_number
+		answer = firstNumber + secondNumber
 	case "-":
-		answer = first_number - second_number
+		answer = firstNumber - secondNumber
 	case "*":
-		answer = first_number * second_number
+		answer = firstNumber * secondNumber
 	case "/":
-		if second_number == 0 {
+		if secondNumber == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		answer = first_number / second_number
+		answer = firstNumber / secondNumber
 	default:
 		fmt.Println("Invalid operation")
 		return
