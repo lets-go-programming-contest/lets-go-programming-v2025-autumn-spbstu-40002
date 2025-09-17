@@ -20,6 +20,9 @@ func main() {
 
 	var operator string
 	_, err = fmt.Scan(&operator)
+	if err != nil {
+		return;
+		}
 
 	var answer int
 	switch operator {
