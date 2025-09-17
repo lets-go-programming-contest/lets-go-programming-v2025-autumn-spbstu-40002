@@ -20,7 +20,9 @@ func main() {
 	}
 
 	var operator string
-	fmt.Scan(&operator)
+	if _, err := fmt.Scan(&operator); err != nil {
+		return
+	}
 
 	switch operator {
 	case "+":
