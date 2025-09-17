@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	var first_number int
+	var firstNumber int
 
 	_, err := fmt.Scan(&firstNumber)
 	if err != nil {
@@ -11,7 +11,7 @@ func main() {
 		return
 	}
 
-	var second_number int
+	var secondNumber int
 	_, err = fmt.Scan(&secondNumber)
 	if err != nil {
 		fmt.Println("Invalid second operand")
@@ -19,7 +19,7 @@ func main() {
 	}
 
 	var operator string
-	fmt.Scan(&operator)
+	_, err = fmt.Scan(&operator)
 
 	var answer int
 	switch operator {
