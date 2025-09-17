@@ -25,7 +25,11 @@ func main() {
 
 	// Read the operation sign
 	fmt.Println("Enter operator: ")
-	fmt.Scan(&operator)
+	_, err = fmt.Scan(&operator)
+	if err != nil {
+		return
+	}
+
 
 	// Сalculate the expression depending on the operator
 	switch operator {
