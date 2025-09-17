@@ -7,7 +7,7 @@ func main() {
 	_, err1 := fmt.Scan(&number1)
 
 	if err1 != nil {
-		fmt.Printf("Invalid first operand\n")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
@@ -15,7 +15,7 @@ func main() {
 	_, err2 := fmt.Scan(&number2)
 
 	if err2 != nil {
-		fmt.Printf("Invalid second operand\n")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
@@ -26,17 +26,17 @@ func main() {
 
 	switch operator {
 	case "+":
-		fmt.Printf("%d\n", number1 + number2)
+		fmt.Println(number1 + number2)
 	case "-":
-		fmt.Printf("%d\n", number1 - number2)
+		fmt.Println(number1 - number2)
 	case "/":
 		if number2 != 0 {
-			fmt.Printf("%d\n", number1 / number2)
+			fmt.Println(number1 / number2)
 		} else {
-			fmt.Printf("Division by zero\n")
+			fmt.Println("Division by zero")
 		}
 	case "*":
-		fmt.Printf("%d\n", number1 * number2)
+		fmt.Println(number1 * number2)
 	default:
 		fmt.Printf("Invalid operation\n")
 	}
