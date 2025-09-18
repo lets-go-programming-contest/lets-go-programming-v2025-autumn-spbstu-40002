@@ -52,5 +52,4 @@ func main() {
 
 	//Writing the result
 	fmt.Println(result)
-
 }
