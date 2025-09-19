@@ -5,46 +5,41 @@ import (
 )
 
 func main() {
-	var firstVar, operation, secondVar string
+	var firstVar, secondVar int
+	var operation string
 
-	fmt.Scanln(&firstVar)
-	fmt.Scanln(&operation)
-	fmt.Scanln(&secondVar)
-
-	first, err := toInt(firstVar)
+	_, err := fmt.Scanln(&firstVar)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	second, err := toInt(secondVar)
+	_, err = fmt.Scanln(&secondVar)
 	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
+	_, err = fmt.Scanln(&operation)
+	if err != nil {
+		return
+	}
+
 	switch operation {
 	case "+":
-		fmt.Println(first + second)
+		fmt.Println(firstVar + secondVar)
 	case "/":
-		if second == 0 {
+		if secondVar == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Println(first / second)
+		fmt.Println(firstVar / secondVar)
 	case "-":
-		fmt.Println(first - second)
+		fmt.Println(firstVar - secondVar)
 	case "*":
-		fmt.Println(first * second)
+		fmt.Println(firstVar * secondVar)
 	default:
 		fmt.Println("Invalid operation")
 		return
 	}
-
-}
-
-func toInt(s string) (int, error) {
-	var num int
-	_, err := fmt.Sscanf(s, "%d", &num)
-	return num, err
 }
