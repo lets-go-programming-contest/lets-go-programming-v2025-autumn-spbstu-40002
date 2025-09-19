@@ -4,23 +4,23 @@ import "fmt"
 
 func main() {
 	var number1 int
-	_, err1 := fmt.Scan(&number1)
+	var number2 int
+	var operator string
 
-	if err1 != nil {
+	_, err := fmt.Scan(&number1)
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	var number2 int
-	_, err2 := fmt.Scan(&number2)
-
-	if err2 != nil {
+	_, err = fmt.Scan(&number2)
+	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
-	var operator string
-	if _, err := fmt.Scan(&operator); err != nil {
+	_, err = fmt.Scan(&operator)
+	if err != nil {
 		return
 	}
 
@@ -38,6 +38,6 @@ func main() {
 	case "*":
 		fmt.Println(number1 * number2)
 	default:
-		fmt.Printf("Invalid operation\n")
+		fmt.Println("Invalid operation")
 	}
 }
