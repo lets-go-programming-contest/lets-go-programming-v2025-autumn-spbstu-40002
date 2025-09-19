@@ -15,24 +15,24 @@ func main() {
 
 	switch {
 	case err1 != nil:
-		fmt.Print("Invalid first operand")
+		fmt.Println("Invalid first operand")
 	case err2 != nil:
-		fmt.Print("Invalid second operand")
+		fmt.Println("Invalid second operand")
 	case err3 != nil:
 		return
 	case operator == "+":
-		fmt.Print(num1 + num2)
+		fmt.Println(num1 + num2)
 	case operator == "-":
-		fmt.Print(num1 - num2)
+		fmt.Println(num1 - num2)
 	case operator == "*":
-		fmt.Print(num1 * num2)
+		fmt.Println(num1 * num2)
 	case operator == "/":
 		if num2 == 0 {
-			fmt.Print("Division by zero")
+			fmt.Println("Division by zero")
 		} else {
-			fmt.Print(num1 / num2)
+			fmt.Println(num1 / num2)
 		}
 	default:
-		fmt.Print("Invalid operation")
+		fmt.Println("Invalid operation")
 	}
 }
