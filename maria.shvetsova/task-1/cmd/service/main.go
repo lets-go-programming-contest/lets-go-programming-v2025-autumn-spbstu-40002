@@ -24,7 +24,6 @@ func main() {
 	if err != nil {
 		return
 	}
-
 	isValid := (op == "+" || op == "-" || op == "*" || op == "/")
 	if !isValid {
 		fmt.Println("Invalid operation")
