@@ -2,30 +2,28 @@ package main
 
 import "fmt"
 
-var (
-	firstOperand  int
-	secondOperand int
-	operation     string
-)
-
 func main() {
+
+	var firstOperand, secondOperand int
+	var operation string
+
 	//Reading the first operand
-	n, err := fmt.Scanln(&firstOperand)
-	if err != nil || n != 1 {
+	_, err := fmt.Scanln(&firstOperand)
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
 	//Reading the second operand
-	n, err = fmt.Scanln(&secondOperand)
-	if err != nil || n != 1 {
+	_, err = fmt.Scanln(&secondOperand)
+	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
 	//Reading the operation
-	n, err = fmt.Scanln(&operation)
-	if err != nil || n != 1 {
+	_, err = fmt.Scanln(&operation)
+	if err != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
