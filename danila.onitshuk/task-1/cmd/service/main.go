@@ -2,31 +2,38 @@ package main
 
 import "fmt"
 
-var (
-	num1     int
-	num2     int
-	operator string
-)
-
 func main() {
-	_, err1 := fmt.Scan(&num1)
-	_, err2 := fmt.Scan(&num2)
-	_, err3 := fmt.Scan(&operator)
+	var (
+		num1     int
+		num2     int
+		operator string
+	)
 
-	switch {
-	case err1 != nil:
+	_, err := fmt.Scan(&num1)
+	if err != nil {
 		fmt.Println("Invalid first operand")
-	case err2 != nil:
-		fmt.Println("Invalid second operand")
-	case err3 != nil:
 		return
-	case operator == "+":
+	}
+
+	_, err = fmt.Scan(&num2)
+	if err != nil {
+		fmt.Println("Invalid second operand")
+		return
+	}
+
+	_, err = fmt.Scan(&operator)
+	if err != nil {
+		return
+	}
+
+	switch operator {
+	case "+":
 		fmt.Println(num1 + num2)
-	case operator == "-":
+	case "-":
 		fmt.Println(num1 - num2)
-	case operator == "*":
+	case "*":
 		fmt.Println(num1 * num2)
-	case operator == "/":
+	case "/":
 		if num2 == 0 {
 			fmt.Println("Division by zero")
 		} else {
