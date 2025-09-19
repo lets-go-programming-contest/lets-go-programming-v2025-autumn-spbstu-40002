@@ -9,7 +9,7 @@ func main() {
 	var op string
 
 	_, err := fmt.Scan(&a)
-	if errScanFirstOperand != nil {
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
