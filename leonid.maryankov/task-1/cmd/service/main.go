@@ -1,8 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
 	var (
@@ -21,7 +19,11 @@ func main() {
 		fmt.Println("Invalid second operand")
 		return
 	}
-	fmt.Scan(&symbol)
+	_, errSym := fmt.Scan(&symbol)
+	if errSym != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
 
 	switch symbol {
 	case "+":
