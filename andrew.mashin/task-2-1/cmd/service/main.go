@@ -13,10 +13,11 @@ func main() {
 	}
 
 	for range departments {
-		var minTemp = 15
-		var maxTemp = 30
+		minTemp := 15
+		maxTemp := 30
 
 		var workers int
+
 		_, err = fmt.Scan(&workers)
 		if err != nil {
 			return
