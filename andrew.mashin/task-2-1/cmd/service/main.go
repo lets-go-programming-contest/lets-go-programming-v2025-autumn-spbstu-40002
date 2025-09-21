@@ -5,46 +5,54 @@ import (
 )
 
 func main() {
-	var n int
-	var k int
-	var operator string
-	var temp int
-	var minTemp int
-	var maxTemp int
-
-	_, err := fmt.Scan(&n)
+	var departments int
+	_, err := fmt.Scan(&departments)
 	if err != nil {
 		return
 	}
 
-	for i := 0; i < n; i++ {
-		minTemp = 15
-		maxTemp = 30
+	for range departments {
+		var minTemp = 15
+		var maxTemp = 30
 
-		_, err = fmt.Scan(&k)
+		var flag bool = false
+
+		var workers int
+		_, err = fmt.Scan(&workers)
 		if err != nil {
 			return
 		}
 
-		for j := 0; j < k; j++ {
+		for i := 0; i < workers; i++ {
+			var operator string
 			_, err = fmt.Scan(&operator)
 			if err != nil {
 				return
 			}
 
+			var temp int
 			_, err = fmt.Scan(&temp)
 			if err != nil {
 				return
 			}
 
-			if operator == ">=" && temp <= maxTemp {
-				minTemp = temp
-				fmt.Println(minTemp)
-			} else if operator == "<=" && temp >= minTemp {
-				maxTemp = temp
-				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
+			switch operator {
+			case ">=":
+				if temp <= maxTemp && flag != true {
+					minTemp = temp
+					fmt.Println(minTemp)
+				} else {
+					flag = true
+					fmt.Println(-1)
+				}
+			case "<=":
+				if temp >= minTemp && flag != true {
+					maxTemp = temp
+					fmt.Println(minTemp)
+				} else {
+					flag = true
+					fmt.Println(-1)
+				}
 			}
 		}
 	}
