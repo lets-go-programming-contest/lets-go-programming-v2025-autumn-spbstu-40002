@@ -6,6 +6,7 @@ import (
 
 func main() {
 	var departments int
+
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		return
@@ -15,22 +16,22 @@ func main() {
 		var minTemp = 15
 		var maxTemp = 30
 
-		var flag bool = false
-
 		var workers int
 		_, err = fmt.Scan(&workers)
 		if err != nil {
 			return
 		}
 
-		for i := 0; i < workers; i++ {
+		for range workers {
 			var operator string
+
 			_, err = fmt.Scan(&operator)
 			if err != nil {
 				return
 			}
 
 			var temp int
+
 			_, err = fmt.Scan(&temp)
 			if err != nil {
 				return
@@ -38,21 +39,19 @@ func main() {
 
 			switch operator {
 			case ">=":
-				if temp <= maxTemp && flag != true {
+				if temp > minTemp {
 					minTemp = temp
-					fmt.Println(minTemp)
-				} else {
-					flag = true
-					fmt.Println(-1)
 				}
 			case "<=":
-				if temp >= minTemp && flag != true {
+				if temp < maxTemp {
 					maxTemp = temp
-					fmt.Println(minTemp)
-				} else {
-					flag = true
-					fmt.Println(-1)
 				}
+			}
+
+			if minTemp <= maxTemp {
+				fmt.Println(minTemp)
+			} else {
+				fmt.Println(-1)
 			}
 		}
 	}
