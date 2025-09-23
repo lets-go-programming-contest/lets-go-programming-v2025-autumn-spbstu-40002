@@ -20,8 +20,8 @@ func main() {
 		contradiction := false
 
 		for range make([]struct{}, employeeCount) {
-			var operator string
-			var temperature int
+			operator := ""
+			temperature := 0
 
 			_, err := fmt.Scan(&operator, &temperature)
 			if err != nil {
@@ -31,6 +31,7 @@ func main() {
 			if contradiction {
 				fmt.Println(-1)
 
+				// пустая строка перед continue (nlreturn)
 				continue
 			}
 
@@ -50,6 +51,7 @@ func main() {
 
 				fmt.Println(-1)
 
+				// пустая строка перед continue (nlreturn)
 				continue
 			}
 
