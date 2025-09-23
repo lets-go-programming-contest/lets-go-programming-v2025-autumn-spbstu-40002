@@ -20,27 +20,28 @@ func main() {
 		contradiction := false
 
 		for range make([]struct{}, employeeCount) {
-			var op string
-			var temp int
-			if _, err := fmt.Scan(&op, &temp); err != nil {
+			var operator string
+			var temperature int
+
+			_, err := fmt.Scan(&operator, &temperature)
+			if err != nil {
 				return
 			}
 
 			if contradiction {
 				fmt.Println(-1)
 
-				// blank line before continue (nlreturn)
 				continue
 			}
 
-			switch op {
+			switch operator {
 			case ">=":
-				if temp > low {
-					low = temp
+				if temperature > low {
+					low = temperature
 				}
 			case "<=":
-				if temp < high {
-					high = temp
+				if temperature < high {
+					high = temperature
 				}
 			}
 
@@ -48,6 +49,7 @@ func main() {
 				contradiction = true
 
 				fmt.Println(-1)
+
 				continue
 			}
 
