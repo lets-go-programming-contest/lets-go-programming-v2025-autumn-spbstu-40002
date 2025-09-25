@@ -7,51 +7,73 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] } // min-heap
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+func (ih *IntHeap) Len() int {
+	return len(*ih)
 }
-func (h *IntHeap) Pop() interface{} {
-	old := *h
+
+func (ih *IntHeap) Less(i, j int) bool {
+	return (*ih)[i] < (*ih)[j] // min-heap
+}
+
+func (ih *IntHeap) Swap(i, j int) {
+	(*ih)[i], (*ih)[j] = (*ih)[j], (*ih)[i]
+}
+
+func (ih *IntHeap) Push(x interface{}) {
+	v, ok := x.(int)
+	if !ok {
+		panic("IntHeap: Push expects int")
+	}
+	*ih = append(*ih, v)
+}
+
+func (ih *IntHeap) Pop() interface{} {
+	old := *ih
 	n := len(old)
 	x := old[n-1]
-	*h = old[:n-1]
+	*ih = old[:n-1]
+
 	return x
 }
 
 func main() {
-	var N int
-	if _, err := fmt.Scan(&N); err != nil {
+	var total int
+	if _, err := fmt.Scan(&total); err != nil {
 		return
 	}
 
-	arr := make([]int, N)
-	for i := 0; i < N; i++ {
+	arr := make([]int, total)
+	for i := range arr {
 		if _, err := fmt.Scan(&arr[i]); err != nil {
 			return
 		}
 	}
 
-	var k int
-	if _, err := fmt.Scan(&k); err != nil {
+	var kth int
+	if _, err := fmt.Scan(&kth); err != nil {
 		return
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
-
-	for i := 0; i < k; i++ {
-		heap.Push(h, arr[i])
+	// basic sanity: если k некорректен — выходим без вывода
+	if kth <= 0 || kth > total {
+		return
 	}
 
-	for i := k; i < N; i++ {
-		if arr[i] > (*h)[0] {
-			heap.Pop(h)
-			heap.Push(h, arr[i])
+	heapInst := &IntHeap{}
+	heap.Init(heapInst)
+
+	// первые k элементов
+	for i := range arr[:kth] {
+		heap.Push(heapInst, arr[i])
+	}
+
+	// поддерживаем k наибольших
+	for _, v := range arr[kth:] {
+		if v > (*heapInst)[0] {
+			heap.Pop(heapInst)
+			heap.Push(heapInst, v)
 		}
 	}
 
-	fmt.Println((*h)[0])
+	fmt.Println((*heapInst)[0])
 }
