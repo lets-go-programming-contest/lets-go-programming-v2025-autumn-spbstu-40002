@@ -20,11 +20,11 @@ func (ih *IntHeap) Swap(i, j int) {
 }
 
 func (ih *IntHeap) Push(x interface{}) {
-	v, ok := x.(int)
-	if !ok {
-		panic("IntHeap: Push expects int")
+	if v, ok := x.(int); ok {
+		*ih = append(*ih, v)
+		return
 	}
-	*ih = append(*ih, v)
+	panic("IntHeap: Push expects int")
 }
 
 func (ih *IntHeap) Pop() interface{} {
@@ -54,7 +54,6 @@ func main() {
 		return
 	}
 
-	// basic sanity: если k некорректен — выходим без вывода
 	if kth <= 0 || kth > total {
 		return
 	}
@@ -62,12 +61,10 @@ func main() {
 	heapInst := &IntHeap{}
 	heap.Init(heapInst)
 
-	// первые k элементов
 	for i := range arr[:kth] {
 		heap.Push(heapInst, arr[i])
 	}
 
-	// поддерживаем k наибольших
 	for _, v := range arr[kth:] {
 		if v > (*heapInst)[0] {
 			heap.Pop(heapInst)
