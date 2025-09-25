@@ -20,11 +20,12 @@ func (ih *IntHeap) Swap(i, j int) {
 }
 
 func (ih *IntHeap) Push(x interface{}) {
-	if v, ok := x.(int); ok {
-		*ih = append(*ih, v)
-		return
+	v, ok := x.(int)
+	if !ok {
+		panic("IntHeap: Push expects int")
 	}
-	panic("IntHeap: Push expects int")
+
+	*ih = append(*ih, v)
 }
 
 func (ih *IntHeap) Pop() interface{} {
