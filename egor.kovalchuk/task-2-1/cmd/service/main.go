@@ -1,77 +1,88 @@
 package main
 
-import "fmt"
-
-const (
-	defaultLow  = 15
-	defaultHigh = 30
+import (
+	"errors"
+	"fmt"
 )
 
-func main() {
-	var departments int
-	if _, err := fmt.Scan(&departments); err != nil || departments < 0 {
-		return
+var errOperation = errors.New("invalid operation")
+
+func adjustTemperature(low int, high int, temp int, op string) (int, int, error) {
+	if low == -1 && high == -1 {
+		return low, high, nil
 	}
 
-	depts := make([]struct{}, departments)
-	for range depts {
-		if ok := processDepartment(); !ok {
-			return
+	switch op {
+	case ">=":
+		if temp > high {
+			return -1, -1, nil
 		}
+		if temp > low {
+			low = temp
+		}
+	case "<=":
+		if temp < low {
+			return -1, -1, nil
+		}
+		if temp < high {
+			high = temp
+		}
+	default:
+		return low, high, errOperation
 	}
+
+	return low, high, nil
 }
 
-func processDepartment() bool {
-	low, high := defaultLow, defaultHigh
+func processDepartment(employeeCount int, minTemp int, maxTemp int) {
+	low := minTemp
+	high := maxTemp
 
-	var employeeCount int
-	if _, err := fmt.Scan(&employeeCount); err != nil || employeeCount < 0 {
-		return false
-	}
-
-	contradiction := false
-
-	var operator string
-	var temperature int
+	var op string
+	var temp int
 
 	emps := make([]struct{}, employeeCount)
 	for range emps {
 
-		if _, err := fmt.Scan(&operator, &temperature); err != nil {
-			return false
-		}
-
-		if contradiction {
+		_, err := fmt.Scan(&op, &temp)
+		if err != nil || temp < minTemp || temp > maxTemp {
 			fmt.Println(-1)
 
-			continue
+			return
 		}
 
-		switch operator {
-		case ">=":
-			if temperature > low {
-				low = temperature
-			}
-		case "<=":
-			if temperature < high {
-				high = temperature
-			}
-		default:
-			contradiction = true
+		low, high, err = adjustTemperature(low, high, temp, op)
+		if err != nil {
 			fmt.Println(-1)
 
-			continue
-		}
-
-		if low > high {
-			contradiction = true
-			fmt.Println(-1)
-
-			continue
+			return
 		}
 
 		fmt.Println(low)
 	}
+}
 
-	return true
+func main() {
+	const (
+		minTemp = 15
+		maxTemp = 30
+	)
+
+	var departmentCount, employeeCount int
+
+	_, err := fmt.Scan(&departmentCount)
+	if err != nil || departmentCount < 1 {
+		return
+	}
+
+	depts := make([]struct{}, departmentCount)
+	for range depts {
+
+		_, err := fmt.Scan(&employeeCount)
+		if err != nil || employeeCount < 0 {
+			return
+		}
+
+		processDepartment(employeeCount, minTemp, maxTemp)
+	}
 }
