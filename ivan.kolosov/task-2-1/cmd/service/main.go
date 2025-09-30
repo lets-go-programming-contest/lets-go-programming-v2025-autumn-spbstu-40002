@@ -23,8 +23,8 @@ func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployee
 	var newBorder int
 
 	var sign string
-
-	for range amountOfEmployees {
+	i := 0
+	for i < amountOfEmployees {
 		_, err := fmt.Scan(&sign)
 		if err != nil {
 			return ErrIncorrectSign
@@ -49,12 +49,14 @@ func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployee
 		}
 
 		if leftBorder > rightBorder {
-			leftBorder = -1
+			break
 		}
 
 		fmt.Println(leftBorder)
 	}
-
+	for i < amountOfEmployees {
+		fmt.Println(-1)
+	}
 	return nil
 }
 
