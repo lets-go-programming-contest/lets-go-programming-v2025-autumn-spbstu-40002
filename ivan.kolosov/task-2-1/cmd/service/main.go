@@ -20,7 +20,6 @@ var (
 )
 
 func getSpecificEmployeeOpinion(leftBorder int, rightBorder int, newBorder int, sign string) (int, int, error) {
-
 	switch sign {
 	case "<=":
 		if newBorder < rightBorder {
