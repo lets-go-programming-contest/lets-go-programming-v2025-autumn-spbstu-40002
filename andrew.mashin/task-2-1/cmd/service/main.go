@@ -4,22 +4,27 @@ import (
 	"fmt"
 )
 
+const (
+	MinTempConst = 15
+	MaxTempConst = 30
+)
+
 func main() {
 	var departments int
 
 	_, err := fmt.Scan(&departments)
-	if err != nil {
+	if err != nil || departments < 1 || departments > 1000 {
 		return
 	}
 
 	for range departments {
-		minTemp := 15
-		maxTemp := 30
+		minTemp := MinTempConst
+		maxTemp := MaxTempConst
 
 		var workers int
 
 		_, err = fmt.Scan(&workers)
-		if err != nil {
+		if err != nil || workers < 1 || workers > 1000 {
 			return
 		}
 
