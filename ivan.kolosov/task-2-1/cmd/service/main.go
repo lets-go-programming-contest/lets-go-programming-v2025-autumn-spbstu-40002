@@ -20,6 +20,7 @@ func main() {
 	}
 
 	var sign string
+	
 	newBorder := 0
 	amountOfEmployees := 0
 
