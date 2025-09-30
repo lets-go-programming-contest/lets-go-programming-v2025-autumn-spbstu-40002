@@ -42,13 +42,10 @@ func main() {
 				continue
 			}
 
-			_, err = fmt.Scan(&sign)
+			_, err = fmt.Scan(&sign, &newBorder)
 			if err != nil {
 				return
-			}
-
-			_, err = fmt.Scan(&newBorder)
-			if err != nil || newBorder > 30 || newBorder < 15 {
+			} else if newBorder > MAX || newBorder < MIN {
 				fmt.Println("Incorrect border")
 
 				return
