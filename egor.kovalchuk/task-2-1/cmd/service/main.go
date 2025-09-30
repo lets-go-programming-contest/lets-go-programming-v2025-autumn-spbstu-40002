@@ -2,24 +2,37 @@ package main
 
 import "fmt"
 
+const (
+	defaultLow  = 15
+	defaultHigh = 30
+)
+
 func main() {
 	var departments int
 	if _, err := fmt.Scan(&departments); err != nil {
 		return
 	}
+	if departments < 0 {
+		return
+	}
 
-	for range make([]struct{}, departments) {
-		low := 15
-		high := 30
+	depts := make([]struct{}, departments)
+	for range depts {
+		low := defaultLow
+		high := defaultHigh
 
 		var employeeCount int
 		if _, err := fmt.Scan(&employeeCount); err != nil {
 			return
 		}
+		if employeeCount < 0 {
+			return
+		}
 
 		contradiction := false
 
-		for range make([]struct{}, employeeCount) {
+		emps := make([]struct{}, employeeCount)
+		for range emps {
 			operator := ""
 			temperature := 0
 
@@ -31,7 +44,13 @@ func main() {
 			if contradiction {
 				fmt.Println(-1)
 
-				// пустая строка перед continue (nlreturn)
+				continue
+			}
+
+			if operator != ">=" && operator != "<=" {
+				contradiction = true
+				fmt.Println(-1)
+
 				continue
 			}
 
@@ -51,7 +70,6 @@ func main() {
 
 				fmt.Println(-1)
 
-				// пустая строка перед continue (nlreturn)
 				continue
 			}
 
