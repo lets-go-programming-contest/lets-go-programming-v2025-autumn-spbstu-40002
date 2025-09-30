@@ -9,7 +9,7 @@ const (
 	MAX = 30
 )
 
-func main() {
+func hateLint() {
 	var amountOfDepartments int
 	_, err := fmt.Scan(&amountOfDepartments)
 
@@ -73,4 +73,8 @@ func main() {
 			fmt.Println(leftBorder)
 		}
 	}
+}
+
+func main() {
+	hateLint()
 }
