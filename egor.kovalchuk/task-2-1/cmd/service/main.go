@@ -30,22 +30,18 @@ func processDepartment() bool {
 	}
 
 	contradiction := false
-	emps := make([]struct{}, employeeCount)
-	for range emps {
-		var operator string
-		var temperature int
+
+	var operator string
+	var temperature int
+
+	for i := 0; i < employeeCount; i++ {
 		if _, err := fmt.Scan(&operator, &temperature); err != nil {
 			return false
 		}
 
 		if contradiction {
 			fmt.Println(-1)
-			continue
-		}
 
-		if operator != ">=" && operator != "<=" {
-			contradiction = true
-			fmt.Println(-1)
 			continue
 		}
 
@@ -58,11 +54,17 @@ func processDepartment() bool {
 			if temperature < high {
 				high = temperature
 			}
+		default:
+			contradiction = true
+			fmt.Println(-1)
+
+			continue
 		}
 
 		if low > high {
 			contradiction = true
 			fmt.Println(-1)
+
 			continue
 		}
 
