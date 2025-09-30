@@ -34,7 +34,9 @@ func processDepartment() bool {
 	var operator string
 	var temperature int
 
-	for i := 0; i < employeeCount; i++ {
+	emps := make([]struct{}, employeeCount)
+	for range emps {
+
 		if _, err := fmt.Scan(&operator, &temperature); err != nil {
 			return false
 		}
