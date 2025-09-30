@@ -19,6 +19,28 @@ var (
 	ErrIncorrectEmployees   = errors.New("incorrect amount of employees")
 )
 
+func getSpecificEmployeeOpinion(leftBorder int, rightBorder int, newBorder int, sign string) (int, int, error) {
+
+	switch sign {
+	case "<=":
+		if newBorder < rightBorder {
+			rightBorder = newBorder
+		}
+	case ">=":
+		if newBorder > leftBorder {
+			leftBorder = newBorder
+		}
+	default:
+		return leftBorder, rightBorder, ErrIncorrectSign
+	}
+
+	if leftBorder > rightBorder {
+		leftBorder = -1
+	}
+
+	return leftBorder, rightBorder, nil
+}
+
 func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployees int) error {
 	var newBorder int
 
@@ -41,21 +63,9 @@ func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployee
 			continue
 		}
 
-		switch sign {
-		case "<=":
-			if newBorder < rightBorder {
-				rightBorder = newBorder
-			}
-		case ">=":
-			if newBorder > leftBorder {
-				leftBorder = newBorder
-			}
-		default:
-			return ErrIncorrectSign
-		}
-
-		if leftBorder > rightBorder {
-			leftBorder = -1
+		leftBorder, rightBorder, err = getSpecificEmployeeOpinion(leftBorder, rightBorder, newBorder, sign)
+		if err != nil {
+			return err
 		}
 
 		fmt.Println(leftBorder)
