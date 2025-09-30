@@ -5,84 +5,78 @@ import (
 	"fmt"
 )
 
-var errOperation = errors.New("invalid operation")
+const (
+	minTemperature = 15
+	maxTemperature = 30
+)
 
-func adjustTemperature(low int, high int, temp int, op string) (int, int, error) {
-	if low == -1 && high == -1 {
-		return low, high, nil
+var errFormat = errors.New("invalid temperature format")
+
+func adjustTemperature(low int, high int) (int, int, error) {
+	var (
+		operation string
+		newTemp   int
+	)
+
+	_, err := fmt.Scanln(&operation, &newTemp)
+	if err != nil || newTemp < minTemperature || newTemp > maxTemperature {
+		return 0, 0, errFormat
 	}
 
-	switch op {
+	switch operation {
 	case ">=":
-		if temp > high {
+		if high < newTemp {
 			return -1, -1, nil
 		}
-		if temp > low {
-			low = temp
+
+		if low < newTemp {
+			low = newTemp
 		}
 	case "<=":
-		if temp < low {
+		if low > newTemp {
 			return -1, -1, nil
 		}
-		if temp < high {
-			high = temp
+
+		if high > newTemp {
+			high = newTemp
 		}
 	default:
-		return low, high, errOperation
+		return 0, 0, errFormat
 	}
 
 	return low, high, nil
 }
 
-func processDepartment(employeeCount int, minTemp int, maxTemp int) {
-	low := minTemp
-	high := maxTemp
-
-	var op string
-	var temp int
-
-	emps := make([]struct{}, employeeCount)
-	for range emps {
-
-		_, err := fmt.Scan(&op, &temp)
-		if err != nil || temp < minTemp || temp > maxTemp {
-			fmt.Println(-1)
-
-			return
-		}
-
-		low, high, err = adjustTemperature(low, high, temp, op)
-		if err != nil {
-			fmt.Println(-1)
-
-			return
-		}
-
-		fmt.Println(low)
-	}
-}
-
 func main() {
-	const (
-		minTemp = 15
-		maxTemp = 30
-	)
+	var dep, emp uint16
 
-	var departmentCount, employeeCount int
+	_, err := fmt.Scanln(&dep)
+	if err != nil || dep == 0 || dep > 1000 {
+		fmt.Println("invalid number of departments")
 
-	_, err := fmt.Scan(&departmentCount)
-	if err != nil || departmentCount < 1 {
 		return
 	}
 
-	depts := make([]struct{}, departmentCount)
-	for range depts {
+	for range dep {
+		_, err = fmt.Scanln(&emp)
+		if err != nil || emp > 1000 {
+			fmt.Println("invalid number of employees")
 
-		_, err := fmt.Scan(&employeeCount)
-		if err != nil || employeeCount < 0 {
 			return
 		}
 
-		processDepartment(employeeCount, minTemp, maxTemp)
+		lowTemp := minTemperature
+		highTemp := maxTemperature
+
+		for range emp {
+			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
+			if err != nil {
+				fmt.Println(err)
+
+				return
+			}
+
+			fmt.Println(lowTemp)
+		}
 	}
 }
