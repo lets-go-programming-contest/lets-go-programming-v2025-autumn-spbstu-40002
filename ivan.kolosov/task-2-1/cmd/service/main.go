@@ -13,10 +13,10 @@ const (
 )
 
 var (
-	ErrorIncorrectSign        = errors.New("incorrect sign")
-	ErrorIncorrectBorder      = errors.New("incorrect border")
-	ErrorIncorrectDepartments = errors.New("incorrect amount of departments")
-	ErrorIncorrectEmployees   = errors.New("incorrect amount of employees")
+	ErrIncorrectSign        = errors.New("incorrect sign")
+	ErrIncorrectBorder      = errors.New("incorrect border")
+	ErrIncorrectDepartments = errors.New("incorrect amount of departments")
+	ErrIncorrectEmployees   = errors.New("incorrect amount of employees")
 )
 
 func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployees int) error {
@@ -25,15 +25,14 @@ func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployee
 	var sign string
 
 	for range amountOfEmployees {
-
 		_, err := fmt.Scan(&sign)
 		if err != nil {
-			return ErrorIncorrectSign
+			return ErrIncorrectSign
 		}
 
 		_, err = fmt.Scan(&newBorder)
 		if err != nil || newBorder > TemperatureMax || newBorder < TemperatureMin {
-			return ErrorIncorrectBorder
+			return ErrIncorrectBorder
 		}
 
 		if leftBorder == -1 {
@@ -42,16 +41,17 @@ func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployee
 			continue
 		}
 
-		if sign == "<=" {
+		switch sign {
+		case "<=":
 			if newBorder < rightBorder {
 				rightBorder = newBorder
 			}
-		} else if sign == "=>" {
+		case ">=":
 			if newBorder > leftBorder {
 				leftBorder = newBorder
 			}
-		} else {
-			return ErrorIncorrectSign
+		default:
+			return ErrIncorrectSign
 		}
 
 		if leftBorder > rightBorder {
@@ -60,6 +60,7 @@ func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployee
 
 		fmt.Println(leftBorder)
 	}
+
 	return nil
 }
 
@@ -68,7 +69,7 @@ func main() {
 	_, err := fmt.Scan(&amountOfDepartments)
 
 	if err != nil || amountOfDepartments < DepEmpMin || amountOfDepartments > DepEmpMax {
-		fmt.Println("Error:", ErrorIncorrectDepartments)
+		fmt.Println("Error:", ErrIncorrectDepartments)
 
 		return
 	}
@@ -78,7 +79,7 @@ func main() {
 	for range amountOfDepartments {
 		_, err = fmt.Scan(&amountOfEmployees)
 		if err != nil || amountOfEmployees < DepEmpMin || amountOfEmployees > DepEmpMax {
-			fmt.Println("Error:", ErrorIncorrectEmployees)
+			fmt.Println("Error:", ErrIncorrectEmployees)
 
 			return
 		}
