@@ -20,14 +20,12 @@ func main() {
 	}
 
 	var sign string
-	leftBorder := 0
-	rightBorder := 0
 	newBorder := 0
 	amountOfEmployees := 0
 
 	for range amountOfDepartments {
-		leftBorder = MIN
-		rightBorder = MAX
+		leftBorder := MIN
+		rightBorder := MAX
 
 		_, err = fmt.Scan(&amountOfEmployees)
 		if err != nil || amountOfEmployees < 1 || amountOfEmployees > 1000 {
