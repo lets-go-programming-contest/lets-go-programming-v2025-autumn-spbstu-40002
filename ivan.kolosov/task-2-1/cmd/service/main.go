@@ -13,49 +13,52 @@ const (
 )
 
 var (
-	ErrIncorrectSign        = errors.New("incorrect sign")
-	ErrIncorrectBorder      = errors.New("incorrect border")
-	ErrIncorrectDepartments = errors.New("incorrect amount of departments")
-	ErrIncorrectEmployees   = errors.New("incorrect amount of employees")
+	ErrorIncorrectSign        = errors.New("incorrect sign")
+	ErrorIncorrectBorder      = errors.New("incorrect border")
+	ErrorIncorrectDepartments = errors.New("incorrect amount of departments")
+	ErrorIncorrectEmployees   = errors.New("incorrect amount of employees")
 )
 
 func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployees int) error {
 	var newBorder int
 
 	var sign string
-	i := 0
-	for i < amountOfEmployees {
+
+	for range amountOfEmployees {
+
 		_, err := fmt.Scan(&sign)
 		if err != nil {
-			return ErrIncorrectSign
+			return ErrorIncorrectSign
 		}
 
 		_, err = fmt.Scan(&newBorder)
 		if err != nil || newBorder > TemperatureMax || newBorder < TemperatureMin {
-			return ErrIncorrectBorder
+			return ErrorIncorrectBorder
 		}
 
-		switch sign {
-		case "<=":
+		if leftBorder == -1 {
+			fmt.Println(leftBorder)
+
+			continue
+		}
+
+		if sign == "<=" {
 			if newBorder < rightBorder {
 				rightBorder = newBorder
 			}
-		case ">=":
+		} else if sign == "=>" {
 			if newBorder > leftBorder {
 				leftBorder = newBorder
 			}
-		default:
-			return ErrIncorrectSign
+		} else {
+			return ErrorIncorrectSign
 		}
 
 		if leftBorder > rightBorder {
-			break
+			leftBorder = -1
 		}
 
 		fmt.Println(leftBorder)
-	}
-	for i < amountOfEmployees {
-		fmt.Println(-1)
 	}
 	return nil
 }
@@ -65,7 +68,7 @@ func main() {
 	_, err := fmt.Scan(&amountOfDepartments)
 
 	if err != nil || amountOfDepartments < DepEmpMin || amountOfDepartments > DepEmpMax {
-		fmt.Println("Error:", ErrIncorrectDepartments)
+		fmt.Println("Error:", ErrorIncorrectDepartments)
 
 		return
 	}
@@ -75,7 +78,7 @@ func main() {
 	for range amountOfDepartments {
 		_, err = fmt.Scan(&amountOfEmployees)
 		if err != nil || amountOfEmployees < DepEmpMin || amountOfEmployees > DepEmpMax {
-			fmt.Println("Error:", ErrIncorrectEmployees)
+			fmt.Println("Error:", ErrorIncorrectEmployees)
 
 			return
 		}
