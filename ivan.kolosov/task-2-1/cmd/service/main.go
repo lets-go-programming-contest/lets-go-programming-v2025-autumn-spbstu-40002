@@ -5,76 +5,80 @@ import (
 )
 
 const (
-	MIN = 15
-	MAX = 30
+	TEMPERATURE_MIN = 15
+	TEMPERATURE_MAX = 30
+	DEP_EMP_MAX     = 1000
+	DEP_EMP_MIN     = 1
 )
 
-func hateLint() {
+func loopForSpecificDepartment(leftBorder int, rightBorder int, amountOfEmployees int) error {
+	var newBorder int
+	var sign string
+
+	for range amountOfEmployees {
+		if leftBorder == -1 {
+			fmt.Println(leftBorder)
+
+			continue
+		}
+
+		_, err := fmt.Scan(&sign)
+		if err != nil {
+			return fmt.Errorf("incorrect sign")
+		}
+
+		_, err = fmt.Scan(&newBorder)
+		if err != nil || newBorder > TEMPERATURE_MAX || newBorder < TEMPERATURE_MIN {
+			return fmt.Errorf("incorrect border")
+		}
+
+		switch sign {
+		case "<=":
+			if newBorder < leftBorder {
+				leftBorder = -1
+			} else if newBorder < rightBorder {
+				rightBorder = newBorder
+			}
+		case ">=":
+			if newBorder > rightBorder {
+				leftBorder = -1
+			} else if newBorder > leftBorder {
+				leftBorder = newBorder
+			}
+		default:
+			return fmt.Errorf("incorrect sign")
+		}
+
+		fmt.Println(leftBorder)
+	}
+	return nil
+}
+
+func main() {
 	var amountOfDepartments int
 	_, err := fmt.Scan(&amountOfDepartments)
 
-	if err != nil || amountOfDepartments < 1 || amountOfDepartments > 1000 {
-		fmt.Println("Incorrect amount of departments")
+	if err != nil || amountOfDepartments < DEP_EMP_MIN || amountOfDepartments > DEP_EMP_MAX {
+		fmt.Println("Error: incorrect amount of departments")
 
 		return
 	}
 
-	var sign string
-
-	newBorder := 0
 	amountOfEmployees := 0
 
 	for range amountOfDepartments {
-		leftBorder := MIN
-		rightBorder := MAX
-
 		_, err = fmt.Scan(&amountOfEmployees)
-		if err != nil || amountOfEmployees < 1 || amountOfEmployees > 1000 {
-			fmt.Println("Incorrect amount of employees")
+		if err != nil || amountOfEmployees < DEP_EMP_MIN || amountOfEmployees > DEP_EMP_MAX {
+			fmt.Println("Error: incorrect amount of employees")
 
 			return
 		}
 
-		for range amountOfEmployees {
-			if leftBorder == -1 {
-				fmt.Println(leftBorder)
+		err = loopForSpecificDepartment(TEMPERATURE_MIN, TEMPERATURE_MAX, amountOfEmployees)
+		if err != nil {
+			fmt.Println("Error:", err)
 
-				continue
-			}
-
-			_, err = fmt.Scan(&sign, &newBorder)
-			if err != nil {
-				return
-			} else if newBorder > MAX || newBorder < MIN {
-				fmt.Println("Incorrect border")
-
-				return
-			}
-
-			switch sign {
-			case "<=":
-				if newBorder < leftBorder {
-					leftBorder = -1
-				} else if newBorder < rightBorder {
-					rightBorder = newBorder
-				}
-			case ">=":
-				if newBorder > rightBorder {
-					leftBorder = -1
-				} else if newBorder > leftBorder {
-					leftBorder = newBorder
-				}
-			default:
-				fmt.Println("Incorrect sign")
-
-				return
-			}
-
-			fmt.Println(leftBorder)
+			return
 		}
 	}
-}
-
-func main() {
-	hateLint()
 }
