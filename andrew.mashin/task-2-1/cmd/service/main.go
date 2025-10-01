@@ -5,27 +5,29 @@ import (
 )
 
 const (
-	MinTempConst = 15
-	MaxTempConst = 30
+	MinTempConst   = 15
+	MaxTempConst   = 30
+	MinCorrectData = 1
+	MaxCorrectData = 1000
 )
 
 func isDataValidity(data int) bool {
-	return data >= 1 && data <= 1000
+	return data >= MinCorrectData && data <= MaxCorrectData
 }
 
-func findTheOptimalTemp(massiveOfTemp [2]int, operator string, temp int) [2]int {
+func findTheOptimalTemp(minTemp int, maxTemp int, operator string, temp int) (int, int) {
 	switch operator {
 	case ">=":
-		if temp > massiveOfTemp[0] {
-			massiveOfTemp[0] = temp
+		if temp > minTemp {
+			minTemp = temp
 		}
 	case "<=":
-		if temp < massiveOfTemp[1] {
-			massiveOfTemp[1] = temp
+		if temp < maxTemp {
+			maxTemp = temp
 		}
 	}
 
-	return massiveOfTemp
+	return minTemp, maxTemp
 }
 
 func main() {
@@ -37,7 +39,8 @@ func main() {
 	}
 
 	for range departments {
-		massiveOfTemp := [2]int{MinTempConst, MaxTempConst}
+		minTemp := MinTempConst
+		maxTemp := MaxTempConst
 
 		var workers int
 
@@ -61,10 +64,10 @@ func main() {
 				return
 			}
 
-			massiveOfTemp = findTheOptimalTemp(massiveOfTemp, operator, temp)
+			minTemp, maxTemp = findTheOptimalTemp(minTemp, maxTemp, operator, temp)
 
-			if massiveOfTemp[0] <= massiveOfTemp[1] {
-				fmt.Println(massiveOfTemp[0])
+			if minTemp <= maxTemp {
+				fmt.Println(minTemp)
 			} else {
 				fmt.Println(-1)
 			}
