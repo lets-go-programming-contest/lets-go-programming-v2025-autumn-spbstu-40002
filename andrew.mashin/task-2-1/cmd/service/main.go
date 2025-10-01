@@ -9,11 +9,15 @@ const (
 	MaxTempConst = 30
 )
 
+func isDataValidity(data int) bool {
+	return data >= 1 && data <= 1000
+}
+
 func main() {
 	var departments int
 
 	_, err := fmt.Scan(&departments)
-	if err != nil || departments < 1 || departments > 1000 {
+	if err != nil || !isDataValidity(departments) {
 		return
 	}
 
@@ -24,7 +28,7 @@ func main() {
 		var workers int
 
 		_, err = fmt.Scan(&workers)
-		if err != nil || workers < 1 || workers > 1000 {
+		if err != nil || !isDataValidity(workers) {
 			return
 		}
 
