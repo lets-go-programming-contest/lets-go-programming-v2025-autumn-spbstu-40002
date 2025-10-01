@@ -27,7 +27,9 @@ func (h *MyHeap) Swap(i, j int) {
 }
 
 func (h *MyHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	if v, ok := x.(int); ok {
+		*h = append(*h, v)
+	}
 }
 
 func (h *MyHeap) Pop() interface{} {
