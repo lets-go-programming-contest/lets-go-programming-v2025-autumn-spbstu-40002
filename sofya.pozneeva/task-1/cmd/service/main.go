@@ -25,21 +25,21 @@ func main() {
 	var err error
 	_, err = fmt.Scanln(&a)
 	if err != nil {
-		fmt.Print("Invalid first operand")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
 	var b int
 	_, err = fmt.Scanln(&b)
 	if err != nil {
-		fmt.Print("Invalid second operand")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
 	var op rune
 	_, err = fmt.Scanf("%c\n", &op)
 	if err != nil {
-		fmt.Print("Invalid operation")
+		fmt.Println("Invalid operation")
 		return
 	}
 
