@@ -11,13 +11,20 @@ func main() {
 	_, err := fmt.Scan(&a)
 	if err != nil {
 		fmt.Println("Invalid first operand")
-	}
-	_, er := fmt.Scan(&b)
-	if er != nil {
-		fmt.Println("Invalid second operand")
+		return
 	}
 
-	fmt.Scan(&operation)
+	_, err = fmt.Scan(&b)
+	if err != nil {
+		fmt.Println("Invalid second operand")
+		return
+	}
+
+	_, err = fmt.Scan(&operation)
+	if err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
 
 	switch operation {
 	case "+":
@@ -35,5 +42,4 @@ func main() {
 	default:
 		fmt.Println("Invalid operation")
 	}
-
 }
