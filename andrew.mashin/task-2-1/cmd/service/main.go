@@ -13,6 +13,14 @@ func isDataValidity(data int) bool {
 	return data >= 1 && data <= 1000
 }
 
+func findTheOptimalTemp(minTemp int, maxTemp int) int {
+	if minTemp <= maxTemp {
+		return minTemp
+	}
+
+	return -1
+}
+
 func main() {
 	var departments int
 
@@ -58,11 +66,7 @@ func main() {
 				}
 			}
 
-			if minTemp <= maxTemp {
-				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
-			}
+			fmt.Println(findTheOptimalTemp(minTemp, maxTemp))
 		}
 	}
 }
