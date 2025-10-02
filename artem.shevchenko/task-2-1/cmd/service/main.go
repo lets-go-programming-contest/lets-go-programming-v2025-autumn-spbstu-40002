@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 	"slices"
+
 	"lab-2-1/internal/errors"
 )
 
 const (
-	minTemp = 15
-	maxTemp = 30
+	minTemp              = 15
+	maxTemp              = 30
 	minInitialConditions = 1
 	maxInitialConditions = 1000
 )
-
 
 func fillTemperatureTable(temperatures map[int]int, operator string, temp int) error {
 	// determine acceptable temperature ranges for employees
