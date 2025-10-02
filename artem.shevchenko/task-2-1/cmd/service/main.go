@@ -20,7 +20,28 @@ var (
 	ErrIncorrectEmployeeCount    = errors.New("the number of employees must be between 1 and 1000")
 )
 
-func fillTemperatureTable(temperatures map[int]int, operator string, temp int) error {
+func readOperatorAndTemp() (string, int, bool) {
+	var (
+		operator string
+		temp     int
+	)
+
+	_, err := fmt.Scan(&operator, &temp)
+	if err != nil || temp <= minTemp || temp >= maxTemp {
+		fmt.Println(ErrIncorrectTemperature)
+		return "", 0, false
+	}
+
+	if operator != ">=" && operator != "<=" {
+		fmt.Println(ErrIncorrectOperator)
+		return "", 0, false
+	}
+
+	return operator, temp, true
+}
+
+
+func fillTemperatureTable(temperatures map[int]int, operator string, temp int) {
 	// determine acceptable temperature ranges for employees
 	switch operator {
 	case ">=":
@@ -31,11 +52,7 @@ func fillTemperatureTable(temperatures map[int]int, operator string, temp int) e
 		for currentTemp := temp; currentTemp >= minTemp; currentTemp-- {
 			temperatures[currentTemp] += 1
 		}
-	default:
-		return ErrIncorrectOperator
 	}
-
-	return nil
 }
 
 func getAcceptableTemp(temperatures map[int]int, employeeCount int) int {
@@ -60,8 +77,6 @@ func main() {
 	var (
 		departmentCount int
 		employeeCount   int
-		temp            int
-		operator        string
 	)
 
 	// get the number of departments
@@ -85,21 +100,14 @@ func main() {
 		temperatures := make(map[int]int)
 
 		for employee := range employeeCount {
-			// get the permissible temperature
-			_, err = fmt.Scan(&operator, &temp)
-			if err != nil || !(minTemp <= temp && temp <= maxTemp) {
-				fmt.Println(ErrIncorrectTemperature)
-
+			// get the permissible temperature and operator
+			operator, temp, ok := readOperatorAndTemp()
+			if !ok {
 				return
 			}
 
 			// filling out the temperature table
-			err = fillTemperatureTable(temperatures, operator, temp)
-			if err != nil {
-				fmt.Println(err)
-
-				return
-			}
+			fillTemperatureTable(temperatures, operator, temp)
 
 			// derive the permissible temperature
 			fmt.Println(getAcceptableTemp(temperatures, employee+1))
