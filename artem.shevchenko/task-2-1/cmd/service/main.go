@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"slices"
+
 	"lab-2-1/internal/errors"
 )
 
@@ -20,6 +21,7 @@ func fillTemperatureTable(temperatures map[int]int, operator string, temp int) e
 	default:
 		return errors.ErrIncorrectOperator
 	}
+	
 	return nil
 }
 
@@ -41,7 +43,6 @@ func getAcceptableTemp(temperatures map[int]int, employeeCount int) int {
 	return -1
 }
 
-
 func main() {
 	var departmentCount, employeeCount, temp int
 	var operator string
@@ -50,27 +51,30 @@ func main() {
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil || !(1 <= departmentCount && departmentCount <= 1000) {
 		fmt.Println(errors.ErrIncorrectDepartmentsCount)
+
 		return
 	}
 
-	for departmentId := 0; departmentId < departmentCount; departmentId++ {
+	for departmentId := range departmentCount {
 
 		// get the number of employees in the department
 		_, err = fmt.Scan(&employeeCount)
 		if err != nil || !(1 <= employeeCount && employeeCount <= 1000) {
 			fmt.Println(errors.ErrIncorrectEmployeeCount)
-	 		return
+
+			return
 		}
 
 		// initialize the map of temperatures
 		temperatures := make(map[int]int)
 
-		for employee := 1; employee <= employeeCount; employee++ {
-			
+		for employee := range employeeCount {
+
 			// get the permissible temperature
 			_, err = fmt.Scan(&operator, &temp)
 			if err != nil || !(15 <= temp && temp <= 30) {
 				fmt.Println(errors.ErrIncorrectTemperature)
+
 				return
 			}
 
@@ -78,11 +82,12 @@ func main() {
 			err = fillTemperatureTable(temperatures, operator, temp)
 			if err != nil {
 				fmt.Println(err)
+
 				return
 			}
 
 			// derive the permissible temperature
-			fmt.Println(getAcceptableTemp(temperatures, employee))
+			fmt.Println(getAcceptableTemp(temperatures, employee + 1))
 		}
 	}
 }
