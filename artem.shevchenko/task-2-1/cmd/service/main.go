@@ -6,15 +6,23 @@ import (
 	"lab-2-1/internal/errors"
 )
 
+const (
+	minTemp = 15
+	maxTemp = 30
+	minInitialConditions = 1
+	maxInitialConditions = 1000
+)
+
+
 func fillTemperatureTable(temperatures map[int]int, operator string, temp int) error {
 	// determine acceptable temperature ranges for employees
 	switch operator {
 	case ">=":
-		for currentTemp := temp; currentTemp <= 30; currentTemp++ {
+		for currentTemp := temp; currentTemp <= maxTemp; currentTemp++ {
 			temperatures[currentTemp] += 1
 		}
 	case "<=":
-		for currentTemp := temp; currentTemp >= 15; currentTemp-- {
+		for currentTemp := temp; currentTemp >= minTemp; currentTemp-- {
 			temperatures[currentTemp] += 1
 		}
 	default:
@@ -28,7 +36,7 @@ func getAcceptableTemp(temperatures map[int]int, employeeCount int) int {
 	acceptableTemperatures := make([]int, 0)
 
 	// determine a list of temperatures suitable for each employee
-	for temp := 15; temp <= 30; temp++ {
+	for temp := minTemp; temp <= maxTemp; temp++ {
 		if temperatures[temp] == employeeCount {
 			acceptableTemperatures = append(acceptableTemperatures, temp)
 		}
@@ -52,7 +60,7 @@ func main() {
 
 	// get the number of departments
 	_, err := fmt.Scan(&departmentCount)
-	if err != nil || !(1 <= departmentCount && departmentCount <= 1000) {
+	if err != nil || !(minInitialConditions <= departmentCount && departmentCount <= maxInitialConditions) {
 		fmt.Println(errors.ErrIncorrectDepartmentsCount)
 
 		return
@@ -61,7 +69,7 @@ func main() {
 	for range departmentCount {
 		// get the number of employees in the department
 		_, err = fmt.Scan(&employeeCount)
-		if err != nil || !(1 <= employeeCount && employeeCount <= 1000) {
+		if err != nil || !(minInitialConditions <= employeeCount && employeeCount <= maxInitialConditions) {
 			fmt.Println(errors.ErrIncorrectEmployeeCount)
 
 			return
@@ -73,7 +81,7 @@ func main() {
 		for employee := range employeeCount {
 			// get the permissible temperature
 			_, err = fmt.Scan(&operator, &temp)
-			if err != nil || !(15 <= temp && temp <= 30) {
+			if err != nil || !(minTemp <= temp && temp <= maxTemp) {
 				fmt.Println(errors.ErrIncorrectTemperature)
 
 				return
