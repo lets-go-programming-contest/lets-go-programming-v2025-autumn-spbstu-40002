@@ -9,7 +9,7 @@ func parse(a any, errText string) bool {
 	if err != nil {
 		fmt.Println(errText)
 		var errBuf string
-		fmt.Scanln(&errBuf)
+		_, _ = fmt.Scanln(&errBuf)
 	}
 	return err == nil
 }
