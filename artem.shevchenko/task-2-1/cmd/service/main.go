@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 	"slices"
-
-	"lab-2-1/internal/errors"
+	"errors"
 )
 
 const (
@@ -12,6 +11,13 @@ const (
 	maxTemp              = 30
 	minInitialConditions = 1
 	maxInitialConditions = 1000
+)
+
+var (
+	ErrIncorrectTemperature      = errors.New("the temperature is not between 15 and 30")
+	ErrIncorrectOperator         = errors.New("the range sign can only be <= or >=")
+	ErrIncorrectDepartmentsCount = errors.New("the number of departments must be between 1 and 1000")
+	ErrIncorrectEmployeeCount    = errors.New("the number of employees must be between 1 and 1000")
 )
 
 func fillTemperatureTable(temperatures map[int]int, operator string, temp int) error {
@@ -26,7 +32,7 @@ func fillTemperatureTable(temperatures map[int]int, operator string, temp int) e
 			temperatures[currentTemp] += 1
 		}
 	default:
-		return errors.ErrIncorrectOperator
+		return ErrIncorrectOperator
 	}
 
 	return nil
@@ -61,7 +67,7 @@ func main() {
 	// get the number of departments
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil || !(minInitialConditions <= departmentCount && departmentCount <= maxInitialConditions) {
-		fmt.Println(errors.ErrIncorrectDepartmentsCount)
+		fmt.Println(ErrIncorrectDepartmentsCount)
 
 		return
 	}
@@ -70,7 +76,7 @@ func main() {
 		// get the number of employees in the department
 		_, err = fmt.Scan(&employeeCount)
 		if err != nil || !(minInitialConditions <= employeeCount && employeeCount <= maxInitialConditions) {
-			fmt.Println(errors.ErrIncorrectEmployeeCount)
+			fmt.Println(ErrIncorrectEmployeeCount)
 
 			return
 		}
@@ -82,7 +88,7 @@ func main() {
 			// get the permissible temperature
 			_, err = fmt.Scan(&operator, &temp)
 			if err != nil || !(minTemp <= temp && temp <= maxTemp) {
-				fmt.Println(errors.ErrIncorrectTemperature)
+				fmt.Println(ErrIncorrectTemperature)
 
 				return
 			}
