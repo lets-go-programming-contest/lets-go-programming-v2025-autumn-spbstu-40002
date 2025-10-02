@@ -44,8 +44,12 @@ func getAcceptableTemp(temperatures map[int]int, employeeCount int) int {
 }
 
 func main() {
-	var departmentCount, employeeCount, temp int
-	var operator string
+	var (
+		departmentCount int
+		employeeCount   int
+		temp            int
+		operator        string
+	)
 
 	// get the number of departments
 	_, err := fmt.Scan(&departmentCount)
@@ -56,7 +60,6 @@ func main() {
 	}
 
 	for range departmentCount {
-
 		// get the number of employees in the department
 		_, err = fmt.Scan(&employeeCount)
 		if err != nil || !(1 <= employeeCount && employeeCount <= 1000) {
@@ -69,7 +72,6 @@ func main() {
 		temperatures := make(map[int]int)
 
 		for employee := range employeeCount {
-
 			// get the permissible temperature
 			_, err = fmt.Scan(&operator, &temp)
 			if err != nil || !(15 <= temp && temp <= 30) {
@@ -87,7 +89,7 @@ func main() {
 			}
 
 			// derive the permissible temperature
-			fmt.Println(getAcceptableTemp(temperatures, employee + 1))
+			fmt.Println(getAcceptableTemp(temperatures, employee+1))
 		}
 	}
 }
