@@ -9,10 +9,7 @@ import (
 
 func main() {
 	var total int
-	if _, err := fmt.Scan(&total); err != nil {
-		return
-	}
-	if total <= 0 {
+	if _, err := fmt.Scan(&total); err != nil || total <= 0 {
 		return
 	}
 
@@ -24,10 +21,7 @@ func main() {
 	}
 
 	var kth int
-	if _, err := fmt.Scan(&kth); err != nil {
-		return
-	}
-	if kth <= 0 || kth > total {
+	if _, err := fmt.Scan(&kth); err != nil || kth <= 0 || kth > total {
 		return
 	}
 
