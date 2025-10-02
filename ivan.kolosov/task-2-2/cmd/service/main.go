@@ -32,7 +32,7 @@ func (heap *MaxHeap) Push(x interface{}) {
 	if !isInt {
 		panic("expected int")
 	}
-	
+
 	*heap = append(*heap, value)
 }
 
