@@ -21,17 +21,18 @@ var (
 
 type MaxHeap []int
 
-func (heap MaxHeap) Len() int { return len(heap) }
+func (heap *MaxHeap) Len() int { return len((*heap)) }
 
-func (heap MaxHeap) Less(i, j int) bool { return heap[i] > heap[j] }
+func (heap *MaxHeap) Less(i, j int) bool { return (*heap)[i] > (*heap)[j] }
 
-func (heap MaxHeap) Swap(i, j int) { heap[i], heap[j] = heap[j], heap[i] }
+func (heap *MaxHeap) Swap(i, j int) { (*heap)[i], (*heap)[j] = (*heap)[j], (*heap)[i] }
 
 func (heap *MaxHeap) Push(x interface{}) { *heap = append(*heap, x.(int)) }
 
 func (heap *MaxHeap) Pop() interface{} {
 	x := (*heap)[len(*heap)-1]
 	*heap = (*heap)[0 : len(*heap)-1]
+
 	return x
 }
 
@@ -60,14 +61,14 @@ func main() {
 		heap.Push(myHeap, newDish)
 	}
 
-	var k int
+	var numberOfTheDish int
 
-	_, err = fmt.Scan(&k)
-	if err != nil || k > amountOfDishes {
+	_, err = fmt.Scan(&numberOfTheDish)
+	if err != nil || numberOfTheDish > amountOfDishes {
 		fmt.Println("Error:", errIncorrectK)
 
 		return
 	}
 
-	fmt.Println((*myHeap)[k-1])
+	fmt.Println((*myHeap)[numberOfTheDish-1])
 }
