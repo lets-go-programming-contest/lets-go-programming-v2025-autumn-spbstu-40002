@@ -16,7 +16,7 @@ func main() {
 
 	_, err = fmt.Scan(&secondOperand)
 	if err != nil {
-		fmt.Println("Invalid first operand")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
