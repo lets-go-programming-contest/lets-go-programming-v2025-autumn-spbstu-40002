@@ -21,7 +21,7 @@ func fillTemperatureTable(temperatures map[int]int, operator string, temp int) e
 	default:
 		return errors.ErrIncorrectOperator
 	}
-	
+
 	return nil
 }
 
@@ -55,7 +55,7 @@ func main() {
 		return
 	}
 
-	for departmentId := range departmentCount {
+	for range departmentCount {
 
 		// get the number of employees in the department
 		_, err = fmt.Scan(&employeeCount)
