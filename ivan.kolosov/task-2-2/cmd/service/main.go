@@ -27,7 +27,13 @@ func (heap *MaxHeap) Less(i, j int) bool { return (*heap)[i] > (*heap)[j] }
 
 func (heap *MaxHeap) Swap(i, j int) { (*heap)[i], (*heap)[j] = (*heap)[j], (*heap)[i] }
 
-func (heap *MaxHeap) Push(x interface{}) { *heap = append(*heap, x.(int)) }
+func (heap *MaxHeap) Push(x interface{}) {
+	value, isInt := x.(int)
+	if !isInt {
+		panic("expected int")
+	}
+	*heap = append(*heap, value)
+}
 
 func (heap *MaxHeap) Pop() interface{} {
 	x := (*heap)[len(*heap)-1]
@@ -48,8 +54,8 @@ func main() {
 
 	var newDish int
 
-	myHeap := &MaxHeap{}
-	heap.Init(myHeap)
+	heapOfDishes := &MaxHeap{}
+	heap.Init(heapOfDishes)
 
 	for range amountOfDishes {
 		_, err = fmt.Scan(&newDish)
@@ -58,7 +64,8 @@ func main() {
 
 			return
 		}
-		heap.Push(myHeap, newDish)
+
+		heap.Push(heapOfDishes, newDish)
 	}
 
 	var numberOfTheDish int
@@ -70,5 +77,11 @@ func main() {
 		return
 	}
 
-	fmt.Println((*myHeap)[numberOfTheDish-1])
+	var todaysDish interface{}
+
+	for range numberOfTheDish {
+		todaysDish = heap.Pop(heapOfDishes)
+	}
+
+	fmt.Println(todaysDish)
 }
