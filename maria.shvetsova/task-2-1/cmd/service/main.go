@@ -7,31 +7,35 @@ import (
 func findOptimalTemp(sign string, temp int, maxTemp, minTemp, optimalTemp *int) {
 	switch sign {
 	case ">=":
-		switch {
-		case temp <= *maxTemp && temp <= *minTemp || temp <= *optimalTemp:
-			*minTemp = temp
-		case temp <= *maxTemp && !(temp <= *minTemp || temp <= *optimalTemp):
-			*optimalTemp = temp
-		default:
+		*minTemp = temp
+
+		if temp > *maxTemp {
 			*optimalTemp = -1
 		}
 	case "<=":
-		switch {
-		case temp >= *minTemp && temp >= *maxTemp || temp >= *optimalTemp:
-			*maxTemp = temp
-		case temp <= *maxTemp && !(temp >= *maxTemp || temp >= *optimalTemp):
-			*optimalTemp = temp
-		default:
-			*optimalTemp = temp
+		*maxTemp = temp
+
+		if temp < *minTemp {
+			*optimalTemp = -1
 		}
 	default:
 		return
 	}
+
+	if *minTemp <= *maxTemp {
+		*optimalTemp = *minTemp
+	} else {
+		*optimalTemp = -1
+	}
+
+	fmt.Println(*optimalTemp)
 }
 
 func main() {
 	var numOfDepartments int
+
 	_, err := fmt.Scan(&numOfDepartments)
+
 	if err != nil {
 		return
 	}
@@ -42,7 +46,9 @@ func main() {
 
 	for range numOfDepartments {
 		var numOfEmployees int
+
 		_, err = fmt.Scan(&numOfEmployees)
+
 		if err != nil {
 			return
 		}
@@ -59,19 +65,13 @@ func main() {
 		optimalTemp := 15
 
 		for range numOfEmployees {
-			_, err = fmt.Scan(&sign)
-			if err != nil {
-				return
-			}
+			_, err = fmt.Scan(&sign, &temperature)
 
-			_, err = fmt.Scan(&temperature)
 			if err != nil {
 				return
 			}
 
 			findOptimalTemp(sign, temperature, &maxTemp, &minTemp, &optimalTemp)
-
-			fmt.Println(optimalTemp)
 		}
 	}
 }
