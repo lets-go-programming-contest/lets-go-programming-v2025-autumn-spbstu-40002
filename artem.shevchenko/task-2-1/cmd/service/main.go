@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"slices"
-
 	"lab-2-1/internal/errors"
 )
 
