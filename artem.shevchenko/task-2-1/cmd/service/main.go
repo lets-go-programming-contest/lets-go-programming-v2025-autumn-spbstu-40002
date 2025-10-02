@@ -27,7 +27,7 @@ func readOperatorAndTemp() (string, int, bool) {
 	)
 
 	_, err := fmt.Scan(&operator, &temp)
-	if err != nil || temp <= minTemp || temp >= maxTemp {
+	if err != nil || !(minTemp <= temp && temp <= maxTemp) {
 		fmt.Println(ErrIncorrectTemperature)
 		return "", 0, false
 	}
@@ -39,7 +39,6 @@ func readOperatorAndTemp() (string, int, bool) {
 
 	return operator, temp, true
 }
-
 
 func fillTemperatureTable(temperatures map[int]int, operator string, temp int) {
 	// determine acceptable temperature ranges for employees
