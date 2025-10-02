@@ -29,11 +29,13 @@ func readOperatorAndTemp() (string, int, bool) {
 	_, err := fmt.Scan(&operator, &temp)
 	if err != nil || !(minTemp <= temp && temp <= maxTemp) {
 		fmt.Println(ErrIncorrectTemperature)
+
 		return "", 0, false
 	}
 
 	if operator != ">=" && operator != "<=" {
 		fmt.Println(ErrIncorrectOperator)
+
 		return "", 0, false
 	}
 
