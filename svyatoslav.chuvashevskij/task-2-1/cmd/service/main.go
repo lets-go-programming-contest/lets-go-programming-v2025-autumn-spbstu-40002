@@ -10,22 +10,18 @@ func main() {
 	const minTemperature = 15
 
 	numberOfDepartments := 0
-
 	numberOfEmployees := 0
 
 	_, err := fmt.Scan(&numberOfDepartments)
 	if err != nil {
-
 		fmt.Println("Error:", err)
 
 		return
 	}
 
 	for range numberOfDepartments {
-
 		_, err = fmt.Scan(&numberOfEmployees)
 		if err != nil {
-
 			fmt.Println("Error:", err)
 
 			return
@@ -33,14 +29,12 @@ func main() {
 
 		conditions := [2]int{minTemperature, maxTemperature}
 		for range numberOfEmployees {
-
 			var option string
 
 			var temperature int
 
 			_, err = fmt.Scan(&option, &temperature)
 			if err != nil {
-
 				fmt.Println("Error:", err)
 
 				return
