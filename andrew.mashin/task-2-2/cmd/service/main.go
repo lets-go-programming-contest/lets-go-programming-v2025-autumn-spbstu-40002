@@ -34,7 +34,7 @@ func (h *MyHeap) Push(x interface{}) {
 
 func (h *MyHeap) Pop() interface{} {
 	if len(*h) == 0 {
-		return
+		return nil
 	}
 	
 	old := *h
