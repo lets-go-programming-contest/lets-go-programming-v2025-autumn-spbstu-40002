@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	AmountOfDishesMax = 10000
-	AmountOfDishesMin = 1
-	RatingOfDishesMax = 10000
-	RatingOfDishesMin = -10000
+	AmountOfDishesMax  = 10000
+	AmountOfDishesMin  = 1
+	RatingOfDishesMax  = 10000
+	RatingOfDishesMin  = -10000
 	NumberOfTheDishMin = 1
 )
 
