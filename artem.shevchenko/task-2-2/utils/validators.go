@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/slendycs/task-2-2/constants"
-	"github.com/slendycs/task-2-2/errors"
+	"github.com/slendycs/task-2-2/myErrors"
 )
 
 func ReadDishesCount() (int, bool) {
@@ -12,7 +12,7 @@ func ReadDishesCount() (int, bool) {
 
 	_, err := fmt.Scan(&dishCount)
 	if err != nil || !(constants.MinDishCount <= dishCount && dishCount <= constants.MaxDishCount) {
-		fmt.Println(errors.ErrIncorrectDishesCount)
+		fmt.Println(myErrors.ErrIncorrectDishesCount)
 
 		return 0, false
 	}
@@ -25,7 +25,7 @@ func ReadDishesRaiting() (int, bool) {
 
 	_, err := fmt.Scan(&dishRaiting)
 	if err != nil || !(constants.MinRaiting <= dishRaiting && dishRaiting <= constants.MaxRaiting) {
-		fmt.Println(errors.ErrIncorrectRaiting)
+		fmt.Println(myErrors.ErrIncorrectRaiting)
 
 		return 0, false
 	}
@@ -38,7 +38,7 @@ func ReadPickedDish(dishCount int) (int, bool) {
 
 	_, err := fmt.Scan(&pickedDish)
 	if err != nil || !(1 <= pickedDish && pickedDish <= dishCount) {
-		fmt.Println(errors.ErrIncorrectPickedDish)
+		fmt.Println(myErrors.ErrIncorrectPickedDish)
 
 		return 0, false
 	}
