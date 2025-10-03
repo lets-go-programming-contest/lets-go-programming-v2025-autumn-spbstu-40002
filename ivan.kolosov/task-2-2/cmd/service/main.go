@@ -40,7 +40,7 @@ func (heap *MaxHeap) Pop() interface{} {
 	if len(*heap) == 0 {
 		panic("trying to pop from an empty heap")
 	}
-	
+
 	x := (*heap)[len(*heap)-1]
 	*heap = (*heap)[0 : len(*heap)-1]
 
