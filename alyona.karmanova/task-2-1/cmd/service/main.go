@@ -12,21 +12,22 @@ func isCorrectInputCnt(c int) bool {
 	return (c <= 1000 && c >= 1)
 }
 
-func applyLowerBound(currentMax *int, currentMin *int, newBoard int, currentTemp int) int {
-	if newBoard > *currentMax {
+func applyLowerBound(currentMax *int, currentMin *int, desiredTemp int, currentTemp int) int {
+	if desiredTemp > *currentMax {
+		*currentMin = desiredTemp
 		return -1
 	}
 
-	if newBoard > *currentMin {
-		*currentMin = newBoard
+	if desiredTemp > *currentMin {
+		*currentMin = desiredTemp
 
-		if currentTemp < newBoard {
-			currentTemp = newBoard
+		if currentTemp < desiredTemp {
+			currentTemp = desiredTemp
 		}
 	}
 
 	if currentTemp == -1 {
-		currentTemp = newBoard
+		currentTemp = desiredTemp
 	}
 
 	return currentTemp
@@ -34,6 +35,7 @@ func applyLowerBound(currentMax *int, currentMin *int, newBoard int, currentTemp
 
 func applyUpperBound(currentMax *int, currentMin *int, desiredTemp int, currentTemp int) int {
 	if desiredTemp < *currentMin {
+		*currentMax = desiredTemp
 		return -1
 	}
 
@@ -53,11 +55,9 @@ func applyUpperBound(currentMax *int, currentMin *int, desiredTemp int, currentT
 }
 
 func main() {
-	var countDepartment, countPeople, newBoard int
+	var countDepartment, countPeople, newBoard, tempMin, tempMax, curTemp int
 
 	var sign string
-
-	tempMin, tempMax, curTemp := 14, 31, -1
 
 	_, err := fmt.Scan(&countDepartment)
 
@@ -71,6 +71,8 @@ func main() {
 		if err != nil || !isCorrectInputCnt(countPeople) {
 			return
 		}
+
+		tempMin, tempMax, curTemp = 15, 30, 15
 
 		for range countPeople {
 			_, err = fmt.Scan(&sign, &newBoard)
