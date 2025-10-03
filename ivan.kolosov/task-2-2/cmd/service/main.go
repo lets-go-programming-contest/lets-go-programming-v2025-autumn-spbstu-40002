@@ -11,6 +11,7 @@ const (
 	AmountOfDishesMin = 1
 	RatingOfDishesMax = 10000
 	RatingOfDishesMin = -10000
+	NumberOfTheDishMin = 1
 )
 
 var (
@@ -76,7 +77,7 @@ func main() {
 	var numberOfTheDish int
 
 	_, err = fmt.Scan(&numberOfTheDish)
-	if err != nil || numberOfTheDish > amountOfDishes {
+	if err != nil || numberOfTheDish > amountOfDishes || numberOfTheDish < NumberOfTheDishMin {
 		fmt.Println("Error:", errIncorrectK)
 
 		return
