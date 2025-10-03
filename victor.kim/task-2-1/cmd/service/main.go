@@ -10,14 +10,22 @@ const (
 	maxTemperature = 30
 )
 
-var errFormat = errors.New("invalid temperature format")
+var (
+	errFormat     = errors.New("invalid temperature format")
+	errScanFailed = errors.New("scan failed")
+)
 
 func readInt() (int, error) {
 	var value int
 	n, err := fmt.Scan(&value)
-	if n != 1 || err != nil {
-		return 0, errors.New("scan failed")
+	if n != 1 {
+		return 0, errScanFailed
 	}
+
+	if err != nil {
+		return 0, errScanFailed
+	}
+
 	return value, nil
 }
 
@@ -26,7 +34,11 @@ func adjustTemperature(low int, high int) (int, int, error) {
 	var value int
 
 	n, err := fmt.Scan(&operator, &value)
-	if n != 2 || err != nil {
+	if n != 2 {
+		return 0, 0, errFormat
+	}
+
+	if err != nil {
 		return 0, 0, errFormat
 	}
 
@@ -39,6 +51,7 @@ func adjustTemperature(low int, high int) (int, int, error) {
 		if value > high {
 			return -1, -1, nil
 		}
+
 		if value > low {
 			low = value
 		}
@@ -46,6 +59,7 @@ func adjustTemperature(low int, high int) (int, int, error) {
 		if value < low {
 			return -1, -1, nil
 		}
+
 		if value < high {
 			high = value
 		}
@@ -60,9 +74,10 @@ func processDepartment(employees int) {
 	lowTemp := minTemperature
 	highTemp := maxTemperature
 
-	for e := 0; e < employees; e++ {
+	for range make([]int, employees) {
 		var err error
 		lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
+
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -78,6 +93,7 @@ func processDepartment(employees int) {
 
 func main() {
 	departments, err := readInt()
+
 	if err != nil || departments <= 0 || departments > 1000 {
 		fmt.Println("invalid number of departments")
 		return
@@ -85,6 +101,7 @@ func main() {
 
 	for range make([]int, departments) {
 		employees, err := readInt()
+
 		if err != nil || employees <= 0 || employees > 1000 {
 			fmt.Println("invalid number of employees")
 			return
