@@ -4,6 +4,7 @@ import "fmt"
 
 func main() {
 	var departmentsCount int
+
 	_, err := fmt.Scan(&departmentsCount)
 	if err != nil {
 		return
@@ -13,6 +14,7 @@ func main() {
 		minTemperature := 15
 		maxTemperature := 30
 		var employeesCount int
+
 		_, err := fmt.Scan(&employeesCount)
 		if err != nil {
 			return
@@ -23,7 +25,9 @@ func main() {
 				sign        string
 				temperature int
 			)
-			if _, err := fmt.Scan(&sign, &temperature); err != nil {
+
+			_, err := fmt.Scan(&sign, &temperature)
+			if err != nil {
 				return
 			}
 
