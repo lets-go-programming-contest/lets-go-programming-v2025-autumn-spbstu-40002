@@ -13,11 +13,11 @@ func main() {
 		return
 	}
 
-	for departament := 0; departament < departmentsCount; departament++ {
+	for range departmentsCount {
 		minTemperature := 15
 		maxTemperature := 30
 
-		for employee := 0; employee < employeesPerDepartment; employee++ {
+		for range employeesPerDepartment {
 			var condition string
 			var requestedTemperature int
 
@@ -33,7 +33,7 @@ func main() {
 				maxTemperature = requestedTemperature
 			}
 
-			if minTemperature <= maxTemperature {
+			if minTemperature <= maxTemperature && minTemperature >= 15 && maxTemperature <= 30 {
 				fmt.Println(minTemperature)
 			} else {
 				fmt.Println(-1)
