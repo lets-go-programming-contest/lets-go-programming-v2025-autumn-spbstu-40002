@@ -59,7 +59,7 @@ func main() {
 	for range make([]int, departments) {
 		var employees int
 
-		n, err := fmt.Scan(&employees)
+		n, err = fmt.Scan(&employees)
 
 		if n != 1 || err != nil || employees <= 0 || employees > 1000 {
 			fmt.Println("invalid number of employees")
@@ -70,8 +70,6 @@ func main() {
 		highTemp := maxTemperature
 
 		for range make([]int, employees) {
-			var err error
-
 			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
 
 			if err != nil {
