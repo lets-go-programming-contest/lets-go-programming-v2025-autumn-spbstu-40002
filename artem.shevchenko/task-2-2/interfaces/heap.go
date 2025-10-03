@@ -6,7 +6,7 @@ import (
 	"github.com/slendycs/task-2-2/errors"
 )
 
-// define the interface of the heap so that the minimum element is at the top
+// Define the interface of the heap so that the minimum element is at the top.
 type MinHeap []int
 
 func (h *MinHeap) Len() int           { return len(*h) }

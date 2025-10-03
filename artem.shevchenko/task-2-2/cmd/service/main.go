@@ -14,13 +14,13 @@ func main() {
 
 	dishesRaitingList := make([]int, 0)
 
-	// get the number of dishes
+	// Get the number of dishes.
 	dishCount, ok := utils.ReadDishesCount()
 	if !ok {
 		return
 	}
 
-	// сreate a list of dish ratings
+	// Create a list of dish ratings.
 	for range dishCount {
 		// get the raiting of dish
 		dishRaiting, ok := utils.ReadDishesRaiting()
@@ -31,7 +31,7 @@ func main() {
 		dishesRaitingList = append(dishesRaitingList, dishRaiting)
 	}
 
-	// get the selected dish
+	// Get the selected dish.
 	pickedDishId, ok = utils.ReadPickedDish(dishCount)
 	if !ok {
 		return
