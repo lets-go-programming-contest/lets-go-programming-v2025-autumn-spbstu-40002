@@ -15,16 +15,16 @@ func main() {
 	dishesRaitingList := make([]int, 0)
 
 	// Get the number of dishes.
-	dishCount, ok := utils.ReadDishesCount()
-	if !ok {
+	dishCount, success := utils.ReadDishesCount()
+	if !success {
 		return
 	}
 
 	// Create a list of dish ratings.
 	for range dishCount {
 		// get the raiting of dish
-		dishRaiting, ok := utils.ReadDishesRaiting()
-		if !ok {
+		dishRaiting, success := utils.ReadDishesRaiting()
+		if !success {
 			return
 		}
 
@@ -32,8 +32,8 @@ func main() {
 	}
 
 	// Get the selected dish.
-	pickedDishID, ok = utils.ReadPickedDish(dishCount)
-	if !ok {
+	pickedDishID, success = utils.ReadPickedDish(dishCount)
+	if !success {
 		return
 	}
 

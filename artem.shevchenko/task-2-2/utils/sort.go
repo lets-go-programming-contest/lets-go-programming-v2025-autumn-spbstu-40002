@@ -14,6 +14,7 @@ func GetPreferredDish(pickedDishID int, dishesRaitingList []int) int {
 	// Add each rating to the heap, pushing the minimum one out of it if its size exceeds the ID of the selected dish.
 	for _, raiting := range dishesRaitingList {
 		heap.Push(raitingHeap, raiting)
+		
 		if raitingHeap.Len() > pickedDishID {
 			_ = heap.Pop(raitingHeap)
 		}
