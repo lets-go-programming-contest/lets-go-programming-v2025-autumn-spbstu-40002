@@ -53,8 +53,10 @@ func applyUpperBound(currentMax *int, currentMin *int, desiredTemp int, currentT
 }
 
 func main() {
-	var countDepartment, countPeople int
+	var countDepartment, countPeople, newBoard int
 	var sign string
+	tempMin, tempMax, curTemp := 14, 31, -1
+
 	_, err := fmt.Scan(&countDepartment)
 
 	if err != nil || !isCorrectInputCnt(countDepartment) {
@@ -62,27 +64,33 @@ func main() {
 	}
 
 	for range countDepartment {
+
 		_, err = fmt.Scan(&countPeople)
 
 		if err != nil || !isCorrectInputCnt(countPeople) {
 			return
 		}
-		tempMin, tempMax, curTemp := 14, 31, -1
-		var newBoard int
 
 		for range countPeople {
+
 			_, err = fmt.Scan(&sign, &newBoard)
 
 			if err != nil || !isCorrectInputTemperature(sign, newBoard) {
 				return
 			}
+
 			isLookGreater := sign[0] == '>'
 
 			if isLookGreater {
+
 				curTemp = applyLowerBound(&tempMax, &tempMin, newBoard, curTemp)
+
 			} else {
+
 				curTemp = applyUpperBound(&tempMax, &tempMin, newBoard, curTemp)
+
 			}
+
 			fmt.Println(curTemp)
 		}
 	}
