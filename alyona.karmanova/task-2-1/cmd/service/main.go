@@ -54,6 +54,7 @@ func applyUpperBound(currentMax *int, currentMin *int, desiredTemp int, currentT
 
 func main() {
 	var countDepartment, countPeople, newBoard int
+
 	var sign string
 
 	tempMin, tempMax, curTemp := 14, 31, -1
