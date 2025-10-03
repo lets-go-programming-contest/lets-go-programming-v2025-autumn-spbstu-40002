@@ -77,7 +77,7 @@ func main() {
 
 	dishes := []int{}
 
-	for i := 0; i < dishesCount; i++ {
+	for range dishesCount {
 		var value int
 
 		if _, err := fmt.Scan(&value); err != nil {
