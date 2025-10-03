@@ -15,15 +15,18 @@ func main() {
 			employeesCount int
 			sign           string
 			temperature    int
-			minTemperature int = 15
-			maxTemperature int = 30
+			minTemperature = 15
+			maxTemperature = 30
 		)
 		if _, err := fmt.Scan(&employeesCount); err != nil {
 			return
 		}
 
 		for employee := 0; employee < employeesCount; employee++ {
-			if _, err := fmt.Scan(&sign, &temperature); err != nil {
+			if _, err := fmt.Scan(&sign); err != nil {
+				return
+			}
+			if _, err := fmt.Scan(&temperature); err != nil {
 				return
 			}
 
