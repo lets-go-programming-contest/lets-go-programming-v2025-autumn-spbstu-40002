@@ -13,6 +13,7 @@ func main() {
 	for range departmentsCount {
 		minTemperature := 15
 		maxTemperature := 30
+
 		var employeesCount int
 
 		_, err := fmt.Scan(&employeesCount)
