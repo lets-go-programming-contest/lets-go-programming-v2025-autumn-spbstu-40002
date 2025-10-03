@@ -12,44 +12,48 @@ const (
 
 var errInvalidFormat = errors.New("invalid temperature format")
 
-func adjustTemperature(currentLow int, currentHigh int) (int, int, error) {
-	var operation string
-	var temperature int
+func adjustTemperature(low int, high int) (int, int, error) {
+	var op string
+	var temp int
 
-	_, scanErr := fmt.Scanln(&operation, &temperature)
+	_, scanErr := fmt.Scanln(&op, &temp)
 	if scanErr != nil {
 		return 0, 0, errInvalidFormat
 	}
 
-	if temperature < minTemperature || temperature > maxTemperature {
+	if temp < minTemperature || temp > maxTemperature {
 		return 0, 0, errInvalidFormat
 	}
 
-	switch operation {
-	case ">=":
-		if currentHigh < temperature {
+	if op == ">=" {
+		if high < temp {
 			return -1, -1, nil
 		}
-		if currentLow < temperature {
-			currentLow = temperature
+
+		if low < temp {
+			low = temp
 		}
-	case "<=":
-		if currentLow > temperature {
+
+	} else if op == "<=" {
+		if low > temp {
 			return -1, -1, nil
 		}
-		if currentHigh > temperature {
-			currentHigh = temperature
+
+		if high > temp {
+			high = temp
 		}
-	default:
+
+	} else {
 		return 0, 0, errInvalidFormat
 	}
 
-	return currentLow, currentHigh, nil
+	return low, high, nil
 }
 
 func main() {
 	var numDepartments int
 	_, err := fmt.Scan(&numDepartments)
+
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -60,9 +64,10 @@ func main() {
 		return
 	}
 
-	for dep := 0; dep < numDepartments; dep++ {
+	for range make([]struct{}, numDepartments) {
 		var numEmployees int
 		_, empErr := fmt.Scan(&numEmployees)
+
 		if empErr != nil {
 			fmt.Println(empErr)
 			return
@@ -76,9 +81,10 @@ func main() {
 		currentLow := minTemperature
 		currentHigh := maxTemperature
 
-		for emp := 0; emp < numEmployees; emp++ {
+		for range make([]struct{}, numEmployees) {
 			var adjustErr error
 			currentLow, currentHigh, adjustErr = adjustTemperature(currentLow, currentHigh)
+
 			if adjustErr != nil {
 				fmt.Println(adjustErr)
 				return
@@ -86,6 +92,7 @@ func main() {
 
 			if currentLow == -1 || currentHigh == -1 {
 				fmt.Println(-1)
+
 				continue
 			}
 
