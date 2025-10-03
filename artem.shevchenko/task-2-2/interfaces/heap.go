@@ -3,7 +3,7 @@ package interfaces
 import (
 	"fmt"
 
-	"github.com/slendycs/task-2-2/errors"
+	"github.com/slendycs/task-2-2/myErrors"
 )
 
 // Define the interface of the heap so that the minimum element is at the top.
@@ -16,8 +16,8 @@ func (h *MinHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *MinHeap) Push(elem any) {
 	intElem, ok := elem.(int)
 	if !ok {
-		fmt.Println(errors.ErrIncorrectHeapPushedType)
-		
+		fmt.Println(myErrors.ErrIncorrectHeapPushedType)
+
 		return
 	}
 	*h = append(*h, intElem)
