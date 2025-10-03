@@ -41,7 +41,7 @@ func main() {
 			return
 		}
 
-		intHeap.PushValue(item)
+		heap.Push(intHeap, item)
 	}
 
 	var rating int
@@ -51,11 +51,9 @@ func main() {
 		return
 	}
 
-	var res int
-
-	for range numOfDishes - rating + 1 {
-		res = intHeap.PopValue()
+	for range numOfDishes - rating {
+		heap.Pop(intHeap)
 	}
 
-	fmt.Println(res)
+	fmt.Println(heap.Pop(intHeap))
 }

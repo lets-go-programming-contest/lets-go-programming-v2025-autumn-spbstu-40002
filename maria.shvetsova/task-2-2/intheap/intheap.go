@@ -16,6 +16,7 @@ func (h *IntHeap) Pop() interface{} {
 	intHeap := *h
 	x := intHeap[len(intHeap)-1]
 	*h = intHeap[:len(intHeap)-1]
+	heap.Fix(h, 0)
 
 	return x
 }
@@ -30,16 +31,4 @@ func (h *IntHeap) Less(i, j int) bool {
 
 func (h *IntHeap) Swap(i, j int) {
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
-}
-
-func (h *IntHeap) PushValue(x int) {
-	heap.Push(h, x)
-}
-
-func (h *IntHeap) PopValue() int {
-	if val, ok := h.Pop().(int); ok {
-		return val
-	} else {
-		return 0
-	}
 }
