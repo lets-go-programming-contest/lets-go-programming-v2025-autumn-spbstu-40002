@@ -12,12 +12,21 @@ const (
 
 var errFormat = errors.New("invalid temperature format")
 
+func readInt() (int, error) {
+	var value int
+	n, err := fmt.Scan(&value)
+	if n != 1 || err != nil {
+		return 0, errors.New("scan failed")
+	}
+	return value, nil
+}
+
 func adjustTemperature(low int, high int) (int, int, error) {
 	var operator string
 	var value int
 
-	_, err := fmt.Scan(&operator, &value)
-	if err != nil {
+	n, err := fmt.Scan(&operator, &value)
+	if n != 2 || err != nil {
 		return 0, 0, errFormat
 	}
 
@@ -30,7 +39,6 @@ func adjustTemperature(low int, high int) (int, int, error) {
 		if value > high {
 			return -1, -1, nil
 		}
-
 		if value > low {
 			low = value
 		}
@@ -38,7 +46,6 @@ func adjustTemperature(low int, high int) (int, int, error) {
 		if value < low {
 			return -1, -1, nil
 		}
-
 		if value < high {
 			high = value
 		}
@@ -49,46 +56,40 @@ func adjustTemperature(low int, high int) (int, int, error) {
 	return low, high, nil
 }
 
-func main() {
-	var departments int
-	n, err := fmt.Scan(&departments)
-	if n != 1 || err != nil {
-		return
-	}
+func processDepartment(employees int) {
+	lowTemp := minTemperature
+	highTemp := maxTemperature
 
-	if departments <= 0 || departments > 1000 {
+	for e := 0; e < employees; e++ {
+		var err error
+		lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		if lowTemp == -1 && highTemp == -1 {
+			fmt.Println(-1)
+		} else {
+			fmt.Println(lowTemp)
+		}
+	}
+}
+
+func main() {
+	departments, err := readInt()
+	if err != nil || departments <= 0 || departments > 1000 {
 		fmt.Println("invalid number of departments")
 		return
 	}
 
-	for d := 0; d < departments; d++ {
-		var employees int
-		n, err = fmt.Scan(&employees)
-		if n != 1 || err != nil {
-			return
-		}
-
-		if employees <= 0 || employees > 1000 {
+	for range make([]int, departments) {
+		employees, err := readInt()
+		if err != nil || employees <= 0 || employees > 1000 {
 			fmt.Println("invalid number of employees")
 			return
 		}
 
-		lowTemp := minTemperature
-		highTemp := maxTemperature
-
-		for e := 0; e < employees; e++ {
-			var err error
-			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			if lowTemp == -1 && highTemp == -1 {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(lowTemp)
-			}
-		}
+		processDepartment(employees)
 	}
 }
