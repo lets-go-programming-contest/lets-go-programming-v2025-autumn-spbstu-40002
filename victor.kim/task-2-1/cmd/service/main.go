@@ -3,112 +3,79 @@ package main
 import (
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 )
 
-var (
-	ErrInvalidOperator    = errors.New("invalid operator")
-	ErrInvalidTemperature = errors.New("invalid temperature")
+const (
+	minTemperature = 15
+	maxTemperature = 30
 )
 
-func parseBorder(border string) (string, int, error) {
-	fields := strings.Fields(border)
+var errFormat = errors.New("invalid temperature format")
 
-	if fields[0] != "<=" && fields[0] != ">=" {
-		return "", 0, ErrInvalidOperator
+func adjustTemperature(currentLow int, currentHigh int) (int, int, error) {
+	var (
+		operator string
+		value    int
+	)
+
+	_, err := fmt.Scan(&operator, &value)
+	if err != nil || value < minTemperature || value > maxTemperature {
+		return 0, 0, errFormat
 	}
 
-	temp, err := strconv.Atoi(fields[1])
-	if err != nil {
-		return "", 0, ErrInvalidTemperature
+	switch operator {
+	case ">=":
+		if value > currentHigh {
+			return -1, -1, nil
+		}
+
+		if value > currentLow {
+			currentLow = value
+		}
+	case "<=":
+		if value < currentLow {
+			return -1, -1, nil
+		}
+
+		if value < currentHigh {
+			currentHigh = value
+		}
+	default:
+		return 0, 0, errFormat
 	}
 
-	if temp > 30 || temp < 15 {
-		return "", 0, ErrInvalidTemperature
-	}
-
-	return fields[0], temp, nil
-}
-
-func processEmployees(employees int) {
-	minTemp := 15
-	maxTemp := 30
-	impossibleCondition := false
-
-	for range employees {
-		var (
-			oper string
-			temp string
-		)
-
-		_, err := fmt.Scan(&oper, &temp)
-		if err != nil {
-			fmt.Println("Error reading operator and temperature:", err)
-			fmt.Println(-1)
-
-			impossibleCondition = true
-
-			continue
-		}
-
-		tempBorder := fmt.Sprintf("%s %s", oper, temp)
-
-		operation, temperature, err := parseBorder(tempBorder)
-		if err != nil {
-			fmt.Println("Error has occurred:", err)
-			fmt.Println(-1)
-
-			impossibleCondition = true
-
-			continue
-		}
-
-		if impossibleCondition {
-			fmt.Println(-1)
-
-			continue
-		}
-
-		switch operation {
-		case ">=":
-			minTemp = max(minTemp, temperature)
-		case "<=":
-			maxTemp = min(maxTemp, temperature)
-		}
-
-		if minTemp > maxTemp {
-			fmt.Println(-1)
-
-			impossibleCondition = true
-
-			continue
-		}
-
-		fmt.Println(minTemp)
-	}
+	return currentLow, currentHigh, nil
 }
 
 func main() {
-	var departments int
-
-	_, err := fmt.Scan(&departments)
-	if err != nil {
-		fmt.Println("Error reading number of departments:", err)
-
+	var departments uint16
+	if _, err := fmt.Scan(&departments); err != nil || departments == 0 || departments > 1000 {
+		fmt.Println("invalid number of departments")
 		return
 	}
 
-	for range departments {
-		var employees int
-
-		_, err := fmt.Scan(&employees)
-		if err != nil {
-			fmt.Println("Error reading number of employees:", err)
-
+	for d := uint16(0); d < departments; d++ {
+		var employees uint16
+		if _, err := fmt.Scan(&employees); err != nil || employees == 0 || employees > 1000 {
+			fmt.Println("invalid number of employees")
 			return
 		}
 
-		processEmployees(employees)
+		currentLow := minTemperature
+		currentHigh := maxTemperature
+
+		for e := uint16(0); e < employees; e++ {
+			currentLow, currentHigh, err := adjustTemperature(currentLow, currentHigh)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			if currentLow == -1 && currentHigh == -1 {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(currentLow)
+			}
+		}
 	}
 }
