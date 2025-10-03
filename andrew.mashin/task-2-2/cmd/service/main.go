@@ -36,7 +36,7 @@ func (h *MyHeap) Pop() interface{} {
 	if len(*h) == 0 {
 		return nil
 	}
-	
+
 	old := *h
 	n := len(old)
 	x := old[n-1]
