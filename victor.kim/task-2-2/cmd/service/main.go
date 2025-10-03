@@ -23,6 +23,7 @@ func (h *IntHeap) Push(x interface{}) {
 func (h *IntHeap) Pop() interface{} {
 	oldHeap := *h
 	heapSize := len(oldHeap)
+
 	if heapSize == 0 {
 		return nil
 	}
