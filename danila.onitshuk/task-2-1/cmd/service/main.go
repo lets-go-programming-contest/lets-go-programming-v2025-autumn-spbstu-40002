@@ -1,8 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
 	var departmentsCount int
@@ -10,22 +8,20 @@ func main() {
 		return
 	}
 
-	for departmentNumber := 0; departmentNumber < departmentsCount; departmentNumber++ {
-		var (
-			employeesCount int
-			sign           string
-			temperature    int
-			minTemperature = 15
-			maxTemperature = 30
-		)
+	for range departmentsCount {
+		minTemperature := 15
+		maxTemperature := 30
+		var employeesCount int
 		if _, err := fmt.Scan(&employeesCount); err != nil {
 			return
 		}
 
-		for employee := 0; employee < employeesCount; employee++ {
+		for range employeesCount {
+			var sign string
 			if _, err := fmt.Scan(&sign); err != nil {
 				return
 			}
+			var temperature int
 			if _, err := fmt.Scan(&temperature); err != nil {
 				return
 			}
@@ -46,7 +42,6 @@ func main() {
 			} else {
 				fmt.Println(-1)
 			}
-
 		}
 	}
 }
