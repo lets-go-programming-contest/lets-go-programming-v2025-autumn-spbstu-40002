@@ -5,12 +5,18 @@ import "container/heap"
 type IntHeap []int
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	if val, ok := x.(int); ok {
+		*h = append(*h, val)
+	} else {
+		return
+	}
 }
 
 func (h *IntHeap) Pop() interface{} {
-	x := (*h)[len(*h)-1]
-	*h = (*h)[:len(*h)-1]
+	intHeap := *h
+	x := intHeap[len(intHeap)-1]
+	*h = intHeap[:len(intHeap)-1]
+
 	return x
 }
 
@@ -31,5 +37,9 @@ func (h *IntHeap) PushValue(x int) {
 }
 
 func (h *IntHeap) PopValue() int {
-	return heap.Pop(h).(int)
+	if val, ok := h.Pop().(int); ok {
+		return val
+	} else {
+		return -1
+	}
 }
