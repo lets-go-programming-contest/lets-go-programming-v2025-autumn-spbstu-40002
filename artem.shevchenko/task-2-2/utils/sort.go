@@ -6,19 +6,19 @@ import (
 	"github.com/slendycs/task-2-2/interfaces"
 )
 
-func GetPreferredDish(pickedDishID int, dishesRaitingList []int) int {
+func GetPreferredDish(pickedDishID int, dishesRatingList []int) int {
 	// Initialize the heap.
-	raitingHeap := &interfaces.MinHeap{}
-	heap.Init(raitingHeap)
+	ratingHeap := &interfaces.MinHeap{}
+	heap.Init(ratingHeap)
 
 	// Add each rating to the heap, pushing the minimum one out of it if its size exceeds the ID of the selected dish.
-	for _, raiting := range dishesRaitingList {
-		heap.Push(raitingHeap, raiting)
-		
-		if raitingHeap.Len() > pickedDishID {
-			_ = heap.Pop(raitingHeap)
+	for _, rating := range dishesRatingList {
+		heap.Push(ratingHeap, rating)
+
+		if ratingHeap.Len() > pickedDishID {
+			_ = heap.Pop(ratingHeap)
 		}
 	}
 
-	return (*raitingHeap)[0]
+	return (*ratingHeap)[0]
 }
