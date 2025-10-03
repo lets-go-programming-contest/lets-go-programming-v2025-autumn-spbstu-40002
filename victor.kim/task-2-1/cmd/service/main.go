@@ -10,93 +10,77 @@ const (
 	maxTemperature = 30
 )
 
-var errInvalidFormat = errors.New("invalid temperature format")
+var errFormat = errors.New("invalid temperature format")
 
 func adjustTemperature(low int, high int) (int, int, error) {
-	var op string
-	var temp int
+	var (
+		operation string
+		newTemp   int
+	)
 
-	_, scanErr := fmt.Scanln(&op, &temp)
-	if scanErr != nil {
-		return 0, 0, errInvalidFormat
+	_, err := fmt.Scanln(&operation, &newTemp)
+	if err != nil || newTemp < minTemperature || newTemp > maxTemperature {
+		return 0, 0, errFormat
 	}
 
-	if temp < minTemperature || temp > maxTemperature {
-		return 0, 0, errInvalidFormat
-	}
-
-	if op == ">=" {
-		if high < temp {
+	switch operation {
+	case ">=":
+		if high < newTemp {
 			return -1, -1, nil
 		}
 
-		if low < temp {
-			low = temp
+		if low < newTemp {
+			low = newTemp
 		}
-
-	} else if op == "<=" {
-		if low > temp {
+	case "<=":
+		if low > newTemp {
 			return -1, -1, nil
 		}
 
-		if high > temp {
-			high = temp
+		if high > newTemp {
+			high = newTemp
 		}
-
-	} else {
-		return 0, 0, errInvalidFormat
+	default:
+		return 0, 0, errFormat
 	}
 
 	return low, high, nil
 }
 
 func main() {
-	var numDepartments int
-	_, err := fmt.Scan(&numDepartments)
+	var dep, emp uint16
 
-	if err != nil {
-		fmt.Println(err)
+	_, err := fmt.Scanln(&dep)
+	if err != nil || dep == 0 || dep > 1000 {
+		fmt.Println("invalid number of departments")
+
 		return
 	}
 
-	if numDepartments <= 0 || numDepartments > 1000 {
-		fmt.Println(-1)
-		return
-	}
+	for range dep {
+		_, err = fmt.Scanln(&emp)
+		if err != nil || emp == 0 || emp > 1000 {
+			fmt.Println("invalid number of employees")
 
-	for range make([]struct{}, numDepartments) {
-		var numEmployees int
-		_, empErr := fmt.Scan(&numEmployees)
-
-		if empErr != nil {
-			fmt.Println(empErr)
 			return
 		}
 
-		if numEmployees <= 0 || numEmployees > 1000 {
-			fmt.Println(-1)
-			return
-		}
+		lowTemp := minTemperature
+		highTemp := maxTemperature
 
-		currentLow := minTemperature
-		currentHigh := maxTemperature
+		for range emp {
+			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
+			if err != nil {
+				fmt.Println(err)
 
-		for range make([]struct{}, numEmployees) {
-			var adjustErr error
-			currentLow, currentHigh, adjustErr = adjustTemperature(currentLow, currentHigh)
-
-			if adjustErr != nil {
-				fmt.Println(adjustErr)
 				return
 			}
 
-			if currentLow == -1 || currentHigh == -1 {
+			if lowTemp == -1 && highTemp == -1 {
 				fmt.Println(-1)
-
-				continue
+			} else {
+				fmt.Println(lowTemp)
 			}
-
-			fmt.Println(currentLow)
 		}
 	}
 }
