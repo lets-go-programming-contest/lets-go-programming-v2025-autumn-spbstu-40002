@@ -14,20 +14,26 @@ const (
 
 type MinHeap []int
 
-func (h MinHeap) Len() int {
-	return len(h)
+func (h *MinHeap) Len() int {
+	return len(*h)
 }
 
-func (h MinHeap) Less(i, j int) bool {
-	return h[i] < h[j]
+func (h *MinHeap) Less(i, j int) bool {
+	return (*h)[i] < (*h)[j]
 }
 
-func (h MinHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (h *MinHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
 func (h *MinHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+
+	if !ok {
+		return
+	}
+
+	*h = append(*h, value)
 }
 
 func (h *MinHeap) Pop() any {
@@ -42,36 +48,36 @@ func (h *MinHeap) Pop() any {
 	return x
 }
 
-func findKthLargest(dishes []int, k int) int {
-	h := &MinHeap{}
+func findKthLargest(dishes []int, kth int) int {
+	minHeap := &MinHeap{}
 
-	heap.Init(h)
+	heap.Init(minHeap)
 
 	for _, dish := range dishes {
-		heap.Push(h, dish)
+		heap.Push(minHeap, dish)
 
-		if h.Len() > k {
-			heap.Pop(h)
+		if minHeap.Len() > kth {
+			heap.Pop(minHeap)
 		}
 	}
 
-	return (*h)[0]
+	return (*minHeap)[0]
 }
 
 func main() {
-	var count int
+	var dishesCount int
 
-	if _, err := fmt.Scan(&count); err != nil {
+	if _, err := fmt.Scan(&dishesCount); err != nil {
 		return
 	}
 
-	if count < MinN || count > MaxN {
+	if dishesCount < MinN || dishesCount > MaxN {
 		return
 	}
 
 	dishes := []int{}
 
-	for range count {
+	for i := 0; i < dishesCount; i++ {
 		var value int
 
 		if _, err := fmt.Scan(&value); err != nil {
@@ -85,17 +91,17 @@ func main() {
 		dishes = append(dishes, value)
 	}
 
-	var k int
+	var kthDish int
 
-	if _, err := fmt.Scan(&k); err != nil {
+	if _, err := fmt.Scan(&kthDish); err != nil {
 		return
 	}
 
-	if k < 1 || k > count {
+	if kthDish < 1 || kthDish > dishesCount {
 		return
 	}
 
-	result := findKthLargest(dishes, k)
+	result := findKthLargest(dishes, kthDish)
 
 	fmt.Println(result)
 }
