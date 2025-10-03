@@ -6,38 +6,42 @@ import (
 )
 
 const (
-	minTemp = 15
-	maxTemp = 30
+	minTemperature = 15
+	maxTemperature = 30
 )
 
-var errInvalidInput = errors.New("invalid temperature input")
+var errInvalidFormat = errors.New("invalid temperature format")
 
-func processPreference(currentLow, currentHigh int) (int, int, error) {
-	var op string
-	var temp int
+func adjustTemperature(currentLow int, currentHigh int) (int, int, error) {
+	var operation string
+	var temperature int
 
-	_, err := fmt.Scan(&op, &temp)
-	if err != nil || temp < minTemp || temp > maxTemp {
-		return 0, 0, errInvalidInput
+	_, scanErr := fmt.Scanln(&operation, &temperature)
+	if scanErr != nil {
+		return 0, 0, errInvalidFormat
 	}
 
-	switch op {
+	if temperature < minTemperature || temperature > maxTemperature {
+		return 0, 0, errInvalidFormat
+	}
+
+	switch operation {
 	case ">=":
-		if currentHigh < temp {
+		if currentHigh < temperature {
 			return -1, -1, nil
 		}
-		if currentLow < temp {
-			currentLow = temp
+		if currentLow < temperature {
+			currentLow = temperature
 		}
 	case "<=":
-		if currentLow > temp {
+		if currentLow > temperature {
 			return -1, -1, nil
 		}
-		if currentHigh > temp {
-			currentHigh = temp
+		if currentHigh > temperature {
+			currentHigh = temperature
 		}
 	default:
-		return 0, 0, errInvalidInput
+		return 0, 0, errInvalidFormat
 	}
 
 	return currentLow, currentHigh, nil
@@ -46,35 +50,46 @@ func processPreference(currentLow, currentHigh int) (int, int, error) {
 func main() {
 	var numDepartments int
 	_, err := fmt.Scan(&numDepartments)
-	if err != nil || numDepartments <= 0 || numDepartments > 1000 {
-		fmt.Println("invalid number of departments")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if numDepartments <= 0 || numDepartments > 1000 {
+		fmt.Println(-1)
 		return
 	}
 
 	for dep := 0; dep < numDepartments; dep++ {
 		var numEmployees int
-		_, err := fmt.Scan(&numEmployees)
-		if err != nil || numEmployees <= 0 || numEmployees > 1000 {
-			fmt.Println("invalid number of employees")
+		_, empErr := fmt.Scan(&numEmployees)
+		if empErr != nil {
+			fmt.Println(empErr)
 			return
 		}
 
-		low := minTemp
-		high := maxTemp
+		if numEmployees <= 0 || numEmployees > 1000 {
+			fmt.Println(-1)
+			return
+		}
+
+		currentLow := minTemperature
+		currentHigh := maxTemperature
 
 		for emp := 0; emp < numEmployees; emp++ {
-			low, high, err = processPreference(low, high)
-			if err != nil {
-				fmt.Println(err)
+			var adjustErr error
+			currentLow, currentHigh, adjustErr = adjustTemperature(currentLow, currentHigh)
+			if adjustErr != nil {
+				fmt.Println(adjustErr)
 				return
 			}
 
-			if low == -1 && high == -1 {
+			if currentLow == -1 || currentHigh == -1 {
 				fmt.Println(-1)
 				continue
 			}
 
-			fmt.Println(low)
+			fmt.Println(currentLow)
 		}
 	}
 }
