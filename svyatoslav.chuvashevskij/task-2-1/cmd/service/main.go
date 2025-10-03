@@ -28,6 +28,7 @@ func main() {
 		}
 
 		conditions := [2]int{minTemperature, maxTemperature}
+
 		for range numberOfEmployees {
 			var option string
 
