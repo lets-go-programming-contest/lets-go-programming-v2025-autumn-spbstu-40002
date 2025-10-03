@@ -6,82 +6,75 @@ import (
 )
 
 const (
-	minTemperature = 15
-	maxTemperature = 30
+	minTemp = 15
+	maxTemp = 30
 )
 
-var errFormat = errors.New("invalid temperature format")
+var errInvalidInput = errors.New("invalid temperature input")
 
-func adjustTemperature(low int, high int) (int, int, error) {
-	var operator string
-	var value int
+func processPreference(currentLow, currentHigh int) (int, int, error) {
+	var op string
+	var temp int
 
-	n, err := fmt.Scan(&operator, &value)
-
-	if n != 2 || err != nil || value < minTemperature || value > maxTemperature {
-		return 0, 0, errFormat
+	_, err := fmt.Scan(&op, &temp)
+	if err != nil || temp < minTemp || temp > maxTemp {
+		return 0, 0, errInvalidInput
 	}
 
-	switch operator {
+	switch op {
 	case ">=":
-		if value > high {
+		if currentHigh < temp {
 			return -1, -1, nil
 		}
-
-		if value > low {
-			low = value
+		if currentLow < temp {
+			currentLow = temp
 		}
 	case "<=":
-		if value < low {
+		if currentLow > temp {
 			return -1, -1, nil
 		}
-
-		if value < high {
-			high = value
+		if currentHigh > temp {
+			currentHigh = temp
 		}
 	default:
-		return 0, 0, errFormat
+		return 0, 0, errInvalidInput
 	}
 
-	return low, high, nil
+	return currentLow, currentHigh, nil
 }
 
 func main() {
-	var departments int
-
-	n, err := fmt.Scan(&departments)
-
-	if n != 1 || err != nil || departments <= 0 || departments > 1000 {
+	var numDepartments int
+	_, err := fmt.Scan(&numDepartments)
+	if err != nil || numDepartments <= 0 || numDepartments > 1000 {
 		fmt.Println("invalid number of departments")
 		return
 	}
 
-	for range make([]int, departments) {
-		var employees int
-
-		n, err = fmt.Scan(&employees)
-
-		if n != 1 || err != nil || employees <= 0 || employees > 1000 {
+	for dep := 0; dep < numDepartments; dep++ {
+		var numEmployees int
+		_, err := fmt.Scan(&numEmployees)
+		if err != nil || numEmployees <= 0 || numEmployees > 1000 {
 			fmt.Println("invalid number of employees")
 			return
 		}
 
-		lowTemp := minTemperature
-		highTemp := maxTemperature
+		low := minTemp
+		high := maxTemp
 
-		for range make([]int, employees) {
-			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
-
+		for emp := 0; emp < numEmployees; emp++ {
+			low, high, err = processPreference(low, high)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			if lowTemp == -1 && highTemp == -1 {
+			if low == -1 && high == -1 {
 				fmt.Println(-1)
-			} else {
-				fmt.Println(lowTemp)
+				continue
 			}
+
+			fmt.Println(low)
 		}
 	}
 }
