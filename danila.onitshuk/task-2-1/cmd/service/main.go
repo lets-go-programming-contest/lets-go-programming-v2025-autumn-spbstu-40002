@@ -6,22 +6,28 @@ import (
 
 func main() {
 	var departmentsCount int
-	fmt.Scan(&departmentsCount)
+	if _, err := fmt.Scan(&departmentsCount); err != nil {
+		return
+	}
 
 	for departmentNumber := 0; departmentNumber < departmentsCount; departmentNumber++ {
 		var (
 			employeesCount int
-			sing           string
+			sign           string
 			temperature    int
 			minTemperature int = 15
 			maxTemperature int = 30
 		)
-		fmt.Scan(&employeesCount)
+		if _, err := fmt.Scan(&employeesCount); err != nil {
+			return
+		}
 
 		for employee := 0; employee < employeesCount; employee++ {
-			fmt.Scan(&sing, &temperature)
+			if _, err := fmt.Scan(&sign, &temperature); err != nil {
+				return
+			}
 
-			switch sing {
+			switch sign {
 			case ">=":
 				if temperature > minTemperature {
 					minTemperature = temperature
