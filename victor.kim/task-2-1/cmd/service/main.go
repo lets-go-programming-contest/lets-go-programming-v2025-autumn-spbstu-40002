@@ -17,7 +17,11 @@ func adjustTemperature(low int, high int) (int, int, error) {
 	var value int
 
 	_, err := fmt.Scan(&operator, &value)
-	if err != nil || value < minTemperature || value > maxTemperature {
+	if err != nil {
+		return 0, 0, errFormat
+	}
+
+	if value < minTemperature || value > maxTemperature {
 		return 0, 0, errFormat
 	}
 
@@ -26,6 +30,7 @@ func adjustTemperature(low int, high int) (int, int, error) {
 		if value > high {
 			return -1, -1, nil
 		}
+
 		if value > low {
 			low = value
 		}
@@ -33,6 +38,7 @@ func adjustTemperature(low int, high int) (int, int, error) {
 		if value < low {
 			return -1, -1, nil
 		}
+
 		if value < high {
 			high = value
 		}
@@ -45,37 +51,43 @@ func adjustTemperature(low int, high int) (int, int, error) {
 
 func main() {
 	var departments int
-	_, err := fmt.Scan(&departments)
-	if err != nil || departments <= 0 || departments > 1000 {
-		fmt.Println("invalid number of departments")
+	n, err := fmt.Scan(&departments)
+	if n != 1 || err != nil {
+		return
+	}
 
+	if departments <= 0 || departments > 1000 {
+		fmt.Println("invalid number of departments")
 		return
 	}
 
 	for d := 0; d < departments; d++ {
 		var employees int
-		_, err := fmt.Scan(&employees)
-		if err != nil || employees <= 0 || employees > 1000 {
-			fmt.Println("invalid number of employees")
-
+		n, err = fmt.Scan(&employees)
+		if n != 1 || err != nil {
 			return
 		}
 
-		currentLow := minTemperature
-		currentHigh := maxTemperature
+		if employees <= 0 || employees > 1000 {
+			fmt.Println("invalid number of employees")
+			return
+		}
+
+		lowTemp := minTemperature
+		highTemp := maxTemperature
 
 		for e := 0; e < employees; e++ {
-			currentLow, currentHigh, err = adjustTemperature(currentLow, currentHigh)
+			var err error
+			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
 			if err != nil {
 				fmt.Println(err)
-
 				return
 			}
 
-			if currentLow == -1 && currentHigh == -1 {
+			if lowTemp == -1 && highTemp == -1 {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(currentLow)
+				fmt.Println(lowTemp)
 			}
 		}
 	}
