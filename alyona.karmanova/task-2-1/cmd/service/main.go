@@ -13,8 +13,13 @@ func isCorrectInputCnt(c int) bool {
 }
 
 func applyLowerBound(currentMax *int, currentMin *int, desiredTemp int, currentTemp int) int {
+	if *currentMin > *currentMax {
+		return -1
+	}
+
 	if desiredTemp > *currentMax {
 		*currentMin = desiredTemp
+
 		return -1
 	}
 
@@ -34,8 +39,13 @@ func applyLowerBound(currentMax *int, currentMin *int, desiredTemp int, currentT
 }
 
 func applyUpperBound(currentMax *int, currentMin *int, desiredTemp int, currentTemp int) int {
+	if *currentMin > *currentMax {
+		return -1
+	}
+
 	if desiredTemp < *currentMin {
 		*currentMax = desiredTemp
+
 		return -1
 	}
 
