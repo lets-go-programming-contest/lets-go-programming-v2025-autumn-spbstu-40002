@@ -9,7 +9,7 @@ import (
 func main() {
 	var (
 		dishCount    int
-		pickedDishId int
+		pickedDishID int
 	)
 
 	dishesRaitingList := make([]int, 0)
@@ -32,10 +32,10 @@ func main() {
 	}
 
 	// Get the selected dish.
-	pickedDishId, ok = utils.ReadPickedDish(dishCount)
+	pickedDishID, ok = utils.ReadPickedDish(dishCount)
 	if !ok {
 		return
 	}
 
-	fmt.Println(utils.GetPreferredDish(pickedDishId, dishesRaitingList))
+	fmt.Println(utils.GetPreferredDish(pickedDishID, dishesRaitingList))
 }

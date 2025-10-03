@@ -20,6 +20,7 @@ func (h *MinHeap) Push(elem any) {
 
 		return
 	}
+	
 	*h = append(*h, intElem)
 }
 
