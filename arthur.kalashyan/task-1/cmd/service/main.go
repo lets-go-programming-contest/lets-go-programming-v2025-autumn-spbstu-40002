@@ -9,12 +9,12 @@ func main() {
 	var operator string
 
 	if _, err := fmt.Scanln(&firstOperand); err != nil {
-		fmt.Println("Invalid firstOperand operand")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
 	if _, err := fmt.Scanln(&secondOperand); err != nil {
-		fmt.Println("Invalid secondOperand operand")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
