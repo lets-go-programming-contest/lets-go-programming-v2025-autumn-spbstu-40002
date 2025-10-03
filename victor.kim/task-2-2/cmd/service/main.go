@@ -6,83 +6,89 @@ import (
 	"os"
 )
 
-type IntHeap []int
+type DishHeap []int
 
-func (h *IntHeap) Len() int {
+func (h *DishHeap) Len() int {
 	return len(*h)
 }
 
-func (h *IntHeap) Less(i, j int) bool {
+func (h *DishHeap) Less(i, j int) bool {
 	return (*h)[i] > (*h)[j] // максимальная куча
 }
 
-func (h *IntHeap) Swap(i, j int) {
+func (h *DishHeap) Swap(i, j int) {
 	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
 }
 
-func (h *IntHeap) Push(x any) {
-	value, ok := x.(int)
-	if !ok {
+func (h *DishHeap) Push(x any) {
+	var dish int
+	var ok bool
+
+	if dish, ok = x.(int); !ok {
 		fmt.Fprintln(os.Stderr, "Push: type assertion failed")
 
 		return
 	}
 
-	*h = append(*h, value)
+	*h = append(*h, dish)
 }
 
-func (h *IntHeap) Pop() any {
+func (h *DishHeap) Pop() any {
 	old := *h
 	n := len(old)
 	if n == 0 {
 		return nil
 	}
-	x := old[n-1]
+	dish := old[n-1]
 
 	*h = old[:n-1]
 
-	return x
+	return dish
 }
 
 func main() {
-	var dishCount int
-	if _, err := fmt.Scan(&dishCount); err != nil {
-		fmt.Fprintln(os.Stderr, "couldn't read the number of dishes:", err)
+	var totalDishes uint16
+
+	if _, err := fmt.Scanln(&totalDishes); err != nil || totalDishes == 0 || totalDishes > 10000 {
+		fmt.Println("invalid number of dishes")
 
 		return
 	}
 
-	dishes := &IntHeap{}
-	heap.Init(dishes)
+	dishesHeap := &DishHeap{}
+	heap.Init(dishesHeap)
 
-	for i := range make([]struct{}, dishCount) {
-		var dish int
-		if _, err := fmt.Scan(&dish); err != nil {
+	for range make([]struct{}, totalDishes) {
+		var preference int
+
+		if _, err := fmt.Scan(&preference); err != nil {
 			fmt.Fprintln(os.Stderr, "couldn't read dish preference:", err)
 
 			return
 		}
 
-		heap.Push(dishes, dish)
+		heap.Push(dishesHeap, preference)
 	}
 
-	var preferredDishIndex int
-	if _, err := fmt.Scan(&preferredDishIndex); err != nil || dishes.Len() < preferredDishIndex {
-		fmt.Fprintln(os.Stderr, "invalid preferred dish index")
+	var preferredRank uint16
+
+	if _, err := fmt.Scan(&preferredRank); err != nil || preferredRank == 0 || dishesHeap.Len() < int(preferredRank) {
+		fmt.Println("invalid preferred dish rank")
 
 		return
 	}
 
-	var selected int
-	for i := range make([]struct{}, preferredDishIndex) {
-		value, ok := heap.Pop(dishes).(int)
+	var selectedDish int
+
+	for range make([]struct{}, preferredRank) {
+		value, ok := heap.Pop(dishesHeap).(int)
 		if !ok {
 			fmt.Fprintln(os.Stderr, "Pop: type assertion failed")
 
 			return
 		}
-		selected = value
+		selectedDish = value
 	}
 
-	fmt.Println(selected)
+	fmt.Println(selectedDish)
 }
