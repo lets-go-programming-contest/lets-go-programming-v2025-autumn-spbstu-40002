@@ -1,3 +1,3 @@
-module danila.onitshuk/task2-2
+module danila.onitshuk/task-2-2
 
 go 1.22.7
