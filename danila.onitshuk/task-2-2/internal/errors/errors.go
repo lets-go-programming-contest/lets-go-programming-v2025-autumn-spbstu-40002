@@ -10,7 +10,7 @@ var (
 		"the priority of the dish should be set from -10000 to 10000",
 	)
 	ErrInvalidPreferredDishID = errors.New(
-		"the ID of the preferred dish should be no more than the number of dishes themselves.",
+		"the ID of the preferred dish should be no more than the number of dishes themselves",
 	)
 	ErrInvalidTypeData = errors.New("invalid data type")
 )
