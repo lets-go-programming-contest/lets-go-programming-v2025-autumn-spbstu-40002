@@ -1,7 +1,7 @@
-package service
+package main
 
-import "fmt"
+import "danila.onitshuk/task-2-2/internal/service"
 
 func main() {
-	fmt.Println("initial")
+	service.AgonyChoice()
 }
