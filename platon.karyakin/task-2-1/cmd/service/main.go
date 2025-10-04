@@ -1,98 +1,77 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"os"
-	"strconv"
-	"strings"
 )
 
 const (
-	defaultMinTemp = 15
-	defaultMaxTemp = 30
+	initialMinTemp = 15
+	initialMaxTemp = 30
 )
 
-type TemperatureController struct {
-	min int
-	max int
-}
+var errFormat = fmt.Errorf("invalid input format or value")
 
-func NewTemperatureController() *TemperatureController {
-	return &TemperatureController{
-		min: defaultMinTemp,
-		max: defaultMaxTemp,
-	}
-}
+func readOperationTemp() (string, int, error) {
+	var operation string
+	var temp int
 
-func (tc *TemperatureController) ApplyConstraint(operation string, temperature int) {
-	switch operation {
-	case ">=":
-		if temperature > tc.min {
-			tc.min = temperature
-		}
-	case "<=":
-		if temperature < tc.max {
-			tc.max = temperature
-		}
-	}
-}
-
-func (tc *TemperatureController) GetCurrentTemp() string {
-	if tc.min <= tc.max {
-		return strconv.Itoa(tc.min)
+	_, err := fmt.Scanln(&operation, &temp)
+	if err != nil {
+		return "", 0, errFormat
 	}
 
-	return "-1"
-}
-
-type Department struct {
-	workerCount int
-	controller  *TemperatureController
-}
-
-func NewDepartment(workerCount int) *Department {
-	return &Department{
-		workerCount: workerCount,
-		controller:  NewTemperatureController(),
+	if operation != ">=" && operation != "<=" {
+		return "", 0, errFormat
 	}
-}
 
-func (d *Department) ProcessWorkerRequirement(operation string, temperature int) string {
-	d.controller.ApplyConstraint(operation, temperature)
+	if temp < initialMinTemp || temp > initialMaxTemp {
+		return "", 0, errFormat
+	}
 
-	return d.controller.GetCurrentTemp()
+	return operation, temp, nil
 }
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
+	var departmentsCount int
 
-	scanner.Scan()
-	depCount, _ := strconv.Atoi(scanner.Text())
+	if _, err := fmt.Fscan(os.Stdin, &departmentsCount); err != nil {
+		return
+	}
 
-	for range depCount {
-		scanner.Scan()
+	for departmentIndex := 0; departmentIndex < departmentsCount; departmentIndex++ {
+		var employeesCount int
 
-		workersNumber, err := strconv.Atoi(scanner.Text())
-		if err != nil {
+		if _, err := fmt.Fscan(os.Stdin, &employeesCount); err != nil {
 			return
 		}
 
-		department := NewDepartment(workersNumber)
+		currentMinTemp := initialMinTemp
+		currentMaxTemp := initialMaxTemp
 
-		for range workersNumber {
-			scanner.Scan()
-			line := scanner.Text()
-			parts := strings.Fields(line)
-			operation := parts[0]
-
-			temp, err := strconv.Atoi(parts[1])
+		for employeeIndex := 0; employeeIndex < employeesCount; employeeIndex++ {
+			operation, temperature, err := readOperationTemp()
 			if err != nil {
-				return
+
+				log.Fatalf("error: %v", err)
 			}
 
-			result := department.ProcessWorkerRequirement(operation, temp)
-			fmt.Println(result)
+			if operation == ">=" {
+				if temperature > currentMinTemp {
+					currentMinTemp = temperature
+				}
+			} else if operation == "<=" {
+				if temperature < currentMaxTemp {
+					currentMaxTemp = temperature
+				}
+			}
+
+			if currentMinTemp <= currentMaxTemp {
+				fmt.Println(currentMinTemp)
+			} else {
+				fmt.Println(-1)
+			}
 		}
 	}
 }
