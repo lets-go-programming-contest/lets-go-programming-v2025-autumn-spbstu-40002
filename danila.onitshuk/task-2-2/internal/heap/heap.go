@@ -1,13 +1,26 @@
 package heap
 
+import (
+	"fmt"
+
+	inputerror "danila.onitshuk/task-2-2/internal/errors"
+)
+
 type Heap []int
 
-func (heap Heap) Len() int           { return len(heap) }
-func (heap Heap) Less(i, j int) bool { return heap[i] > heap[j] }
-func (heap Heap) Swap(i, j int)      { heap[i], heap[j] = heap[j], heap[i] }
+func (heap *Heap) Len() int           { return len(*heap) }
+func (heap *Heap) Less(i, j int) bool { return (*heap)[i] > (*heap)[j] }
+func (heap *Heap) Swap(i, j int)      { (*heap)[i], (*heap)[j] = (*heap)[j], (*heap)[i] }
 
-func (heap *Heap) Push(newHeap interface{}) {
-	*heap = append(*heap, newHeap.(int))
+func (heap *Heap) Push(element any) {
+	intElement, err := element.(int)
+	if !err {
+		fmt.Println(inputerror.ErrInvalidTypeData)
+
+		return
+	}
+
+	*heap = append(*heap, intElement)
 }
 
 func (heap *Heap) Pop() interface{} {
@@ -15,5 +28,6 @@ func (heap *Heap) Pop() interface{} {
 	newHeapSize := len(oldHeap) - 1
 	lastElement := oldHeap[newHeapSize]
 	*heap = oldHeap[0:newHeapSize]
+
 	return lastElement
 }

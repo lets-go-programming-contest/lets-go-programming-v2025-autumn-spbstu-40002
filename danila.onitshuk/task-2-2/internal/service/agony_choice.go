@@ -28,7 +28,7 @@ func AgonyChoice() {
 		return
 	}
 
-	for i := 0; i < dishCount; i++ {
+	for range dishCount {
 		var dish int
 
 		_, err := fmt.Scan(&dish)
