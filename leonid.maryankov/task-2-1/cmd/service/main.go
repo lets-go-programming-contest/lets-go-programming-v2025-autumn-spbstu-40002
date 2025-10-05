@@ -3,17 +3,19 @@ package main
 import "fmt"
 
 func main() {
-	var departments int
+	var (
+		departments int
+		staff       int
+		sign        string
+		temp        int
+	)
+
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		fmt.Println("Error:", err)
 
 		return
 	}
-
-	var staff int
-	var sign string
-	var temp int
 
 	for departments > 0 {
 		_, err = fmt.Scan(&staff)
