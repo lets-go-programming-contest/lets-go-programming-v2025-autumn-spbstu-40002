@@ -7,7 +7,6 @@ func main() {
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		fmt.Println("Error:", err)
-
 		return
 	}
 
@@ -16,7 +15,6 @@ func main() {
 		_, err = fmt.Scan(&staff)
 		if err != nil {
 			fmt.Println("Error:", err)
-
 			return
 		}
 
@@ -30,7 +28,6 @@ func main() {
 			_, err = fmt.Scan(&sign, &temp)
 			if err != nil {
 				fmt.Println("Error:", err)
-
 				return
 			}
 
@@ -45,17 +42,16 @@ func main() {
 				}
 			default:
 				fmt.Println("Error: invalid sign")
-
 				return
 			}
 
-			staff--
-		}
+			if minTemp > maxTemp {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(minTemp)
+			}
 
-		if minTemp > maxTemp {
-			fmt.Println(-1)
-		} else {
-			fmt.Println(minTemp)
+			staff--
 		}
 
 		departments--
