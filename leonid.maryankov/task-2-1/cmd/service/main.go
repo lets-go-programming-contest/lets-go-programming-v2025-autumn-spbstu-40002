@@ -4,7 +4,6 @@ import "fmt"
 
 func main() {
 	var departments int
-
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -12,9 +11,11 @@ func main() {
 		return
 	}
 
-	for departments > 0 {
-		var staff int
+	var staff int
+	var sign string
+	var temp int
 
+	for departments > 0 {
 		_, err = fmt.Scan(&staff)
 		if err != nil {
 			fmt.Println("Error:", err)
@@ -24,9 +25,6 @@ func main() {
 
 		minTemp := 15
 		maxTemp := 30
-
-		var sign string
-		var temp int
 
 		for staff > 0 {
 			_, err = fmt.Scan(&sign, &temp)
@@ -51,13 +49,13 @@ func main() {
 				return
 			}
 
-			staff--
-
 			if minTemp > maxTemp {
 				fmt.Println(-1)
 			} else {
 				fmt.Println(minTemp)
 			}
+
+			staff--
 		}
 
 		departments--
