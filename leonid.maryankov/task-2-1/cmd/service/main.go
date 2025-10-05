@@ -25,10 +25,10 @@ func main() {
 		minTemp := 15
 		maxTemp := 30
 
-		for staff > 0 {
-			var sign string
-			var temp int
+		var sign string
+		var temp int
 
+		for staff > 0 {
 			_, err = fmt.Scan(&sign, &temp)
 			if err != nil {
 				fmt.Println("Error:", err)
