@@ -5,34 +5,53 @@ import (
 	"errors"
 )
 
+var (
+	ErrPositionOutOfRange = errors.New("position out of range")
+	ErrEmptyResult        = errors.New("empty result")
+)
+
 type minHeap []int
 
-func (h minHeap) Len() int           { return len(h) }
-func (h minHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h minHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-func (h *minHeap) Push(x any)        { *h = append(*h, x.(int)) }
+func (h *minHeap) Len() int           { return len(*h) }
+func (h *minHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *minHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
+
+func (h *minHeap) Push(x any) {
+	v, ok := x.(int)
+	if !ok {
+		return
+	}
+	*h = append(*h, v)
+}
+
 func (h *minHeap) Pop() any {
 	old := *h
 	n := len(old)
+
 	x := old[n-1]
 	*h = old[:n-1]
+
 	return x
 }
 
 func KthMostPreferred(values []int, position int) (int, error) {
 	if position < 1 || position > len(values) {
-		return 0, errors.New("position out of range")
+		return 0, ErrPositionOutOfRange
 	}
-	h := &minHeap{}
-	heap.Init(h)
+
+	mh := &minHeap{}
+	heap.Init(mh)
+
 	for _, v := range values {
-		heap.Push(h, v)
-		if h.Len() > position {
-			heap.Pop(h)
+		heap.Push(mh, v)
+		if mh.Len() > position {
+			heap.Pop(mh)
 		}
 	}
-	if h.Len() == 0 {
-		return 0, errors.New("empty result")
+
+	if mh.Len() == 0 {
+		return 0, ErrEmptyResult
 	}
-	return (*h)[0], nil
+
+	return (*mh)[0], nil
 }

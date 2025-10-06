@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/rekottt/task-2-2/kth"
 	"os"
+
+	"github.com/rekottt/task-2-2/kth"
 )
 
 func main() {
 	var itemCount int
-	_, scanErr := fmt.Fscan(os.Stdin, &itemCount)
-	if scanErr != nil {
+	if _, err := fmt.Fscan(os.Stdin, &itemCount); err != nil {
 		return
 	}
 	if itemCount < 1 || itemCount > 10000 {
@@ -17,9 +17,8 @@ func main() {
 	}
 
 	values := make([]int, itemCount)
-	for i := 0; i < itemCount; i++ {
-		_, scanErr = fmt.Fscan(os.Stdin, &values[i])
-		if scanErr != nil {
+	for i := range values {
+		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
 			return
 		}
 		if values[i] < -10000 || values[i] > 10000 {
@@ -28,8 +27,7 @@ func main() {
 	}
 
 	var position int
-	_, scanErr = fmt.Fscan(os.Stdin, &position)
-	if scanErr != nil {
+	if _, err := fmt.Fscan(os.Stdin, &position); err != nil {
 		return
 	}
 	if position < 1 || position > itemCount {
