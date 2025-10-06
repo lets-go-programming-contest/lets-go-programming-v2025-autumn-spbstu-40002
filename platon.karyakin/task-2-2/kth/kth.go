@@ -21,6 +21,7 @@ func (h *minHeap) Push(x any) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, v)
 }
 
@@ -39,19 +40,20 @@ func KthMostPreferred(values []int, position int) (int, error) {
 		return 0, ErrPositionOutOfRange
 	}
 
-	mh := &minHeap{}
-	heap.Init(mh)
+	minH := &minHeap{}
+	heap.Init(minH)
 
 	for _, v := range values {
-		heap.Push(mh, v)
-		if mh.Len() > position {
-			heap.Pop(mh)
+		heap.Push(minH, v)
+
+		if minH.Len() > position {
+			heap.Pop(minH)
 		}
 	}
 
-	if mh.Len() == 0 {
+	if minH.Len() == 0 {
 		return 0, ErrEmptyResult
 	}
 
-	return (*mh)[0], nil
+	return (*minH)[0], nil
 }

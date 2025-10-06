@@ -12,6 +12,7 @@ func main() {
 	if _, err := fmt.Fscan(os.Stdin, &itemCount); err != nil {
 		return
 	}
+
 	if itemCount < 1 || itemCount > 10000 {
 		return
 	}
@@ -21,6 +22,7 @@ func main() {
 		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
 			return
 		}
+
 		if values[i] < -10000 || values[i] > 10000 {
 			return
 		}
@@ -30,6 +32,7 @@ func main() {
 	if _, err := fmt.Fscan(os.Stdin, &position); err != nil {
 		return
 	}
+
 	if position < 1 || position > itemCount {
 		return
 	}
