@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	var a, b float32
+	var a, b int
 	var operation string
 
 	_, err := fmt.Scan(&a)
