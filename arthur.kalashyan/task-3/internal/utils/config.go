@@ -18,17 +18,21 @@ func LoadConfig(path string) Config {
 	if err != nil {
 		panic(err)
 	}
+
 	data, err := io.ReadAll(file)
 	if err != nil {
 		_ = file.Close()
 		panic(err)
 	}
-	if err := file.Close(); err != nil {
+
+	err = file.Close()
+	if err != nil {
 		panic(err)
 	}
 
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
 		panic(err)
 	}
 

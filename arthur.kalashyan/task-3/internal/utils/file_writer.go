@@ -11,7 +11,8 @@ const dirPerm = 0o755
 func SaveJSON(path string, items []OutputItem) {
 	dir := filepath.Dir(path)
 	if dir != "." {
-		if err := os.MkdirAll(dir, dirPerm); err != nil {
+		err := os.MkdirAll(dir, dirPerm)
+		if err != nil {
 			panic(err)
 		}
 	}
@@ -20,8 +21,10 @@ func SaveJSON(path string, items []OutputItem) {
 	if err != nil {
 		panic(err)
 	}
+
 	defer func() {
-		if cerr := file.Close(); cerr != nil {
+		cerr := file.Close()
+		if cerr != nil {
 			panic(cerr)
 		}
 	}()
@@ -31,7 +34,8 @@ func SaveJSON(path string, items []OutputItem) {
 		panic(err)
 	}
 
-	if _, err := file.Write(data); err != nil {
+	_, err = file.Write(data)
+	if err != nil {
 		panic(err)
 	}
 }

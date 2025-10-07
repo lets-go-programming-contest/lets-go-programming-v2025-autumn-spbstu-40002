@@ -24,8 +24,10 @@ func ParseCBRXML(path string) []cbrValue {
 	if err != nil {
 		panic(err)
 	}
+
 	defer func() {
-		if cerr := file.Close(); cerr != nil {
+		cerr := file.Close()
+		if cerr != nil {
 			panic(cerr)
 		}
 	}()
@@ -34,7 +36,8 @@ func ParseCBRXML(path string) []cbrValue {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var root cbrValCurs
-	if err := decoder.Decode(&root); err != nil {
+	err = decoder.Decode(&root)
+	if err != nil {
 		panic(err)
 	}
 

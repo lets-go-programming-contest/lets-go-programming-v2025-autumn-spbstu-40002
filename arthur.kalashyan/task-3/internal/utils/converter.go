@@ -13,25 +13,32 @@ type OutputItem struct {
 }
 
 func ConvertAndSort(values []cbrValue) []OutputItem {
-	var result []OutputItem
+	result := make([]OutputItem, 0, len(values))
 
 	for _, val := range values {
-		numCode, err := strconv.Atoi(strings.TrimSpace(val.NumCode))
-		if err != nil {
-			panic(err)
+		numCodeStr := strings.TrimSpace(val.NumCode)
+		nominalStr := strings.TrimSpace(val.Nominal)
+		valueStr := strings.TrimSpace(val.Value)
+
+		if numCodeStr == "" || nominalStr == "" || valueStr == "" {
+			continue
 		}
 
-		nominal, err := strconv.Atoi(strings.TrimSpace(val.Nominal))
+		numCode, err := strconv.Atoi(numCodeStr)
 		if err != nil {
-			panic(err)
+			continue
 		}
 
-		raw := strings.TrimSpace(val.Value)
-		raw = strings.ReplaceAll(raw, " ", "")
-		raw = strings.ReplaceAll(raw, ",", ".")
-		valueF, err := strconv.ParseFloat(raw, 64)
+		nominal, err := strconv.Atoi(nominalStr)
+		if err != nil || nominal == 0 {
+			continue
+		}
+
+		valueStr = strings.ReplaceAll(valueStr, " ", "")
+		valueStr = strings.ReplaceAll(valueStr, ",", ".")
+		valueF, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
-			panic(err)
+			continue
 		}
 
 		valuePerOne := valueF / float64(nominal)
