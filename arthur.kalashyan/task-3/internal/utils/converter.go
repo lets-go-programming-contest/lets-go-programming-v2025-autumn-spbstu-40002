@@ -12,33 +12,40 @@ type OutputItem struct {
 	Value    float64 `json:"value"`
 }
 
-func ConvertAndSort(vals []cbrValue) []OutputItem {
-	var out []OutputItem
-	for _, v := range vals {
-		numCode, err := strconv.Atoi(strings.TrimSpace(v.NumCode))
+func ConvertAndSort(values []cbrValue) []OutputItem {
+	var result []OutputItem
+
+	for _, val := range values {
+		numCode, err := strconv.Atoi(strings.TrimSpace(val.NumCode))
 		if err != nil {
 			panic(err)
 		}
-		nominal, err := strconv.Atoi(strings.TrimSpace(v.Nominal))
+
+		nominal, err := strconv.Atoi(strings.TrimSpace(val.Nominal))
 		if err != nil {
 			panic(err)
 		}
-		raw := strings.TrimSpace(v.Value)
+
+		raw := strings.TrimSpace(val.Value)
 		raw = strings.ReplaceAll(raw, " ", "")
 		raw = strings.ReplaceAll(raw, ",", ".")
 		valueF, err := strconv.ParseFloat(raw, 64)
 		if err != nil {
 			panic(err)
 		}
+
 		valuePerOne := valueF / float64(nominal)
-		out = append(out, OutputItem{
+
+		result = append(result, OutputItem{
 			NumCode:  numCode,
-			CharCode: strings.TrimSpace(v.CharCode),
+			CharCode: strings.TrimSpace(val.CharCode),
 			Value:    valuePerOne,
 		})
 	}
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].Value > out[j].Value
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Value > result[j].Value
 	})
-	return out
+
+	return result
 }

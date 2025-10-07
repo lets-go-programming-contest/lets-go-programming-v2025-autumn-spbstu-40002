@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"io"
 	"os"
+
+	"golang.org/x/net/html/charset"
 )
 
 type cbrValCurs struct {
@@ -19,18 +21,23 @@ type cbrValue struct {
 }
 
 func ParseCBRXML(path string) []cbrValue {
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
-	data, err := io.ReadAll(f)
-	if err != nil {
-		panic(err)
-	}
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			panic(cerr)
+		}
+	}()
+
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
+
 	var root cbrValCurs
-	if err := xml.Unmarshal(data, &root); err != nil {
+	if err := decoder.Decode(&root); err != nil {
 		panic(err)
 	}
+
 	return root.Valute
 }
