@@ -8,6 +8,7 @@ import (
 
 func main() {
 	configPath := flag.String("config", "", "path to YAML config file")
+
 	flag.Parse()
 
 	if *configPath == "" {
@@ -15,11 +16,13 @@ func main() {
 	}
 
 	cfg, err := utils.LoadConfig(*configPath)
+
 	if err != nil {
 		panic(err)
 	}
 
 	data, err := utils.ReadXML(cfg.InputFile)
+
 	if err != nil {
 		panic(err)
 	}
