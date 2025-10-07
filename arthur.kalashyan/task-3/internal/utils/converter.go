@@ -13,22 +13,27 @@ type Output struct {
 }
 
 func SortCurrencies(currencies []Currency) []Output {
-	var out []Output
-	for _, c := range currencies {
-		valStr := strings.ReplaceAll(c.Value, ",", ".")
+	out := make([]Output, 0, len(currencies))
+
+	for _, curr := range currencies {
+		valStr := strings.ReplaceAll(curr.Value, ",", ".")
 		val, err := strconv.ParseFloat(valStr, 64)
 		if err != nil {
 			continue
 		}
-		num, _ := strconv.Atoi(strings.TrimSpace(c.NumCode))
+
+		num, _ := strconv.Atoi(strings.TrimSpace(curr.NumCode))
+
 		out = append(out, Output{
 			NumCode:  num,
-			CharCode: strings.TrimSpace(c.CharCode),
+			CharCode: strings.TrimSpace(curr.CharCode),
 			Value:    val,
 		})
 	}
+
 	sort.Slice(out, func(i, j int) bool {
 		return out[i].Value > out[j].Value
 	})
+
 	return out
 }
