@@ -18,7 +18,6 @@ func SortCurrencies(currencies []Currency) []Output {
 	for _, curr := range currencies {
 		valStr := strings.ReplaceAll(curr.Value, ",", ".")
 		val, err := strconv.ParseFloat(valStr, 64)
-
 		if err != nil {
 			continue
 		}
