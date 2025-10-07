@@ -9,7 +9,7 @@ import (
 
 func SaveToJSON(data any, path string) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}
 
@@ -18,7 +18,7 @@ func SaveToJSON(data any, path string) error {
 		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	err = os.WriteFile(path, bytes, 0600)
+	err = os.WriteFile(path, bytes, 0o600)
 	if err != nil {
 		return fmt.Errorf("write json: %w", err)
 	}
