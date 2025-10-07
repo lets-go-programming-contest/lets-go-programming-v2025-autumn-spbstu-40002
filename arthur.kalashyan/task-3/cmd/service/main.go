@@ -7,15 +7,26 @@ import (
 )
 
 func main() {
-	cfgPath := flag.String("config", "", "")
+	configPath := flag.String("config", "", "path to YAML config file")
 	flag.Parse()
 
-	if *cfgPath == "" {
-		panic("config flag required")
+	if *configPath == "" {
+		panic("config path not provided")
 	}
 
-	cfg := utils.LoadConfig(*cfgPath)
-	values := utils.ParseCBRXML(cfg.InputFile)
-	output := utils.ConvertAndSort(values)
-	utils.SaveJSON(cfg.OutputFile, output)
+	cfg, err := utils.LoadConfig(*configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	data, err := utils.ReadXML(cfg.InputFile)
+	if err != nil {
+		panic(err)
+	}
+
+	sorted := utils.SortCurrencies(data.Currencies)
+
+	if err := utils.SaveToJSON(sorted, cfg.OutputFile); err != nil {
+		panic(err)
+	}
 }

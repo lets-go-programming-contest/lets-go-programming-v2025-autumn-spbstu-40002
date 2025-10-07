@@ -6,53 +6,29 @@ import (
 	"strings"
 )
 
-type OutputItem struct {
+type Output struct {
 	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
 
-func ConvertAndSort(values []cbrValue) []OutputItem {
-	result := make([]OutputItem, 0, len(values))
-
-	for _, val := range values {
-		numCodeStr := strings.TrimSpace(val.NumCode)
-		nominalStr := strings.TrimSpace(val.Nominal)
-		valueStr := strings.TrimSpace(val.Value)
-
-		if numCodeStr == "" || nominalStr == "" || valueStr == "" {
-			continue
-		}
-
-		numCode, err := strconv.Atoi(numCodeStr)
+func SortCurrencies(currencies []Currency) []Output {
+	var out []Output
+	for _, c := range currencies {
+		valStr := strings.ReplaceAll(c.Value, ",", ".")
+		val, err := strconv.ParseFloat(valStr, 64)
 		if err != nil {
 			continue
 		}
-
-		nominal, err := strconv.Atoi(nominalStr)
-		if err != nil || nominal == 0 {
-			continue
-		}
-
-		valueStr = strings.ReplaceAll(valueStr, " ", "")
-		valueStr = strings.ReplaceAll(valueStr, ",", ".")
-		valueF, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
-			continue
-		}
-
-		valuePerOne := valueF / float64(nominal)
-
-		result = append(result, OutputItem{
-			NumCode:  numCode,
-			CharCode: strings.TrimSpace(val.CharCode),
-			Value:    valuePerOne,
+		num, _ := strconv.Atoi(strings.TrimSpace(c.NumCode))
+		out = append(out, Output{
+			NumCode:  num,
+			CharCode: strings.TrimSpace(c.CharCode),
+			Value:    val,
 		})
 	}
-
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Value > result[j].Value
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].Value > out[j].Value
 	})
-
-	return result
+	return out
 }

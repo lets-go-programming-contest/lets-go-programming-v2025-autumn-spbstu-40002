@@ -6,36 +6,14 @@ import (
 	"path/filepath"
 )
 
-const dirPerm = 0o755
-
-func SaveJSON(path string, items []OutputItem) {
+func SaveToJSON(data any, path string) error {
 	dir := filepath.Dir(path)
-	if dir != "." {
-		err := os.MkdirAll(dir, dirPerm)
-		if err != nil {
-			panic(err)
-		}
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
 	}
-
-	file, err := os.Create(path)
+	bytes, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
-		panic(err)
+		return err
 	}
-
-	defer func() {
-		cerr := file.Close()
-		if cerr != nil {
-			panic(cerr)
-		}
-	}()
-
-	data, err := json.MarshalIndent(items, "", " ")
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = file.Write(data)
-	if err != nil {
-		panic(err)
-	}
+	return os.WriteFile(path, bytes, 0644)
 }

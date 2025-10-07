@@ -7,39 +7,29 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-type cbrValCurs struct {
-	XMLName xml.Name   `xml:"ValCurs"`
-	Valute  []cbrValue `xml:"Valute"`
+type Exchange struct {
+	Currencies []Currency `xml:"Valute"`
 }
 
-type cbrValue struct {
+type Currency struct {
 	NumCode  string `xml:"NumCode"`
 	CharCode string `xml:"CharCode"`
-	Nominal  string `xml:"Nominal"`
 	Value    string `xml:"Value"`
 }
 
-func ParseCBRXML(path string) []cbrValue {
+func ReadXML(path string) (*Exchange, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-
-	defer func() {
-		cerr := file.Close()
-		if cerr != nil {
-			panic(cerr)
-		}
-	}()
+	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	var root cbrValCurs
-	err = decoder.Decode(&root)
-	if err != nil {
-		panic(err)
+	var e Exchange
+	if err := decoder.Decode(&e); err != nil {
+		return nil, err
 	}
-
-	return root.Valute
+	return &e, nil
 }
