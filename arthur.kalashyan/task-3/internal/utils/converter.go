@@ -22,7 +22,11 @@ func SortCurrencies(currencies []Currency) []Output {
 			continue
 		}
 
-		num, _ := strconv.Atoi(strings.TrimSpace(curr.NumCode))
+		numStr := strings.TrimSpace(curr.NumCode)
+		num, err := strconv.Atoi(numStr)
+		if err != nil {
+			continue
+		}
 
 		out = append(out, Output{
 			NumCode:  num,
