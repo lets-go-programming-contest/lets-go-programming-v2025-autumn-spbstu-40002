@@ -7,9 +7,14 @@ import (
 	"path/filepath"
 )
 
+const (
+	dirPerm  = 0o755
+	filePerm = 0o600
+)
+
 func SaveToJSON(data any, path string) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return fmt.Errorf("create output dir: %w", err)
 	}
 
@@ -18,7 +23,7 @@ func SaveToJSON(data any, path string) error {
 		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	err = os.WriteFile(path, bytes, 0o600)
+	err = os.WriteFile(path, bytes, filePerm)
 	if err != nil {
 		return fmt.Errorf("write json: %w", err)
 	}
