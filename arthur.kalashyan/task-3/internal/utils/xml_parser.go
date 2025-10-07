@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 
 	"golang.org/x/net/html/charset"
@@ -20,16 +21,22 @@ type Currency struct {
 func ReadXML(path string) (*Exchange, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open xml file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			panic(cerr)
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var e Exchange
 	if err := decoder.Decode(&e); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decode xml: %w", err)
 	}
+
 	return &e, nil
 }
