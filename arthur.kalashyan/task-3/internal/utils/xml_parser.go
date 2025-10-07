@@ -26,8 +26,8 @@ func ReadXML(path string) (*Exchange, error) {
 	}
 
 	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			panic(cerr)
+		if closeErr := file.Close(); closeErr != nil {
+			panic(closeErr)
 		}
 	}()
 
@@ -35,11 +35,10 @@ func ReadXML(path string) (*Exchange, error) {
 
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	var e Exchange
-	
-	if err := decoder.Decode(&e); err != nil {
+	var exch Exchange
+	if err := decoder.Decode(&exch); err != nil {
 		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
-	return &e, nil
+	return &exch, nil
 }
