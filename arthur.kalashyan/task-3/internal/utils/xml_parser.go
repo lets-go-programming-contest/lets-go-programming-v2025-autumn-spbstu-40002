@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/xml"
-	"io"
 	"os"
 
 	"golang.org/x/net/html/charset"
