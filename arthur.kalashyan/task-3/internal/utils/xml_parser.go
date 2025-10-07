@@ -20,23 +20,23 @@ type Currency struct {
 
 func ReadXML(path string) (*Exchange, error) {
 	file, err := os.Open(path)
-
 	if err != nil {
 		return nil, fmt.Errorf("open xml file: %w", err)
 	}
 
 	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
+		closeErr := file.Close()
+		if closeErr != nil {
 			panic(closeErr)
 		}
 	}()
 
 	decoder := xml.NewDecoder(file)
-
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var exch Exchange
-	if err := decoder.Decode(&exch); err != nil {
+	err = decoder.Decode(&exch)
+	if err != nil {
 		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
