@@ -7,12 +7,17 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] > h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	val, ok := x.(int)
+	if !ok {
+
+		return
+	}
+	*h = append(*h, val)
 }
 
 func (h *IntHeap) Pop() any {
@@ -55,13 +60,19 @@ func main() {
 		return
 	}
 
-	h := IntHeap(dishes)
-	heap.Init(&h)
+	dishHeap := IntHeap(dishes)
+	heap.Init(&dishHeap)
 
 	var kDish int
 
 	for kDish = range preference {
-		kDish = heap.Pop(&h).(int)
+		val, ok := heap.Pop(&dishHeap).(int)
+		if !ok {
+			fmt.Println("Error: invalid type")
+
+			return
+		}
+		kDish = val
 	}
 
 	fmt.Println(kDish)
