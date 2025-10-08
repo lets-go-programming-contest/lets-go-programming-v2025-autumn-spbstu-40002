@@ -38,6 +38,7 @@ func main() {
 	_, err := fmt.Scan(&numDish)
 	if err != nil {
 		fmt.Println("Error:", err)
+
 		return
 	}
 
@@ -47,6 +48,7 @@ func main() {
 		_, err = fmt.Scan(&dishes[index])
 		if err != nil {
 			fmt.Println("Error:", err)
+
 			return
 		}
 	}
@@ -54,6 +56,7 @@ func main() {
 	_, err = fmt.Scan(&preference)
 	if err != nil {
 		fmt.Println("Error:", err)
+
 		return
 	}
 
@@ -62,7 +65,7 @@ func main() {
 
 	var kDish int
 
-	for kDish = range preference {
+	for range preference {
 		val, ok := heap.Pop(&dishHeap).(int)
 		if !ok {
 			fmt.Println("Error: invalid type")
