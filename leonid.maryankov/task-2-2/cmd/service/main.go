@@ -16,6 +16,7 @@ func (h *IntHeap) Push(x any) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, val)
 }
 
@@ -24,6 +25,7 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -41,7 +43,7 @@ func main() {
 
 	dishes := make([]int, numDish)
 
-	for index := range numDish {
+	for index := range dishes {
 		_, err = fmt.Scan(&dishes[index])
 		if err != nil {
 			fmt.Println("Error:", err)
@@ -60,12 +62,14 @@ func main() {
 
 	var kDish int
 
-	for step := 0; step < preference; step++ {
+	for kDish = range preference {
 		val, ok := heap.Pop(&dishHeap).(int)
 		if !ok {
 			fmt.Println("Error: invalid type")
+
 			return
 		}
+
 		kDish = val
 	}
 
