@@ -14,7 +14,6 @@ func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *IntHeap) Push(x any) {
 	val, ok := x.(int)
 	if !ok {
-
 		return
 	}
 	*h = append(*h, val)
@@ -25,7 +24,6 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
-
 	return x
 }
 
@@ -38,7 +36,6 @@ func main() {
 	_, err := fmt.Scan(&numDish)
 	if err != nil {
 		fmt.Println("Error:", err)
-
 		return
 	}
 
@@ -48,7 +45,6 @@ func main() {
 		_, err = fmt.Scan(&dishes[index])
 		if err != nil {
 			fmt.Println("Error:", err)
-
 			return
 		}
 	}
@@ -56,7 +52,6 @@ func main() {
 	_, err = fmt.Scan(&preference)
 	if err != nil {
 		fmt.Println("Error:", err)
-
 		return
 	}
 
@@ -65,11 +60,10 @@ func main() {
 
 	var kDish int
 
-	for kDish = range preference {
+	for step := 0; step < preference; step++ {
 		val, ok := heap.Pop(&dishHeap).(int)
 		if !ok {
 			fmt.Println("Error: invalid type")
-
 			return
 		}
 		kDish = val
