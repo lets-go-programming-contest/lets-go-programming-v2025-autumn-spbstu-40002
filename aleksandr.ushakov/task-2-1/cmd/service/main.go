@@ -12,9 +12,10 @@ const (
 	maxNumber             = 1000
 )
 
+var newError = errors.New("Error")
+
 func checkLimits(value int, minLimit int, maxLimit int) bool {
 	if value >= minLimit && value <= maxLimit {
-
 		return true
 	}
 
@@ -32,12 +33,13 @@ func getOptimalTemperature(sign string, temperature int, lowerLimit *int, upperL
 			*upperLimit = temperature
 		}
 	default:
-		return 0, errors.New("error")
+		return 0, newError
 	}
 
 	if *lowerLimit > *upperLimit {
 		return -1, nil
 	}
+
 	return *lowerLimit, nil
 }
 
@@ -45,20 +47,20 @@ func main() {
 	var numberOfDepartments, numberOfPeople int
 	_, err := fmt.Scanln(&numberOfDepartments)
 	if err != nil || !checkLimits(numberOfDepartments, minNumber, maxNumber) {
-
 		return
 	}
 
 	for range numberOfDepartments {
 		_, err = fmt.Scanln(&numberOfPeople)
 		if err != nil || !checkLimits(numberOfPeople, minNumber, maxNumber) {
-
 			return
 		}
 		lowerDepartmentLimit := 15
+
 		upperDepartmentLimit := 30
 		for range numberOfPeople {
 			var sign string
+
 			var temperature int
 			_, err = fmt.Scan(&sign, &temperature)
 			if err != nil || !checkLimits(temperature, lowerTemperatureLimit, upperTemperatureLimit) {
@@ -67,10 +69,10 @@ func main() {
 			}
 			optimalTemp, err := getOptimalTemperature(sign, temperature, &lowerDepartmentLimit, &upperDepartmentLimit)
 			if err != nil {
-
 				return
 			}
 			fmt.Println(optimalTemp)
+
 		}
 	}
 }
