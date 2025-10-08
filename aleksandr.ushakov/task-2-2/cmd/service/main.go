@@ -24,6 +24,7 @@ func (h *IntHeap) Push(x any) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, val)
 }
 
@@ -59,7 +60,9 @@ func main() {
 
 	for range numberOfDishes {
 		var mark int
+
 		_, err = fmt.Scan(&mark)
+
 		if err != nil || !checkLimits(mark, minMark, maxMark) {
 			return
 		}
@@ -67,15 +70,15 @@ func main() {
 		heap.Push(markHeap, mark)
 	}
 
-	var k int
+	var picked int
 
-	_, err = fmt.Scanln(&k)
+	_, err = fmt.Scanln(&picked)
 
-	if err != nil || !checkLimits(k, 1, numberOfDishes) {
+	if err != nil || !checkLimits(picked, 1, numberOfDishes) {
 		return
 	}
 
-	for range k - 1 {
+	for range picked - 1 {
 		heap.Pop(markHeap)
 	}
 
