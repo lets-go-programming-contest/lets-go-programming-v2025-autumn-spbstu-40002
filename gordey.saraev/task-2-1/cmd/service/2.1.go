@@ -27,7 +27,7 @@ func main() {
 		}
 
 		if employees < 1 || employees > 1000 {
-			fmt.Println("employees is out of range [1, 1000]")
+			fmt.Println("Employees is out of range [1, 1000]")
 			return
 		}
 
