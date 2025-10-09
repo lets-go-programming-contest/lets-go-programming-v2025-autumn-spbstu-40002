@@ -46,20 +46,8 @@ func main() {
 	}
 
 	for range preference - 1 {
-		val := heap.Pop(heapMax)
-		if val == nil {
-			fmt.Println("Heap is empty unexpectedly")
-
-			return
-		}
+		heap.Pop(heapMax)
 	}
 
-	val := heap.Pop(heapMax)
-	if val == nil {
-		fmt.Println("Heap is empty unexpectedly")
-
-		return
-	}
-
-	fmt.Println(val)
+	fmt.Println(heap.Pop(heapMax))
 }
