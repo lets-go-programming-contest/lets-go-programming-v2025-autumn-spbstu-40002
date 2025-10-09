@@ -30,6 +30,7 @@ func adjustTemperature(low, high int) (int, int, error) {
 		if high < temperatureValue {
 			return -1, -1, nil
 		}
+
 		if low < temperatureValue {
 			low = temperatureValue
 		}
@@ -37,6 +38,7 @@ func adjustTemperature(low, high int) (int, int, error) {
 		if low > temperatureValue {
 			return -1, -1, nil
 		}
+
 		if high > temperatureValue {
 			high = temperatureValue
 		}
@@ -45,6 +47,37 @@ func adjustTemperature(low, high int) (int, int, error) {
 	}
 
 	return low, high, nil
+}
+
+func processDepartment() error {
+	var numberOfEmployees int
+
+	_, err := fmt.Scanln(&numberOfEmployees)
+	if err != nil || numberOfEmployees < 1 || numberOfEmployees > 1000 {
+		fmt.Println(errEmployees)
+		return errEmployees
+	}
+
+	low := minTemperature
+	high := maxTemperature
+
+	for range numberOfEmployees {
+		var adjustErr error
+
+		low, high, adjustErr = adjustTemperature(low, high)
+		if adjustErr != nil {
+			fmt.Println(adjustErr)
+			return adjustErr
+		}
+
+		if low == -1 || high == -1 || low > high {
+			fmt.Println(-1)
+		} else {
+			fmt.Println(low)
+		}
+	}
+
+	return nil
 }
 
 func main() {
@@ -56,30 +89,9 @@ func main() {
 		return
 	}
 
-	for departmentIndex := 0; departmentIndex < numberOfDepartments; departmentIndex++ {
-		var numberOfEmployees int
-		_, err = fmt.Scanln(&numberOfEmployees)
-		if err != nil || numberOfEmployees < 1 || numberOfEmployees > 1000 {
-			fmt.Println(errEmployees)
+	for range numberOfDepartments {
+		if err := processDepartment(); err != nil {
 			return
-		}
-
-		low := minTemperature
-		high := maxTemperature
-
-		for employeeIndex := 0; employeeIndex < numberOfEmployees; employeeIndex++ {
-			var adjustErr error
-			low, high, adjustErr = adjustTemperature(low, high)
-			if adjustErr != nil {
-				fmt.Println(adjustErr)
-				return
-			}
-
-			if low == -1 || high == -1 || low > high {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(low)
-			}
 		}
 	}
 }
