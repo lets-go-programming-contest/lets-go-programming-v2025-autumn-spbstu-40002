@@ -2,7 +2,10 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
+
+	MyHeap "github.com/Exam-Play/task-2-2/internal/min_heap"
 )
 
 const (
@@ -12,42 +15,23 @@ const (
 	ratingMax         = 10000
 )
 
-type MyHeap []int
-
-func (h *MyHeap) Len() int {
-	return len(*h)
-}
-
-func (h *MyHeap) Less(i, j int) bool {
-	return (*h)[i] < (*h)[j]
-}
-
-func (h *MyHeap) Swap(i, j int) {
-	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
-}
-
-func (h *MyHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
-}
-
-func (h *MyHeap) Pop() interface{} {
-	old := *h
-	n := len(old)
-	x := old[n-1]
-	*h = old[0 : n-1]
-
-	return x
-}
+var (
+	errorIncorrectNumberOfDishes = errors.New("incorrect number of dishes")
+	errorIncorrectRating         = errors.New("incorrect rating")
+	errorIncorrectK              = errors.New("incorrect preferred dish")
+)
 
 func main() {
 	var numberOfDishes int
 
 	_, err := fmt.Scan(&numberOfDishes)
 	if err != nil || numberOfDishes < numberOfDishesMin || numberOfDishes > numberOfDishesMax {
+		fmt.Println(errorIncorrectNumberOfDishes)
+
 		return
 	}
 
-	myHeap := &MyHeap{}
+	myHeap := &MyHeap.MinHeap{}
 	heap.Init(myHeap)
 
 	for range numberOfDishes {
@@ -55,6 +39,8 @@ func main() {
 
 		_, err = fmt.Scan(&rating)
 		if err != nil || rating < ratingMin || rating > ratingMax {
+			fmt.Println(errorIncorrectRating)
+
 			return
 		}
 
@@ -65,6 +51,8 @@ func main() {
 
 	_, err = fmt.Scan(&preferredDish)
 	if err != nil || preferredDish > numberOfDishes || preferredDish < 1 {
+		fmt.Println(errorIncorrectK)
+
 		return
 	}
 
