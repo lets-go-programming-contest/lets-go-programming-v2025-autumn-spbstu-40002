@@ -55,6 +55,7 @@ func processDepartment() error {
 	_, err := fmt.Scanln(&numberOfEmployees)
 	if err != nil || numberOfEmployees < 1 || numberOfEmployees > 1000 {
 		fmt.Println(errEmployees)
+
 		return errEmployees
 	}
 
@@ -67,6 +68,7 @@ func processDepartment() error {
 		low, high, adjustErr = adjustTemperature(low, high)
 		if adjustErr != nil {
 			fmt.Println(adjustErr)
+
 			return adjustErr
 		}
 
@@ -86,11 +88,13 @@ func main() {
 	_, err := fmt.Scanln(&numberOfDepartments)
 	if err != nil || numberOfDepartments < 1 || numberOfDepartments > 1000 {
 		fmt.Println(errDepartments)
+
 		return
 	}
 
 	for range numberOfDepartments {
 		if err := processDepartment(); err != nil {
+
 			return
 		}
 	}
