@@ -94,7 +94,6 @@ func main() {
 
 	for range numberOfDepartments {
 		if err := processDepartment(); err != nil {
-
 			return
 		}
 	}
