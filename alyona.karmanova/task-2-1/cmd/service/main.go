@@ -4,102 +4,115 @@ import (
 	"fmt"
 )
 
-func isCorrectInputTemperature(sign string, temp int) bool {
-	return len(sign) == 2 && (sign[0] == '>' || sign[0] == '<') && sign[1] == '=' && (15 <= temp && temp <= 30)
+const (
+	MinTempConst   = 15
+	MaxTempConst   = 30
+	MinCorrectData = 1
+	MaxCorrectData = 1000
+)
+
+type Office struct {
+	currentMax  int
+	currentMin  int
+	currentTemp int
 }
 
-func isCorrectInputCnt(c int) bool {
-	return (c <= 1000 && c >= 1)
+func (o *Office) GetCurrentTemp() int {
+	return o.currentTemp
 }
 
-func applyLowerBound(currentMax *int, currentMin *int, desiredTemp int, currentTemp int) int {
-	if *currentMin > *currentMax {
-		return -1
+func (o *Office) applyLowerBound(desiredTemp int) {
+	if o.currentMin > o.currentMax {
+		o.currentTemp = -1
+		return
+	}
+	if desiredTemp > o.currentMax {
+		o.currentTemp = -1
+		return
 	}
 
-	if desiredTemp > *currentMax {
-		*currentMin = desiredTemp
+	if desiredTemp > o.currentMin {
+		o.currentMin = desiredTemp
 
-		return -1
-	}
-
-	if desiredTemp > *currentMin {
-		*currentMin = desiredTemp
-
-		if currentTemp < desiredTemp {
-			currentTemp = desiredTemp
+		if o.currentTemp < desiredTemp {
+			o.currentTemp = desiredTemp
 		}
 	}
 
-	if currentTemp == -1 {
-		currentTemp = desiredTemp
+	if o.currentTemp == -1 {
+		o.currentTemp = desiredTemp
 	}
-
-	return currentTemp
 }
 
-func applyUpperBound(currentMax *int, currentMin *int, desiredTemp int, currentTemp int) int {
-	if *currentMin > *currentMax {
-		return -1
+func isDateCorrect(c int) bool {
+	return (c <= MaxCorrectData && c >= MinCorrectData)
+}
+
+func (o *Office) applyUpperBound(desiredTemp int) {
+	if o.currentMin > o.currentMax {
+		o.currentMin = -1
+		return
+	}
+	if desiredTemp < o.currentMin {
+		o.currentMax = desiredTemp
+		o.currentMin = -1
+		return
 	}
 
-	if desiredTemp < *currentMin {
-		*currentMax = desiredTemp
+	if desiredTemp < o.currentMax {
+		o.currentMax = desiredTemp
 
-		return -1
-	}
-
-	if desiredTemp < *currentMax {
-		*currentMax = desiredTemp
-
-		if currentTemp > desiredTemp {
-			currentTemp = desiredTemp
+		if o.currentTemp > desiredTemp {
+			o.currentTemp = desiredTemp
 		}
 	}
 
-	if currentTemp == -1 {
-		currentTemp = desiredTemp
+	if o.currentTemp == -1 {
+		o.currentTemp = desiredTemp
 	}
-
-	return currentTemp
 }
 
 func main() {
-	var countDepartment, countPeople, newBoard, tempMin, tempMax, curTemp int
+	var (
+		countDepartment, countPeople, newBoard int
+		sign                                   string
+	)
 
-	var sign string
+	room := Office{
+		currentMax:  30,
+		currentMin:  15,
+		currentTemp: 15,
+	}
 
 	_, err := fmt.Scan(&countDepartment)
 
-	if err != nil || !isCorrectInputCnt(countDepartment) {
+	if err != nil || !isDateCorrect(countDepartment) {
 		return
 	}
 
 	for range countDepartment {
 		_, err = fmt.Scan(&countPeople)
 
-		if err != nil || !isCorrectInputCnt(countPeople) {
+		if err != nil || !isDateCorrect(countPeople) {
 			return
 		}
-
-		tempMin, tempMax, curTemp = 15, 30, 15
 
 		for range countPeople {
 			_, err = fmt.Scan(&sign, &newBoard)
 
-			if err != nil || !isCorrectInputTemperature(sign, newBoard) {
+			if err != nil {
 				return
 			}
 
 			isLookGreater := sign[0] == '>'
 
 			if isLookGreater {
-				curTemp = applyLowerBound(&tempMax, &tempMin, newBoard, curTemp)
+				room.applyLowerBound(newBoard)
 			} else {
-				curTemp = applyUpperBound(&tempMax, &tempMin, newBoard, curTemp)
+				room.applyUpperBound(newBoard)
 			}
 
-			fmt.Println(curTemp)
+			fmt.Println(room.GetCurrentTemp())
 		}
 	}
 }
