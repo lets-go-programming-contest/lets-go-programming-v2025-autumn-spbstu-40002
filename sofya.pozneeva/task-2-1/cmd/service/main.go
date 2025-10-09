@@ -5,6 +5,7 @@ import "fmt"
 func main() {
 	var nSection uint16
 	_, err := fmt.Scanln(&nSection)
+	
 	if err != nil {
 		fmt.Println("Invalid argument")
 		
@@ -18,6 +19,7 @@ func main() {
 
 		var nPeople uint16
 		_, err = fmt.Scanln(&nPeople)
+		
 		if err != nil {
 			fmt.Println("Invalid argument")
 			
