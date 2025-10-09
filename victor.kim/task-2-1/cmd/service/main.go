@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	minTemperature                  = 15
-	maxTemperature                  = 30
-	expectedScanCountOperationVal   = 2
-	expectedScanCountSingle         = 1
+	minTemperature                = 15
+	maxTemperature                = 30
+	expectedScanCountOperationVal = 2
+	expectedScanCountSingle       = 1
 )
 
 var errFormat = errors.New("invalid temperature format")
