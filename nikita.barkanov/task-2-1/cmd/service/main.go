@@ -41,6 +41,7 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 		if object.upperBound > value {
 			object.upperBound = value
 		}
+
 		if object.upperBound > maxTemperature {
 			object.upperBound = maxTemperature
 		}
