@@ -54,25 +54,17 @@ func main() {
 				continue
 			}
 
+			if minTemp < 15 {
+				minTemp = 15
+			}
+			if maxTemp > 30 {
+				maxTemp = 30
+			}
+
 			if minTemp > maxTemp {
 				fmt.Println(-1)
 			} else {
-
-				if maxTemp > 30 {
-					maxTemp = 30
-				}
-				if minTemp < 15 {
-					minTemp = 15
-				}
-				if minTemp > 30 || maxTemp < 15 {
-					fmt.Println(-1)
-				} else {
-					if maxTemp < minTemp {
-						fmt.Println(-1)
-					} else {
-						fmt.Println(maxTemp)
-					}
-				}
+				fmt.Println(maxTemp)
 			}
 		}
 	}
