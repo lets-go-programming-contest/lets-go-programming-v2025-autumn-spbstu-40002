@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	MinTemp        = 15
@@ -9,60 +12,77 @@ const (
 	MaxValidNumber = 1000
 )
 
-func findOptimal(minTemperature, maxTemperature int, operator string, requestedTemperature int) (int, int) {
-	if operator == ">=" {
-		if requestedTemperature > minTemperature {
-			minTemperature = requestedTemperature
-		}
-	}
+type TemperatureRange struct {
+	Min int
+	Max int
+}
 
-	if operator == "<=" {
-		if requestedTemperature < maxTemperature {
-			maxTemperature = requestedTemperature
+func (t *TemperatureRange) Update(operator string, requested int) error {
+	switch operator {
+	case ">=":
+		if requested > t.Min {
+			t.Min = requested
 		}
+	case "<=":
+		if requested < t.Max {
+			t.Max = requested
+		}
+	default:
+		return errors.New("incorrect operator")
 	}
+	return nil
+}
 
-	return minTemperature, maxTemperature
+func (t *TemperatureRange) Get() (int, error) {
+	if t.Min > t.Max {
+		return -1, errors.New("temperature is out of range")
+	}
+	return t.Min, nil
 }
 
 func main() {
 	var departments int
 
 	if _, err := fmt.Scan(&departments); err != nil {
+		_ = errors.New("departments could not be read")
 		return
 	}
 
 	if departments < MinValidNumber || departments > MaxValidNumber {
+		_ = errors.New("departments out of range")
 		return
 	}
 
 	for range departments {
-		minTemperature := MinTemp
-		maxTemperature := MaxTemp
+		temp := TemperatureRange{Min: MinTemp, Max: MaxTemp}
 
 		var employees int
 
 		if _, err := fmt.Scan(&employees); err != nil {
+			_ = errors.New("amount of employees could not be read")
 			return
 		}
 
 		if employees < MinValidNumber || employees > MaxValidNumber {
+			_ = errors.New("amount of employees out of range")
 			return
 		}
 
 		for range employees {
 			var operator string
-
 			var requestedTemperature int
 
 			if _, err := fmt.Scan(&operator, &requestedTemperature); err != nil {
+				_ = errors.New("temperature or operator could not be read")
 				return
 			}
 
-			minTemperature, maxTemperature = findOptimal(minTemperature, maxTemperature, operator, requestedTemperature)
+			if err := temp.Update(operator, requestedTemperature); err != nil {
+				return
+			}
 
-			if minTemperature <= maxTemperature {
-				fmt.Println(minTemperature)
+			if val, err := temp.Get(); err == nil {
+				fmt.Println(val)
 			} else {
 				fmt.Println(-1)
 			}
