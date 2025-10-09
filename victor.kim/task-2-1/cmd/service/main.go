@@ -84,10 +84,13 @@ func main() {
 			return
 		}
 
+		// === minimal change: include all struct fields in composite literal ===
 		t := &Thermostat{
-			low:  minTemperature,
-			high: maxTemperature,
+			low:      minTemperature,
+			high:     maxTemperature,
+			conflict: false,
 		}
+		// ====================================================================
 
 		for range make([]struct{}, emp) {
 			var operation string
