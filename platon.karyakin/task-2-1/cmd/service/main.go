@@ -20,7 +20,7 @@ func readOperationTemp() (string, int, error) {
 		temp      int
 	)
 
-	_, err := fmt.Scanln(&operation, &temp)
+	_, err := fmt.Fscan(os.Stdin, &operation, &temp)
 	if err != nil {
 		return "", 0, errFormat
 	}
@@ -36,6 +36,45 @@ func readOperationTemp() (string, int, error) {
 	return operation, temp, nil
 }
 
+// TemperatureManager хранит и управляет текущим диапазоном температур.
+type TemperatureManager struct {
+	minTemp int
+	maxTemp int
+}
+
+func NewTemperatureManager(minInit, maxInit int) *TemperatureManager {
+	return &TemperatureManager{
+		minTemp: minInit,
+		maxTemp: maxInit,
+	}
+}
+
+func (tm *TemperatureManager) Update(operation string, temperature int) error {
+	if operation != ">=" && operation != "<=" {
+		return errFormat
+	}
+
+	if temperature < initialMinTemp || temperature > initialMaxTemp {
+		return errFormat
+	}
+
+	if operation == ">=" {
+		if temperature > tm.minTemp {
+			tm.minTemp = temperature
+		}
+	} else if operation == "<=" {
+		if temperature < tm.maxTemp {
+			tm.maxTemp = temperature
+		}
+	}
+
+	return nil
+}
+
+func (tm *TemperatureManager) Get() (int, int) {
+	return tm.minTemp, tm.maxTemp
+}
+
 func main() {
 	var departmentsCount int
 
@@ -43,7 +82,7 @@ func main() {
 		return
 	}
 
-	for range departmentsCount {
+	for i := 0; i < departmentsCount; i++ {
 		var employeesCount int
 
 		if _, err := fmt.Fscan(os.Stdin, &employeesCount); err != nil {
@@ -53,21 +92,19 @@ func main() {
 		currentMinTemp := initialMinTemp
 		currentMaxTemp := initialMaxTemp
 
-		for range employeesCount {
+		tempManager := NewTemperatureManager(currentMinTemp, currentMaxTemp)
+
+		for j := 0; j < employeesCount; j++ {
 			operation, temperature, err := readOperationTemp()
 			if err != nil {
 				log.Fatalf("error: %v", err)
 			}
 
-			if operation == ">=" {
-				if temperature > currentMinTemp {
-					currentMinTemp = temperature
-				}
-			} else if operation == "<=" {
-				if temperature < currentMaxTemp {
-					currentMaxTemp = temperature
-				}
+			if err := tempManager.Update(operation, temperature); err != nil {
+				log.Fatalf("error: %v", err)
 			}
+
+			currentMinTemp, currentMaxTemp = tempManager.Get()
 
 			if currentMinTemp <= currentMaxTemp {
 				fmt.Println(currentMinTemp)
