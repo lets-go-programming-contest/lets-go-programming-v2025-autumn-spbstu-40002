@@ -24,6 +24,7 @@ func main() {
 		
 		return
 	}
+	
 	for range nSection {
 		minTemp = 15
 		maxTemp = 30
@@ -42,8 +43,7 @@ func main() {
 				fmt.Print("Invalid argument")
 				
 					return
-			}
-						
+			}			
 			if sign == ">=" {			
 				if minTemp < temp {
 					minTemp = temp
@@ -59,7 +59,6 @@ func main() {
 			} else {
 				fmt.Println(-1)
 			}
-			
 		}
 	}
 }
