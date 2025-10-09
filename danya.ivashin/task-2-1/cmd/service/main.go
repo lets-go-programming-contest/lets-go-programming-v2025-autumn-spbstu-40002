@@ -13,28 +13,28 @@ const (
 var errFormat = errors.New("invalid temperature format")
 
 func adjustTemperature(low int, high int) (int, int, error) {
-	var op string
-	var t int
+	var operation string
+	var value int
 
-	_, err := fmt.Scanln(&op, &t)
-	if err != nil || t < minTemperature || t > maxTemperature {
+	_, err := fmt.Scanln(&operation, &value)
+	if err != nil || value < minTemperature || value > maxTemperature {
 		return 0, 0, errFormat
 	}
 
-	switch op {
+	switch operation {
 	case ">=":
-		if high < t {
+		if high < value {
 			return -1, -1, nil
 		}
-		if low < t {
-			low = t
+		if low < value {
+			low = value
 		}
 	case "<=":
-		if low > t {
+		if low > value {
 			return -1, -1, nil
 		}
-		if high > t {
-			high = t
+		if high > value {
+			high = value
 		}
 	default:
 		return 0, 0, errFormat
@@ -43,37 +43,44 @@ func adjustTemperature(low int, high int) (int, int, error) {
 	return low, high, nil
 }
 
+func processDepartment(employees int) {
+	low := minTemperature
+	high := maxTemperature
+
+	for i := 0; i < employees; i++ {
+		low, high, err := adjustTemperature(low, high)
+		if err != nil {
+			fmt.Println(err)
+
+			return
+		}
+
+		if low == -1 || high == -1 || low > high {
+			fmt.Println(-1)
+		} else {
+			fmt.Println(low)
+		}
+	}
+}
+
 func main() {
 	var departments, employees int
 
 	_, err := fmt.Scanln(&departments)
 	if err != nil || departments < 1 || departments > 1000 {
 		fmt.Println("invalid number of departments")
+
 		return
 	}
 
-	for d := 0; d < departments; d++ {
-		_, err = fmt.Scanln(&employees)
+	for i := 0; i < departments; i++ {
+		_, err := fmt.Scanln(&employees)
 		if err != nil || employees < 1 || employees > 1000 {
 			fmt.Println("invalid number of employees")
+
 			return
 		}
 
-		low := minTemperature
-		high := maxTemperature
-
-		for e := 0; e < employees; e++ {
-			low, high, err = adjustTemperature(low, high)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-
-			if low == -1 || high == -1 || low > high {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(low)
-			}
-		}
+		processDepartment(employees)
 	}
 }
