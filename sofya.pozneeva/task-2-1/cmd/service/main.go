@@ -13,7 +13,7 @@ var (
 )
 
 func main() {
-	_, err = fmt.Scan(&nSection)
+	_, err = fmt.Scanln(&nSection)
 	
 	if err != nil {
 		fmt.Print("Invalid argument")
@@ -22,14 +22,14 @@ func main() {
 	for range nSection {
 		minTemp = 15
 		maxTemp = 30
-		_, err = fmt.Scan(&nPeople)
+		_, err = fmt.Scanln(&nPeople)
 			
 		if err != nil {
 			fmt.Print("Invalid argument")
 			return
 		}
 		for range nPeople {
-			_, err = fmt.Scanf("%s %d", &sign, &temp)
+			_, err = fmt.Scanf("%s %d\n", &sign, &temp)
 					
 			if err != nil {
 				fmt.Print("Invalid argument")
