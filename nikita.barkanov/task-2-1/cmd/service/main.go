@@ -11,7 +11,7 @@ const (
 	maxTemperature  = 30
 )
 
-type departTemperatureHandler struct {
+type DepartTemperatureHandler struct {
 	optimalTemperature int
 
 	upperBound int
@@ -19,7 +19,7 @@ type departTemperatureHandler struct {
 
 }
 
-func (object *departTemperatureHandler) setTemperature(operator string, value int) error {
+func (object *DepartTemperatureHandler) setTemperature(operator string, value int) error {
 	switch operator {
 	case ">=":
 		object.lowerBound = value
@@ -40,12 +40,12 @@ func (object *departTemperatureHandler) setTemperature(operator string, value in
 	return nil
 }
 
-func (object *departTemperatureHandler) getTemperature() int {
+func (object *DepartTemperatureHandler) getTemperature() int {
 	return object.optimalTemperature
 }
 
-func NewDepartTemperatureHandler(lBound int, uBound int) *departTemperatureHandler {
-	return &departTemperatureHandler{
+func NewDepartTemperatureHandler(lBound int, uBound int) *DepartTemperatureHandler {
+	return &DepartTemperatureHandler{
 		optimalTemperature: lBound,
 
 		lowerBound: lBound,
@@ -60,6 +60,7 @@ func main() {
 	var _, err = fmt.Scanln(&departNumber)
 	if (err != nil) || (departNumber > maxDepartNumber || departNumber < minDepartNumber) {
 		fmt.Println("Invalid department number")
+		return
 	}
 
 	for i := 0; i < departNumber; i++ {
@@ -67,6 +68,7 @@ func main() {
 		_, err = fmt.Scanln(&workersNum)
 		if (err != nil) || (workersNum > maxWorkersNum || workersNum < minWorkersNum) {
 			fmt.Println("Invalid temperature value")
+			return
 		}
 		var handler = NewDepartTemperatureHandler(minTemperature, maxTemperature)
 		for j := 0; j < workersNum; j++ {
