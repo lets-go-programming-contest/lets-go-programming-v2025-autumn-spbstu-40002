@@ -26,77 +26,72 @@ func NewThermostat() *Thermostat {
 	}
 }
 
-func (t *Thermostat) Update(operation string, value int) (bool, error) {
+func (th *Thermostat) Update(operation string, value int) (bool, error) {
 	if value < minTemperature || value > maxTemperature {
 		return false, errFormat
 	}
 
-	if t.conflict {
+	if th.conflict {
 		return true, nil
 	}
 
 	switch operation {
 	case ">=":
-		if value > t.high {
-			t.conflict = true
-
+		if value > th.high {
+			th.conflict = true
 			return true, nil
 		}
 
-		if value > t.low {
-			t.low = value
+		if value > th.low {
+			th.low = value
 		}
 	case "<=":
-		if value < t.low {
-			t.conflict = true
-
+		if value < th.low {
+			th.conflict = true
 			return true, nil
 		}
 
-		if value < t.high {
-			t.high = value
+		if value < th.high {
+			th.high = value
 		}
 	default:
 		return false, errFormat
 	}
 
-	return t.conflict, nil
+	return th.conflict, nil
 }
 
-func (t *Thermostat) Current() int {
-	if t.conflict {
+func (th *Thermostat) Current() int {
+	if th.conflict {
 		return -1
 	}
 
-	return t.low
+	return th.low
 }
 
-func readOperationAndValue() (string, int, error) {
-	var operation string
-	var value int
-
-	_, err := fmt.Scanln(&operation, &value)
-	if err != nil {
-		return "", 0, errFormat
-	}
-
-	if value < minTemperature || value > maxTemperature {
-		return "", 0, errFormat
-	}
-
-	return operation, value, nil
-}
-
-func processDepartment(employees uint16) error {
+func processDepartment(employees int) error {
 	thermostat := NewThermostat()
 
 	for range make([]struct{}, employees) {
-		operation, value, err := readOperationAndValue()
-		if err != nil {
-			return err
+		var (
+			operation string
+			newTemp   int
+		)
+
+		scanCount, scanErr := fmt.Scanln(&operation, &newTemp)
+		if scanErr != nil {
+			return errFormat
 		}
 
-		conflict, updErr := thermostat.Update(operation, value)
+		if scanCount != 2 {
+			return errFormat
+		}
+
+		if newTemp < minTemperature || newTemp > maxTemperature {
+			return errFormat
+		}
+
+		conflict, updErr := thermostat.Update(operation, newTemp)
 		if updErr != nil {
 			return updErr
 		}
@@ -112,25 +107,50 @@ func processDepartment(employees uint16) error {
 }
 
 func main() {
-	var dep uint16
-	var emp uint16
+	var departments int
 
-	_, err := fmt.Scanln(&dep)
-	if err != nil || dep == 0 || dep > 1000 {
+	scanCount, scanErr := fmt.Scanln(&departments)
+	if scanErr != nil {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
-	for range make([]struct{}, dep) {
-		_, err = fmt.Scanln(&emp)
-		if err != nil || emp == 0 || emp > 1000 {
+	if scanCount != 1 {
+		fmt.Println("invalid number of departments")
+
+		return
+	}
+
+	if departments <= 0 || departments > 1000 {
+		fmt.Println("invalid number of departments")
+
+		return
+	}
+
+	for range make([]struct{}, departments) {
+		var employees int
+
+		scanCount, scanErr = fmt.Scanln(&employees)
+		if scanErr != nil {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		if err := processDepartment(emp); err != nil {
+		if scanCount != 1 {
+			fmt.Println("invalid number of employees")
+
+			return
+		}
+
+		if employees <= 0 || employees > 1000 {
+			fmt.Println("invalid number of employees")
+
+			return
+		}
+
+		if err := processDepartment(employees); err != nil {
 			fmt.Println(err)
 
 			return
