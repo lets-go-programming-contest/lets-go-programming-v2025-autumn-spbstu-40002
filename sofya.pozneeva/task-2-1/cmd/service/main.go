@@ -2,33 +2,59 @@ package main
 
 import "fmt"
 
+var {
+	minTemp uint8
+	maxTemp uint8
+	nSection uint8
+	nPeople uint8
+	sign string
+	temp uint8
+	err error
+}
+
 func main() {
-	var min uint8
-	var max uint8
-	var nSection uint8
-	var nPeople uint8
-	var sign string
-	var temp uint8
-	fmt.Scan(&nSection)
-	for i := 0; i < int(nSection); i++ {
-		min = 15
-		max = 30
-		fmt.Scan(&nPeople)
-		for j := 0; j < int(nPeople); j++ {
-			fmt.Scanf("\n%s %d", &sign, &temp)
-			if sign == ">=" {
-				if min < temp {
-					min = temp
-				}
+	_, err = fmt.Scan(&nSection)
+	
+	if err != nil {
+		fmt.Print("Invalid argument")
+		return
+	} else {
+		for range nSection {
+			minTemp = 15
+			maxTemp = 30
+			_, err = fmt.Scan(&nPeople)
+			
+			if err != nil {
+				fmt.Print("Invalid argument")
+				return
 			} else {
-				if max > temp {
-					max = temp
+				for range nPeople {
+					_, err = fmt.Scanf("\n%s %d", &sign, &temp)
+					
+					if err != nil {
+						fmt.Print("Invalid argument")
+						return
+					} else {
+						
+						if sign == ">=" {
+							
+							if minTemp < temp {
+								minTemp = temp
+							}
+						} else {
+							
+							if maxTemp > temp {
+								maxTemp = temp
+							}
+						}
+						
+						if minTemp <= maxTemp {
+							fmt.Println(minTemp)
+						} else {
+							fmt.Println(-1)
+						}
+					}
 				}
-			}
-			if min < max {
-				fmt.Println(min)
-			} else {
-				fmt.Println(-1)
 			}
 		}
 	}
