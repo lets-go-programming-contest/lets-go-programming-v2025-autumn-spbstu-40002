@@ -1,63 +1,62 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/Danya-byte/task-2-1/internal/department"
 )
 
-var errDivisionByZero = errors.New("division by zero")
-
-func plus(x, y int) (int, error) {
-	return x + y, nil
-}
-
-func minus(x, y int) (int, error) {
-	return x - y, nil
-}
-
-func mult(x, y int) (int, error) {
-	return x * y, nil
-}
-
-func div(x, y int) (int, error) {
-	if y == 0 {
-		return 0, errDivisionByZero
+func scanWorkerRequest() (*department.ChangeRequest, error) {
+	req := new(department.ChangeRequest)
+	if _, err := fmt.Scan(&req.Operator); err != nil {
+		return nil, fmt.Errorf("scan operator: %w", err)
 	}
-	return x / y, nil
+
+	if _, err := fmt.Scan(&req.Temperature); err != nil {
+		return nil, fmt.Errorf("scan temperature: %w", err)
+	}
+
+	return req, nil
+}
+
+func processDepartment() error {
+	var countWorkers int
+	if _, err := fmt.Scan(&countWorkers); err != nil {
+		return fmt.Errorf("scan count workers: %w", err)
+	}
+
+	dep := department.New()
+
+	for range countWorkers {
+		req, err := scanWorkerRequest()
+		if err != nil {
+			return fmt.Errorf("process worker: %w", err)
+		}
+
+		optimum, err := dep.Recalculate(req)
+		if err != nil {
+			return fmt.Errorf("recalculate temperature: %w", err)
+		}
+
+		fmt.Println(optimum)
+	}
+
+	return nil
 }
 
 func main() {
-	mapper := map[string]func(x, y int) (int, error){
-		"+": plus,
-		"-": minus,
-		"*": mult,
-		"/": div,
-	}
-	var (
-		x, y int
-		op   string
-	)
-	if _, err := fmt.Scan(&x); err != nil {
-		fmt.Println("Invalid first operand")
+	var countDepartments int
+	if _, err := fmt.Scan(&countDepartments); err != nil {
+		fmt.Printf("scan count departments: %s\n", err)
+
 		return
 	}
-	if _, err := fmt.Scan(&y); err != nil {
-		fmt.Println("Invalid second operand")
-		return
-	}
-	if _, err := fmt.Scan(&op); err != nil {
-		fmt.Println("Invalid operation")
-		return
-	}
-	if f, ok := mapper[op]; ok {
-		res, err := f(x, y)
-		if err != nil {
-			fmt.Println(err.Error())
+
+	for range countDepartments {
+		if err := processDepartment(); err != nil {
+			fmt.Printf("process department: %s\n", err)
+
 			return
 		}
-		fmt.Println(res)
-	} else {
-		fmt.Println("Invalid operation")
-		return
 	}
 }
