@@ -70,7 +70,8 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departNumber; i++ {
+	var i int = 0
+	for i < departNumber {
 		var workersNum int
 
 		_, err = fmt.Scanln(&workersNum)
@@ -82,7 +83,9 @@ func main() {
 		}
 
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
-		for j := 0; j < workersNum; j++ {
+
+		var j int = 0
+		for j < workersNum {
 			var operator string
 
 			var value int
@@ -103,6 +106,8 @@ func main() {
 			temp := handler.getTemperature()
 
 			fmt.Println(temp)
+			j++
 		}
+		i++
 	}
 }
