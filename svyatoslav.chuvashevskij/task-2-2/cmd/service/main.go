@@ -16,6 +16,7 @@ func (h *IntHeap) Push(x any) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, val)
 }
 
