@@ -22,25 +22,33 @@ func checkLimits(value int, minLimit int, maxLimit int) bool {
 	return false
 }
 
-func getOptimalTemperature(sign string, temperature int, lowerLimit *int, upperLimit *int) (int, error) {
+type DepartmentTemperature struct {
+	lowerLimit, upperLimit int
+}
+
+func (temperature *DepartmentTemperature) GetOptimalTemperature() int {
+	if temperature.lowerLimit > temperature.upperLimit {
+		return -1
+	}
+
+	return temperature.lowerLimit
+}
+
+func (temperature *DepartmentTemperature) SetOptimalTemperature(sign string, newTemp int) error {
 	switch sign {
 	case ">=":
-		if temperature > *lowerLimit {
-			*lowerLimit = temperature
+		if newTemp > temperature.lowerLimit {
+			temperature.lowerLimit = newTemp
 		}
 	case "<=":
-		if temperature < *upperLimit {
-			*upperLimit = temperature
+		if newTemp < temperature.upperLimit {
+			temperature.upperLimit = newTemp
 		}
 	default:
-		return 0, errFormat
+		return errFormat
 	}
 
-	if *lowerLimit > *upperLimit {
-		return -1, nil
-	}
-
-	return *lowerLimit, nil
+	return nil
 }
 
 func main() {
@@ -57,9 +65,7 @@ func main() {
 			return
 		}
 
-		lowerDepartmentLimit := 15
-
-		upperDepartmentLimit := 30
+		var departmentTemp DepartmentTemperature = DepartmentTemperature{lowerTemperatureLimit, upperTemperatureLimit}
 
 		for range numberOfPeople {
 			var sign string
@@ -72,12 +78,13 @@ func main() {
 				return
 			}
 
-			optimalTemp, err := getOptimalTemperature(sign, temperature, &lowerDepartmentLimit, &upperDepartmentLimit)
+			err = departmentTemp.SetOptimalTemperature(sign, temperature)
+
 			if err != nil {
 				return
 			}
 
-			fmt.Println(optimalTemp)
+			fmt.Println(departmentTemp.GetOptimalTemperature())
 		}
 	}
 }
