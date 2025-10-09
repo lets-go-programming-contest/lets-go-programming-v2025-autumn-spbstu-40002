@@ -36,7 +36,6 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 			object.optimalTemperature = object.upperBound
 		}
 	default:
-
 		return fmt.Errorf("%w: %s", ErrUnknownOperator, operator)
 	}
 
@@ -71,7 +70,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departNumber; i++ {
+	for _ = range make([]struct{}, departNumber) {
 		var workersNum int
 
 		_, err = fmt.Scanln(&workersNum)
@@ -83,7 +82,7 @@ func main() {
 		}
 
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
-		for j := 0; j < workersNum; j++ {
+		for _ = range make([]struct{}, workersNum) {
 			var operator string
 
 			var value int
@@ -101,7 +100,7 @@ func main() {
 				continue
 			}
 
-			var temp int = handler.getTemperature()
+			var temp = handler.getTemperature()
 
 			fmt.Println(temp)
 		}
