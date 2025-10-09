@@ -43,7 +43,8 @@ func main() {
 				fmt.Print("Invalid argument")
 				
 					return
-			}			
+			}	
+			
 			if sign == ">=" {			
 				if minTemp < temp {
 					minTemp = temp
