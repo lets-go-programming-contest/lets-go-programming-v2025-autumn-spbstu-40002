@@ -1,13 +1,51 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
+
+func processDepartment(employees int) error {
+	minTemp := 15
+	maxTemp := 30
+
+	for range employees {
+		var operator string
+		var temperature int
+		_, err := fmt.Scanln(&operator, &temperature)
+		if err != nil {
+			return err
+		}
+
+		if operator != ">=" && operator != "<=" {
+			return fmt.Errorf("invalid operator: %s", operator)
+		}
+
+		if temperature < 15 || temperature > 30 {
+			return fmt.Errorf("temperature %d is out of range [15, 30]", temperature)
+		}
+
+		switch operator {
+		case ">=":
+			if temperature > minTemp {
+				minTemp = temperature
+			}
+		case "<=":
+			if temperature < maxTemp {
+				maxTemp = temperature
+			}
+		}
+
+		if minTemp <= maxTemp {
+			fmt.Println(minTemp)
+		} else {
+			fmt.Println(-1)
+		}
+	}
+	return nil
+}
 
 func main() {
 	var departments int
-	var employees int
-	var operator string
-	var temperature int
-
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
 		fmt.Println("Error reading departments count")
@@ -19,7 +57,8 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departments; i++ {
+	for range departments {
+		var employees int
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println("Error reading employees count")
@@ -31,42 +70,10 @@ func main() {
 			return
 		}
 
-		minTemp := 15
-		maxTemp := 30
-
-		for j := 0; j < employees; j++ {
-			_, err = fmt.Scanln(&operator, &temperature)
-			if err != nil {
-				fmt.Println("Error reading operator and temperature")
-				return
-			}
-
-			if operator != ">=" && operator != "<=" {
-				fmt.Println("Invalid operator. Must be '>=' or '<='")
-				return
-			}
-
-			if temperature < 15 || temperature > 30 {
-				fmt.Println("Temperature is out of range [15, 30]")
-				return
-			}
-
-			switch operator {
-			case ">=":
-				if temperature > minTemp {
-					minTemp = temperature
-				}
-			case "<=":
-				if temperature < maxTemp {
-					maxTemp = temperature
-				}
-			}
-
-			if minTemp <= maxTemp {
-				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
-			}
+		err = processDepartment(employees)
+		if err != nil {
+			fmt.Println("Error processing department:", err)
+			return
 		}
 	}
 }
