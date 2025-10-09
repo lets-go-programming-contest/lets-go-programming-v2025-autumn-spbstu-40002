@@ -39,6 +39,7 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 	default:
 		return fmt.Errorf("%w: %s", ErrUnknownOperator, operator)
 	}
+
 	if object.upperBound < object.lowerBound {
 		object.optimalTemperature = -1
 	}
@@ -65,6 +66,7 @@ func main() {
 	var _, err = fmt.Scanln(&departNumber)
 	if err != nil || departNumber > maxDepartNumber || departNumber < minDepartNumber {
 		fmt.Println("Invalid department number")
+
 		return
 	}
 
@@ -73,6 +75,7 @@ func main() {
 		_, err = fmt.Scanln(&workersNum)
 		if err != nil || workersNum > maxWorkersNum || workersNum < minWorkersNum {
 			fmt.Println("Invalid temperature value")
+
 			return
 		}
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
@@ -83,11 +86,13 @@ func main() {
 			_, err = fmt.Scanln(&operator, &value)
 			if err != nil {
 				fmt.Println("Invalid input:", err)
+
 				continue
 			}
 
 			if err := handler.setTemperature(operator, value); err != nil {
 				fmt.Println("Error:", err)
+
 				continue
 			}
 
