@@ -24,9 +24,11 @@ func (o *Office) GetCurrentTemp() int {
 func (o *Office) applyLowerBound(desiredTemp int) {
 	if o.currentMin > o.currentMax {
 		o.currentTemp = -1
+
 		return
 	}
 	if desiredTemp > o.currentMax {
+		o.currentMin = desiredTemp
 		o.currentTemp = -1
 		return
 	}
@@ -40,22 +42,20 @@ func (o *Office) applyLowerBound(desiredTemp int) {
 	}
 
 	if o.currentTemp == -1 {
-		o.currentTemp = desiredTemp
+		o.currentTemp = -1
 	}
-}
-
-func isDateCorrect(c int) bool {
-	return (c <= MaxCorrectData && c >= MinCorrectData)
 }
 
 func (o *Office) applyUpperBound(desiredTemp int) {
 	if o.currentMin > o.currentMax {
-		o.currentMin = -1
+		o.currentTemp = -1
+
 		return
 	}
+
 	if desiredTemp < o.currentMin {
 		o.currentMax = desiredTemp
-		o.currentMin = -1
+		o.currentTemp = -1
 		return
 	}
 
@@ -68,8 +68,12 @@ func (o *Office) applyUpperBound(desiredTemp int) {
 	}
 
 	if o.currentTemp == -1 {
-		o.currentTemp = desiredTemp
+		o.currentTemp = -1
 	}
+}
+
+func isDateCorrect(c int) bool {
+	return (c <= MaxCorrectData && c >= MinCorrectData)
 }
 
 func main() {
@@ -77,12 +81,6 @@ func main() {
 		countDepartment, countPeople, newBoard int
 		sign                                   string
 	)
-
-	room := Office{
-		currentMax:  30,
-		currentMin:  15,
-		currentTemp: 15,
-	}
 
 	_, err := fmt.Scan(&countDepartment)
 
@@ -95,6 +93,12 @@ func main() {
 
 		if err != nil || !isDateCorrect(countPeople) {
 			return
+		}
+
+		room := Office{
+			currentMax:  MaxTempConst,
+			currentMin:  MinTempConst,
+			currentTemp: MinTempConst,
 		}
 
 		for range countPeople {
