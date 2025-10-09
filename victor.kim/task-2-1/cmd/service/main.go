@@ -16,7 +16,6 @@ var errFormat = errors.New("invalid temperature format")
 
 func adjustTemperature(low int, high int) (int, int, error) {
 	var operation string
-
 	var newTemp int
 
 	scanCount, scanErr := fmt.Scanln(&operation, &newTemp)
@@ -57,8 +56,10 @@ func adjustTemperature(low int, high int) (int, int, error) {
 }
 
 func main() {
-	var dep uint16
-	var emp uint16
+	var (
+		dep uint16
+		emp uint16
+	)
 
 	scanCount, scanErr := fmt.Scanln(&dep)
 	if scanErr != nil {
