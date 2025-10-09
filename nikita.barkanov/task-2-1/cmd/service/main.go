@@ -82,7 +82,7 @@ func main() {
 		}
 
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
-		for range make([]struct{}, workersNum) {
+		for _ = range make([]struct{}, workersNum) {
 			var operator string
 
 			var value int
