@@ -12,6 +12,16 @@ const (
 	MaxValidNumber = 1000
 )
 
+var (
+	ErrIncorrectOperator     = errors.New("incorrect operator")
+	ErrTemperatureOutOfRange = errors.New("temperature is out of range")
+	ErrDepartmentsScan       = errors.New("departments could not be read")
+	ErrDepartmentsOutOfRange = errors.New("departments out of range")
+	ErrEmployeesScan         = errors.New("amount of employees could not be read")
+	ErrEmployeesOutOfRange   = errors.New("amount of employees out of range")
+	ErrTemperatureInput      = errors.New("temperature or operator could not be read")
+)
+
 type TemperatureRange struct {
 	Min int
 	Max int
@@ -28,14 +38,16 @@ func (t *TemperatureRange) Update(operator string, requested int) error {
 			t.Max = requested
 		}
 	default:
-		return errors.New("incorrect operator")
+
+		return ErrIncorrectOperator
 	}
 	return nil
 }
 
 func (t *TemperatureRange) Get() (int, error) {
 	if t.Min > t.Max {
-		return -1, errors.New("temperature is out of range")
+
+		return -1, ErrTemperatureOutOfRange
 	}
 	return t.Min, nil
 }
@@ -44,12 +56,12 @@ func main() {
 	var departments int
 
 	if _, err := fmt.Scan(&departments); err != nil {
-		_ = errors.New("departments could not be read")
+		fmt.Println("Error:", ErrDepartmentsScan)
 		return
 	}
 
 	if departments < MinValidNumber || departments > MaxValidNumber {
-		_ = errors.New("departments out of range")
+		fmt.Println("Error:", ErrDepartmentsOutOfRange)
 		return
 	}
 
@@ -59,12 +71,12 @@ func main() {
 		var employees int
 
 		if _, err := fmt.Scan(&employees); err != nil {
-			_ = errors.New("amount of employees could not be read")
+			fmt.Println("Error:", ErrEmployeesScan)
 			return
 		}
 
 		if employees < MinValidNumber || employees > MaxValidNumber {
-			_ = errors.New("amount of employees out of range")
+			fmt.Println("Error:", ErrEmployeesOutOfRange)
 			return
 		}
 
@@ -73,11 +85,12 @@ func main() {
 			var requestedTemperature int
 
 			if _, err := fmt.Scan(&operator, &requestedTemperature); err != nil {
-				_ = errors.New("temperature or operator could not be read")
+				fmt.Println("Error:", ErrTemperatureInput)
 				return
 			}
 
 			if err := temp.Update(operator, requestedTemperature); err != nil {
+
 				return
 			}
 
