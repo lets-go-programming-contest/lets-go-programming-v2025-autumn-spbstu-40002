@@ -26,7 +26,10 @@ type DepartTemperatureHandler struct {
 func (object *DepartTemperatureHandler) setTemperature(operator string, value int) error {
 	switch operator {
 	case ">=":
-		object.lowerBound = value
+		if object.lowerBound < value {
+			object.lowerBound = value
+		}
+
 		if object.lowerBound < minTemperature {
 			object.lowerBound = minTemperature
 		}
@@ -35,7 +38,9 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 			object.optimalTemperature = object.lowerBound
 		}
 	case "<=":
-		object.upperBound = value
+		if object.upperBound > value {
+			object.upperBound = value
+		}
 		if object.upperBound > maxTemperature {
 			object.upperBound = maxTemperature
 		}
@@ -89,7 +94,7 @@ func main() {
 		_, err = fmt.Scanln(&workersNum)
 
 		if err != nil || workersNum > maxWorkersNum || workersNum < minWorkersNum {
-			fmt.Println("Invalid temperature value")
+			fmt.Println("Invalid workers num")
 
 			return
 		}
