@@ -10,6 +10,8 @@ const (
 	MinTemperature = 15
 )
 
+var ErrorInvalidOption = errors.New("invalid option")
+
 type Condition struct {
 	minTemperature int
 	maxTemperature int
@@ -26,7 +28,7 @@ func (condition *Condition) SetTemperature(option string, temperature int) error
 			condition.maxTemperature = temperature
 		}
 	default:
-		return errors.New("invalid option")
+		return ErrorInvalidOption
 	}
 
 	return nil
