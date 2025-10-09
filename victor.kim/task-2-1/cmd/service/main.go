@@ -12,55 +12,87 @@ const (
 
 var errFormat = errors.New("invalid temperature format")
 
-type Thermostat struct {
-	low      int
-	high     int
-	conflict bool
-}
+func adjustTemperature(low int, high int) (int, int, error) {
+	var (
+		operation string
+		newTemp   int
+	)
 
-func (t *Thermostat) Update(operation string, newTemp int) (bool, error) {
-	if newTemp < minTemperature || newTemp > maxTemperature {
-		return false, errFormat
-	}
-
-	if t.conflict {
-		return true, nil
+	_, err := fmt.Scanln(&operation, &newTemp)
+	if err != nil || newTemp < minTemperature || newTemp > maxTemperature {
+		return 0, 0, errFormat
 	}
 
 	switch operation {
 	case ">=":
-		if t.high < newTemp {
-			t.conflict = true
-
-			return true, nil
+		if high < newTemp {
+			return -1, -1, nil
 		}
 
-		if t.low < newTemp {
-			t.low = newTemp
+		if low < newTemp {
+			low = newTemp
 		}
 	case "<=":
-		if t.low > newTemp {
-			t.conflict = true
-
-			return true, nil
+		if low > newTemp {
+			return -1, -1, nil
 		}
 
-		if t.high > newTemp {
-			t.high = newTemp
+		if high > newTemp {
+			high = newTemp
 		}
 	default:
-		return false, errFormat
+		return 0, 0, errFormat
 	}
 
-	return t.conflict, nil
+	return low, high, nil
 }
 
-func (t *Thermostat) Current() int {
-	if t.conflict {
-		return -1
+func processDepartment(emp uint16) error {
+	thermostat := struct {
+		low      int
+		high     int
+		conflict bool
+	}{
+		low:      minTemperature,
+		high:     maxTemperature,
 	}
 
-	return t.low
+	for range make([]struct{}, emp) {
+		var (
+			operation string
+			newTemp   int
+		)
+
+		_, err := fmt.Scanln(&operation, &newTemp)
+		if err != nil || newTemp < minTemperature || newTemp > maxTemperature {
+			return errFormat
+		}
+
+		switch operation {
+		case ">=":
+			if thermostat.high < newTemp {
+				thermostat.conflict = true
+			} else if thermostat.low < newTemp {
+				thermostat.low = newTemp
+			}
+		case "<=":
+			if thermostat.low > newTemp {
+				thermostat.conflict = true
+			} else if thermostat.high > newTemp {
+				thermostat.high = newTemp
+			}
+		default:
+			return errFormat
+		}
+
+		if thermostat.conflict {
+			fmt.Println(-1)
+		} else {
+			fmt.Println(thermostat.low)
+		}
+	}
+
+	return nil
 }
 
 func main() {
@@ -84,37 +116,10 @@ func main() {
 			return
 		}
 
-		// === minimal change: include all struct fields in composite literal ===
-		t := &Thermostat{
-			low:      minTemperature,
-			high:     maxTemperature,
-			conflict: false,
-		}
-		// ====================================================================
+		if procErr := processDepartment(emp); procErr != nil {
+			fmt.Println(procErr)
 
-		for range make([]struct{}, emp) {
-			var operation string
-			var newTemp int
-
-			_, err := fmt.Scanln(&operation, &newTemp)
-			if err != nil || newTemp < minTemperature || newTemp > maxTemperature {
-				fmt.Println(errFormat)
-
-				return
-			}
-
-			conflict, updErr := t.Update(operation, newTemp)
-			if updErr != nil {
-				fmt.Println(updErr)
-
-				return
-			}
-
-			if conflict {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(t.Current())
-			}
+			return
 		}
 	}
 }
