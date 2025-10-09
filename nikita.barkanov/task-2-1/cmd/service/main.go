@@ -27,11 +27,18 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 	switch operator {
 	case ">=":
 		object.lowerBound = value
+		if object.lowerBound < minTemperature {
+			object.lowerBound = minTemperature
+		}
+
 		if object.optimalTemperature < object.lowerBound {
 			object.optimalTemperature = object.lowerBound
 		}
 	case "<=":
 		object.upperBound = value
+		if object.upperBound > maxTemperature {
+			object.upperBound = maxTemperature
+		}
 		if object.optimalTemperature > object.upperBound {
 			object.optimalTemperature = object.upperBound
 		}
