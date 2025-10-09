@@ -3,7 +3,6 @@ package main
 import "fmt"
 
 func main() {
-	
 	var nSection uint16
 	
 	_, err := fmt.Scanln(&nSection)
