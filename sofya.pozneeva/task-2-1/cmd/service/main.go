@@ -2,21 +2,26 @@ package main
 
 import "fmt"
 
-var (
-	minTemp uint8
-	maxTemp uint8
-	nSection uint8
-	nPeople uint8
-	sign string
-	temp uint8
-	err error
-)
-
 func main() {
+	var minTemp uint8
+	
+	var maxTemp uint8
+	
+	var nSection uint8
+	
+	var nPeople uint8
+	
+	var sign string
+	
+	var temp uint8
+	
+	var err error
+	
 	_, err = fmt.Scanln(&nSection)
 	
 	if err != nil {
 		fmt.Print("Invalid argument")
+		
 		return
 	}
 	for range nSection {
@@ -26,18 +31,20 @@ func main() {
 			
 		if err != nil {
 			fmt.Print("Invalid argument")
+			
 			return
 		}
+		
 		for range nPeople {
 			_, err = fmt.Scanf("%s %d\n", &sign, &temp)
 					
 			if err != nil {
 				fmt.Print("Invalid argument")
+				
 					return
 			}
 						
-			if sign == ">=" {
-							
+			if sign == ">=" {			
 				if minTemp < temp {
 					minTemp = temp
 				}
@@ -52,6 +59,7 @@ func main() {
 			} else {
 				fmt.Println(-1)
 			}
+			
 		}
 	}
 }
