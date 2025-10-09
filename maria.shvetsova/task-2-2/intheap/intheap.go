@@ -8,11 +8,15 @@ func (h *IntHeap) Push(x interface{}) {
 	if val, ok := x.(int); ok {
 		*h = append(*h, val)
 	} else {
-		return
+		panic("IntHeap.Push: expected int type")
 	}
 }
 
 func (h *IntHeap) Pop() interface{} {
+	if h.Len() == 0 {
+		panic("IntHeap.Pop: heap length must be greater than zero")
+	}
+
 	intHeap := *h
 	x := intHeap[len(intHeap)-1]
 	*h = intHeap[:len(intHeap)-1]

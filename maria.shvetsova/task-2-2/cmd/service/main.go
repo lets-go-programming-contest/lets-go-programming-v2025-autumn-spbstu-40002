@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 
 	"github.com/ummmsh/task-2-2/intheap"
@@ -14,6 +15,11 @@ const (
 	maxRating      = 10000
 )
 
+var (
+	errInvalidDishes = errors.New("invalid num of dishes")
+	errInvalidRating = errors.New("invalid rating value")
+)
+
 func main() {
 	intHeap := &intheap.IntHeap{}
 	heap.Init(intHeap)
@@ -21,11 +27,9 @@ func main() {
 	var numOfDishes int
 
 	_, err := fmt.Scan(&numOfDishes)
-	if err != nil {
-		return
-	}
+	if err != nil || (numOfDishes < minNumOfDishes || numOfDishes > maxNumOfDishes) {
+		fmt.Println(errInvalidDishes)
 
-	if numOfDishes < minNumOfDishes || numOfDishes > maxNumOfDishes {
 		return
 	}
 
@@ -33,11 +37,9 @@ func main() {
 
 	for range numOfDishes {
 		_, err = fmt.Scan(&item)
-		if err != nil {
-			return
-		}
+		if err != nil || (item < minRating || item > maxRating) {
+			fmt.Println(errInvalidRating)
 
-		if item < minRating || item > maxRating {
 			return
 		}
 
@@ -48,6 +50,8 @@ func main() {
 
 	_, err = fmt.Scan(&rating)
 	if err != nil {
+		fmt.Println(errInvalidRating)
+
 		return
 	}
 
