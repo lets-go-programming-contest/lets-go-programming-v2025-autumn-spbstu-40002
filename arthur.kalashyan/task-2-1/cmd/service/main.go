@@ -46,7 +46,6 @@ func (t *TemperatureRange) Update(operator string, requested int) error {
 
 func (t *TemperatureRange) Get() (int, error) {
 	if t.Min > t.Max {
-
 		return -1, ErrTemperatureOutOfRange
 	}
 	return t.Min, nil
@@ -57,6 +56,7 @@ func main() {
 
 	if _, err := fmt.Scan(&departments); err != nil {
 		fmt.Println("Error:", ErrDepartmentsScan)
+
 		return
 	}
 
@@ -90,7 +90,6 @@ func main() {
 			}
 
 			if err := temp.Update(operator, requestedTemperature); err != nil {
-
 				return
 			}
 
