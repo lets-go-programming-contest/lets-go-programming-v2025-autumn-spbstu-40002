@@ -45,6 +45,7 @@ func main() {
 
 	maxHeap := &MaxHeap{}
 	heap.Init(maxHeap)
+
 	for _, rating := range preferences {
 		heap.Push(maxHeap, rating)
 	}
