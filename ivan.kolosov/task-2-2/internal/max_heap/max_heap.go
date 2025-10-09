@@ -1,4 +1,4 @@
-package maxHeap
+package maxheap
 
 type MaxHeap []int
 
