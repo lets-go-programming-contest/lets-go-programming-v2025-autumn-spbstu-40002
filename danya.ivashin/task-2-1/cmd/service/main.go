@@ -5,96 +5,59 @@ import (
 	"fmt"
 )
 
-const (
-	minTemperature = 15
-	maxTemperature = 30
-)
+var errDivisionByZero = errors.New("Division by zero")
 
-var (
-	errFormat      = errors.New("invalid temperature format")
-	errDepartments = errors.New("invalid number of departments")
-	errEmployees   = errors.New("invalid number of employees")
-)
-
-func adjustTemperature(low, high int) (int, int, error) {
-	var operator string
-	var temperatureValue int
-
-	_, scanErr := fmt.Scanln(&operator, &temperatureValue)
-	if scanErr != nil || temperatureValue < minTemperature || temperatureValue > maxTemperature {
-		return 0, 0, errFormat
-	}
-
-	switch operator {
-	case ">=":
-		if high < temperatureValue {
-			return -1, -1, nil
-		}
-
-		if low < temperatureValue {
-			low = temperatureValue
-		}
-	case "<=":
-		if low > temperatureValue {
-			return -1, -1, nil
-		}
-
-		if high > temperatureValue {
-			high = temperatureValue
-		}
-	default:
-		return 0, 0, errFormat
-	}
-
-	return low, high, nil
+func plus(x, y int) (int, error) {
+	return x + y, nil
 }
 
-func processDepartment() error {
-	var numberOfEmployees int
+func minus(x, y int) (int, error) {
+	return x - y, nil
+}
 
-	_, err := fmt.Scanln(&numberOfEmployees)
-	if err != nil || numberOfEmployees < 1 || numberOfEmployees > 1000 {
-		fmt.Println(errEmployees)
+func mult(x, y int) (int, error) {
+	return x * y, nil
+}
 
-		return errEmployees
+func div(x, y int) (int, error) {
+	if y == 0 {
+		return 0, errDivisionByZero
 	}
-
-	low := minTemperature
-	high := maxTemperature
-
-	for range numberOfEmployees {
-		var adjustErr error
-
-		low, high, adjustErr = adjustTemperature(low, high)
-		if adjustErr != nil {
-			fmt.Println(adjustErr)
-
-			return adjustErr
-		}
-
-		if low == -1 || high == -1 || low > high {
-			fmt.Println(-1)
-		} else {
-			fmt.Println(low)
-		}
-	}
-
-	return nil
+	return x / y, nil
 }
 
 func main() {
-	var numberOfDepartments int
-
-	_, err := fmt.Scanln(&numberOfDepartments)
-	if err != nil || numberOfDepartments < 1 || numberOfDepartments > 1000 {
-		fmt.Println(errDepartments)
-
+	mapper := map[string]func(x, y int) (int, error){
+		"+": plus,
+		"-": minus,
+		"*": mult,
+		"/": div,
+	}
+	var (
+		x, y int
+		op   string
+	)
+	if _, err := fmt.Scan(&x); err != nil {
+		fmt.Println("Invalid first operand")
 		return
 	}
-
-	for range numberOfDepartments {
-		if err := processDepartment(); err != nil {
+	if _, err := fmt.Scan(&y); err != nil {
+		fmt.Println("Invalid second operand")
+		return
+	}
+	if _, err := fmt.Scan(&op); err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
+	if f, ok := mapper[op]; ok {
+		res, err := f(x, y)
+		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
+		fmt.Println(res)
+	} else {
+		fmt.Println("Invalid operation")
+		return
 	}
 }
