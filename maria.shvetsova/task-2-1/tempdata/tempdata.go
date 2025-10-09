@@ -13,13 +13,13 @@ type TemperatureData struct {
 	minTemp     int
 }
 
-func NewTempData(optimalTemp, maxTemp, minTemp int) (*TemperatureData, error) {
+func NewTempData(maxTemp, minTemp int) (*TemperatureData, error) {
 	if minTemp > maxTemp {
 		return nil, ErrIncorrectRange
 	}
 
 	return &TemperatureData{
-		optimalTemp: optimalTemp,
+		optimalTemp: 15,
 		maxTemp:     maxTemp,
 		minTemp:     minTemp,
 	}, nil
