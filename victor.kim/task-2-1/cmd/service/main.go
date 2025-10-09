@@ -6,53 +6,61 @@ import (
 )
 
 const (
-	minTemperature                = 15
-	maxTemperature                = 30
-	expectedScanCountSingle       = 1
-	expectedScanCountOperationVal = 2
+	minTemperature = 15
+	maxTemperature = 30
 )
 
 var errFormat = errors.New("invalid temperature format")
 
-func adjustTemperature(low int, high int) (int, int, error) {
-	var operation string
-	var newTemp int
+type Thermostat struct {
+	low      int
+	high     int
+	conflict bool
+}
 
-	scanCount, scanErr := fmt.Scanln(&operation, &newTemp)
-	if scanErr != nil {
-		return 0, 0, errFormat
-	}
-
-	if scanCount != expectedScanCountOperationVal {
-		return 0, 0, errFormat
-	}
-
+func (t *Thermostat) Update(operation string, newTemp int) (bool, error) {
 	if newTemp < minTemperature || newTemp > maxTemperature {
-		return 0, 0, errFormat
+		return false, errFormat
+	}
+
+	if t.conflict {
+		return true, nil
 	}
 
 	switch operation {
 	case ">=":
-		if high < newTemp {
-			return -1, -1, nil
+		if t.high < newTemp {
+			t.conflict = true
+
+			return true, nil
 		}
 
-		if low < newTemp {
-			low = newTemp
+		if t.low < newTemp {
+			t.low = newTemp
 		}
 	case "<=":
-		if low > newTemp {
-			return -1, -1, nil
+		if t.low > newTemp {
+			t.conflict = true
+
+			return true, nil
 		}
 
-		if high > newTemp {
-			high = newTemp
+		if t.high > newTemp {
+			t.high = newTemp
 		}
 	default:
-		return 0, 0, errFormat
+		return false, errFormat
 	}
 
-	return low, high, nil
+	return t.conflict, nil
+}
+
+func (t *Thermostat) Current() int {
+	if t.conflict {
+		return -1
+	}
+
+	return t.low
 }
 
 func main() {
@@ -61,59 +69,49 @@ func main() {
 		emp uint16
 	)
 
-	scanCount, scanErr := fmt.Scanln(&dep)
-	if scanErr != nil {
-		fmt.Println("invalid number of departments")
-
-		return
-	}
-
-	if scanCount != expectedScanCountSingle {
-		fmt.Println("invalid number of departments")
-
-		return
-	}
-
-	if dep == 0 || dep > 1000 {
+	_, err := fmt.Scanln(&dep)
+	if err != nil || dep == 0 || dep > 1000 {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
 	for range make([]struct{}, dep) {
-		scanCount, scanErr = fmt.Scanln(&emp)
-		if scanErr != nil {
+		_, err = fmt.Scanln(&emp)
+		if err != nil || emp == 0 || emp > 1000 {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		if scanCount != expectedScanCountSingle {
-			fmt.Println("invalid number of employees")
-
-			return
+		t := &Thermostat{
+			low:  minTemperature,
+			high: maxTemperature,
 		}
-
-		if emp == 0 || emp > 1000 {
-			fmt.Println("invalid number of employees")
-
-			return
-		}
-
-		lowTemp := minTemperature
-		highTemp := maxTemperature
 
 		for range make([]struct{}, emp) {
-			var err error
+			var operation string
+			var newTemp int
 
-			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
-			if err != nil {
-				fmt.Println(err)
+			_, err := fmt.Scanln(&operation, &newTemp)
+			if err != nil || newTemp < minTemperature || newTemp > maxTemperature {
+				fmt.Println(errFormat)
 
 				return
 			}
 
-			fmt.Println(lowTemp)
+			conflict, updErr := t.Update(operation, newTemp)
+			if updErr != nil {
+				fmt.Println(updErr)
+
+				return
+			}
+
+			if conflict {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(t.Current())
+			}
 		}
 	}
 }
