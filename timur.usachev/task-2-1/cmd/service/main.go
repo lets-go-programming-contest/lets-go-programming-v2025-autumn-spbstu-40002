@@ -41,16 +41,20 @@ func updateBounds(low, high int, operator string, value int) (int, int, error) {
 }
 
 func main() {
-	var n int
-	if _, err := fmt.Fscanln(os.Stdin, &n); err != nil || n < 1 || n > MaxN {
+	var numCases int
+
+	if _, err := fmt.Fscanln(os.Stdin, &numCases); err != nil || numCases < 1 || numCases > MaxN {
 		fmt.Println(-1)
+
 		return
 	}
 
-	for range make([]struct{}, n) {
+	for range make([]struct{}, numCases) {
 		var employees int
+
 		if _, err := fmt.Fscanln(os.Stdin, &employees); err != nil || employees < 1 || employees > MaxK {
 			fmt.Println(-1)
+
 			return
 		}
 
@@ -61,15 +65,19 @@ func main() {
 		for range make([]struct{}, employees) {
 			var operator string
 			var value int
+
 			if _, err := fmt.Fscanln(os.Stdin, &operator, &value); err != nil {
 				fmt.Println(-1)
+
 				return
 			}
 
 			var uerr error
 			low, high, uerr = updateBounds(low, high, operator, value)
+
 			if uerr != nil {
 				fmt.Println(-1)
+
 				return
 			}
 
