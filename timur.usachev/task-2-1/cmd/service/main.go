@@ -63,8 +63,10 @@ func main() {
 		high := MaxTemp
 
 		for range make([]struct{}, employees) {
-			var operator string
-			var value int
+			var (
+				operator string
+				value    int
+			)
 
 			if _, err := fmt.Fscanln(os.Stdin, &operator, &value); err != nil {
 				fmt.Println(-1)
