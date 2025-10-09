@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var errDivisionByZero = errors.New("Division by zero")
+var errDivisionByZero = errors.New("division by zero")
 
 func plus(x, y int) (int, error) {
 	return x + y, nil
