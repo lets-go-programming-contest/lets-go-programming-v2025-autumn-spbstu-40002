@@ -22,8 +22,9 @@ func main() {
 
 	_, err := fmt.Scan(&count)
 
-	if err != nil || count < MinCount || count > MinCount {
+	if err != nil || count < MinCount || count > MaxCount {
 		fmt.Println("incorrect amount of dishes")
+
 		return
 	}
 
@@ -31,6 +32,7 @@ func main() {
 		_, err = fmt.Scan(&rating)
 
 		if err != nil || rating < MinRating || rating > MaxRating {
+			fmt.Println("incorrect rating")
 			return
 		}
 
@@ -47,6 +49,7 @@ func main() {
 		val := heap.Pop(heapMax)
 		if val == nil {
 			fmt.Println("Heap is empty unexpectedly")
+
 			return
 		}
 	}
@@ -54,7 +57,9 @@ func main() {
 	val := heap.Pop(heapMax)
 	if val == nil {
 		fmt.Println("Heap is empty unexpectedly")
+
 		return
 	}
+
 	fmt.Println(val)
 }
