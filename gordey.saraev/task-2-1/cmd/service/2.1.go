@@ -1,63 +1,71 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
-	var departments, employee int
+	var departments int
+	var employees int
 	var operator string
 	var temperature int
 
-	_, err := fmt.Scan(&departments)
+	_, err := fmt.Scanln(&departments)
 	if err != nil {
-		fmt.Println("Invalid number of departments")
+		fmt.Println("Error reading departments count")
 		return
 	}
+
 	if departments < 1 || departments > 1000 {
-		fmt.Println("N is out of range [1, 1000]")
+		fmt.Println("Departments is out of range [1, 1000]")
 		return
 	}
 
 	for i := 0; i < departments; i++ {
-		_, err = fmt.Scan(&employee)
+		_, err = fmt.Scanln(&employees)
 		if err != nil {
-			fmt.Println("Invalid number of employees")
+			fmt.Println("Error reading employees count")
 			return
 		}
-		if employee < 1 || employee > 1000 {
-			fmt.Println("K is out of range [1, 1000]")
+
+		if employees < 1 || employees > 1000 {
+			fmt.Println("employees is out of range [1, 1000]")
 			return
 		}
 
 		minTemp := 15
 		maxTemp := 30
 
-		for j := 0; j < employee; j++ {
-			_, err = fmt.Scan(&operator, &temperature)
-			if err != nil || temperature > 30 || temperature < 15 {
-				fmt.Println("Invalid temperature constraint format")
+		for j := 0; j < employees; j++ {
+			_, err = fmt.Scanln(&operator, &temperature)
+			if err != nil {
+				fmt.Println("Error reading operator and temperature")
+				return
+			}
+
+			if operator != ">=" && operator != "<=" {
+				fmt.Println("Invalid operator. Must be '>=' or '<='")
+				return
+			}
+
+			if temperature < 15 || temperature > 30 {
+				fmt.Println("Temperature is out of range [15, 30]")
 				return
 			}
 
 			switch operator {
 			case ">=":
-				if temperature >= minTemp {
+				if temperature > minTemp {
 					minTemp = temperature
 				}
 			case "<=":
-				if temperature <= maxTemp {
+				if temperature < maxTemp {
 					maxTemp = temperature
 				}
-			default:
-				fmt.Println(-1)
-				continue
 			}
 
-			if minTemp > maxTemp {
-				fmt.Println(-1)
+			if minTemp <= maxTemp {
+				fmt.Println(minTemp)
 			} else {
-				fmt.Println(maxTemp)
+				fmt.Println(-1)
 			}
 		}
 	}
