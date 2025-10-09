@@ -22,6 +22,7 @@ func (h *MaxHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[:n-1]
+
 	return x
 }
 
@@ -49,6 +50,7 @@ func main() {
 	}
 
 	var result int
+
 	for range preferenceK {
 		popped := heap.Pop(maxHeap)
 		if val, ok := popped.(int); ok {
