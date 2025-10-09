@@ -19,8 +19,8 @@ var ErrUnknownOperator = errors.New("unknown operator")
 type DepartTemperatureHandler struct {
 	optimalTemperature int
 
-	upperBound int
 	lowerBound int // минимально допустимая температура, то есть начиная с нее температура приемлем
+	upperBound int // максимально допустимая температура
 }
 
 func (object *DepartTemperatureHandler) setTemperature(operator string, value int) error {
@@ -69,8 +69,12 @@ func main() {
 
 		return
 	}
-
-	var i int = 0
+	// Другие варианты циклов не работают
+	// for i:= 0; i < N; i++ не пропускается линтером
+	// for i := range departNumber не работает, потому что у меня не используются i и j в
+	//	соответствующих циклах, отсюда лезет ошибка unused variable
+	// конструкции типа for range departNumber так же не работают
+	i := 0
 	for i < departNumber {
 		var workersNum int
 
@@ -84,7 +88,7 @@ func main() {
 
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
 
-		var j int = 0
+		j := 0
 		for j < workersNum {
 			var operator string
 
@@ -106,8 +110,10 @@ func main() {
 			temp := handler.getTemperature()
 
 			fmt.Println(temp)
+
 			j++
 		}
+
 		i++
 	}
 }
