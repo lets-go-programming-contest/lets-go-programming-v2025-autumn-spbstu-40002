@@ -15,14 +15,13 @@ func (h *MaxHeap) Push(value interface{}) {
 	if v, ok := value.(int); ok {
 		*h = append(*h, v)
 	}
-
 }
 
 func (h *MaxHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
 	x := old[n-1]
-	*h = old[0 : n-1]
+	*h = old[:n-1]
 
 	return x
 }
@@ -30,7 +29,6 @@ func (h *MaxHeap) Pop() interface{} {
 func main() {
 	var dishCount, preferenceK int
 	if _, err := fmt.Scan(&dishCount); err != nil {
-
 		return
 	}
 
