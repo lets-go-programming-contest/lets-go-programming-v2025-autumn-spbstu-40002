@@ -21,7 +21,7 @@ func main() {
 	_, err = fmt.Scanln(&nSection)
 	
 	if err != nil {
-		fmt.Print("Invalid argument")
+		fmt.Println("Invalid argument")
 		
 		return
 	}
@@ -32,7 +32,7 @@ func main() {
 		_, err = fmt.Scanln(&nPeople)
 			
 		if err != nil {
-			fmt.Print("Invalid argument")
+			fmt.Println("Invalid argument")
 			
 			return
 		}
@@ -41,7 +41,7 @@ func main() {
 			_, err = fmt.Scanf("%s %d\n", &sign, &temp)
 					
 			if err != nil {
-				fmt.Print("Invalid argument")
+				fmt.Println("Invalid argument")
 				
 					return
 			}	
