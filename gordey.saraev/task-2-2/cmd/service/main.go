@@ -1,6 +1,5 @@
 package main
 
-// Github doesn't see my changes from the previous file for some reason. I made a comment to make at least something different.
 import (
 	"container/heap"
 	"fmt"
