@@ -25,6 +25,7 @@ func (h *IntHeap) Push(x interface{}) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, v)
 }
 
@@ -63,8 +64,8 @@ func main() {
 	}
 
 	for j := range make([]struct{}, count-kth) {
-		idx := kth + j
-		val := values[idx]
+		val := values[kth+j]
+
 		if val > (*minHeap)[0] {
 			heap.Pop(minHeap)
 			heap.Push(minHeap, val)
