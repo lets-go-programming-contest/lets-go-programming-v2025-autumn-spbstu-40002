@@ -106,7 +106,6 @@ func main() {
 
 		for range countPeople {
 			_, err = fmt.Scan(&sign, &newBoard)
-
 			if err != nil {
 				return
 			}
