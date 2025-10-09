@@ -4,11 +4,38 @@ import (
 	"fmt"
 )
 
+const MaxTemperature = 30
+const MinTemperature = 15
+
+type Condition struct {
+	minTemperature int
+	maxTemperature int
+}
+
+func (condition *Condition) SetTemperature(option string, temperature int) error {
+	switch option {
+	case ">=":
+		if condition.minTemperature < temperature {
+			condition.minTemperature = temperature
+		}
+	case "<=":
+		if condition.maxTemperature > temperature {
+			condition.maxTemperature = temperature
+		}
+	default:
+		return fmt.Errorf("invalid option \"%s\"", option)
+	}
+	return nil
+}
+
+func (condition Condition) getTemperature() int {
+	if condition.maxTemperature < condition.minTemperature {
+		return -1
+	}
+	return condition.minTemperature
+}
+
 func main() {
-	const maxTemperature = 30
-
-	const minTemperature = 15
-
 	numberOfDepartments := 0
 	numberOfEmployees := 0
 
@@ -27,7 +54,7 @@ func main() {
 			return
 		}
 
-		conditions := [2]int{minTemperature, maxTemperature}
+		condition := Condition{minTemperature: MinTemperature, maxTemperature: MaxTemperature}
 
 		for range numberOfEmployees {
 			var option string
@@ -41,26 +68,13 @@ func main() {
 				return
 			}
 
-			switch option {
-			case ">=":
-				if temperature > conditions[0] {
-					conditions[0] = temperature
-				}
-			case "<=":
-				if temperature < conditions[1] {
-					conditions[1] = temperature
-				}
-			default:
-				fmt.Println("Error: invalid option")
-
+			err = condition.SetTemperature(option, temperature)
+			if err != nil {
+				fmt.Println("Error:", err)
 				return
 			}
 
-			if conditions[0] > conditions[1] {
-				fmt.Println(-1)
-			} else {
-				fmt.Println(conditions[0])
-			}
+			fmt.Println(condition.getTemperature())
 		}
 	}
 }
