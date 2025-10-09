@@ -23,12 +23,25 @@ func (object *departTemperatureHandler) setTemperature(operator string, value in
 	switch operator {
 	case ">=":
 		object.lowerBound = value
+		if object.optimalTemperature < object.lowerBound {
+			object.optimalTemperature = object.lowerBound
+		}
 	case "<=":
 		object.upperBound = value
+		if object.optimalTemperature > object.upperBound {
+			object.optimalTemperature = object.upperBound
+		}
 	default:
-		return fmt.Errorf("Unknown operator: %s", operator)
+		return fmt.Errorf("unknown operator: %s", operator)
+	}
+	if object.upperBound < object.lowerBound {
+		object.optimalTemperature = -1
 	}
 	return nil
+}
+
+func (object *departTemperatureHandler) getTemperature() int {
+	return object.optimalTemperature
 }
 
 func NewDepartTemperatureHandler(lBound int, uBound int) *departTemperatureHandler {
@@ -55,23 +68,21 @@ func main() {
 		if (err != nil) || (workersNum > maxWorkersNum || workersNum < minWorkersNum) {
 			fmt.Println("Invalid temperature value")
 		}
-
+		var handler = NewDepartTemperatureHandler(minTemperature, maxTemperature)
 		for j := 0; j < workersNum; j++ {
 			var operator string
 			var value int
 
-			var handler = NewDepartTemperatureHandler(minTemperature, maxTemperature)
-
-			_, err = fmt.Scanln(&operator)
+			_, err = fmt.Scanln(&operator, &value)
 			if err != nil {
-				fmt.Println("Invalid operator")
-			}
-			_, err = fmt.Scanln(&value)
-			if err != nil {
-				fmt.Println("Incorrect value")
+				fmt.Println("Invalid input:", err)
+				continue
 			}
 
 			handler.setTemperature(operator, value)
+
+			var temp int = handler.getTemperature()
+			fmt.Println(temp)
 		}
 
 	}
