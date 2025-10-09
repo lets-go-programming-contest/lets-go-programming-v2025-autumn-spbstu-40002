@@ -22,27 +22,23 @@ func (h *MaxHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[:n-1]
-
 	return x
 }
 
 func main() {
 	var dishCount, preferenceK int
 	if _, err := fmt.Scan(&dishCount); err != nil {
-
 		return
 	}
 
 	preferences := make([]int, dishCount)
 	for i := range preferences {
 		if _, err := fmt.Scan(&preferences[i]); err != nil {
-
 			return
 		}
 	}
 
 	if _, err := fmt.Scan(&preferenceK); err != nil {
-
 		return
 	}
 
@@ -53,7 +49,6 @@ func main() {
 	}
 
 	var result int
-
 	for range preferenceK {
 		popped := heap.Pop(maxHeap)
 		if val, ok := popped.(int); ok {
