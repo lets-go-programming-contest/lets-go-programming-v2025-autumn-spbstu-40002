@@ -33,6 +33,7 @@ func main() {
 
 		if err != nil || rating < MinRating || rating > MaxRating {
 			fmt.Println("incorrect rating")
+
 			return
 		}
 
