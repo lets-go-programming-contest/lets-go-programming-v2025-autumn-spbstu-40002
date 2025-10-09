@@ -13,24 +13,30 @@ const (
 	MaxK    = 1000
 )
 
-func updateBounds(low, high int, op string, val int) (int, int, error) {
-	if op == ">=" {
-		if val > low {
-			low = val
+var errInvalidOp = errors.New("invalid op")
+
+func updateBounds(low, high int, operator string, value int) (int, int, error) {
+	switch operator {
+	case ">=":
+		if value > low {
+			low = value
 		}
-	} else if op == "<=" {
-		if val < high {
-			high = val
+	case "<=":
+		if value < high {
+			high = value
 		}
-	} else {
-		return low, high, errors.New("invalid op")
+	default:
+		return low, high, errInvalidOp
 	}
+
 	if low < MinTemp {
 		low = MinTemp
 	}
+
 	if high > MaxTemp {
 		high = MaxTemp
 	}
+
 	return low, high, nil
 }
 
@@ -40,27 +46,33 @@ func main() {
 		fmt.Println(-1)
 		return
 	}
-	for d := 0; d < n; d++ {
-		var k int
-		if _, err := fmt.Fscanln(os.Stdin, &k); err != nil || k < 1 || k > MaxK {
+
+	for range make([]struct{}, n) {
+		var employees int
+		if _, err := fmt.Fscanln(os.Stdin, &employees); err != nil || employees < 1 || employees > MaxK {
 			fmt.Println(-1)
 			return
 		}
+
 		low := MinTemp
+
 		high := MaxTemp
-		for i := 0; i < k; i++ {
-			var op string
-			var val int
-			if _, err := fmt.Fscanln(os.Stdin, &op, &val); err != nil {
+
+		for range make([]struct{}, employees) {
+			var operator string
+			var value int
+			if _, err := fmt.Fscanln(os.Stdin, &operator, &value); err != nil {
 				fmt.Println(-1)
 				return
 			}
-			var err error
-			low, high, err = updateBounds(low, high, op, val)
-			if err != nil {
+
+			var uerr error
+			low, high, uerr = updateBounds(low, high, operator, value)
+			if uerr != nil {
 				fmt.Println(-1)
 				return
 			}
+
 			if low > high {
 				fmt.Println(-1)
 			} else {
