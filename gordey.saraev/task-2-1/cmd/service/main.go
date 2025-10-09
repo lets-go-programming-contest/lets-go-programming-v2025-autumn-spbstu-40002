@@ -13,14 +13,17 @@ func processDepartment(employees int) error {
 		var temperature int
 		_, err := fmt.Scanln(&operator, &temperature)
 		if err != nil {
+
 			return err
 		}
 
 		if operator != ">=" && operator != "<=" {
+
 			return fmt.Errorf("invalid operator: %s", operator)
 		}
 
 		if temperature < 15 || temperature > 30 {
+
 			return fmt.Errorf("temperature %d is out of range [15, 30]", temperature)
 		}
 
@@ -41,6 +44,7 @@ func processDepartment(employees int) error {
 			fmt.Println(-1)
 		}
 	}
+
 	return nil
 }
 
@@ -49,11 +53,13 @@ func main() {
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
 		fmt.Println("Error reading departments count")
+
 		return
 	}
 
 	if departments < 1 || departments > 1000 {
 		fmt.Println("Departments is out of range [1, 1000]")
+
 		return
 	}
 
@@ -62,17 +68,20 @@ func main() {
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println("Error reading employees count")
+
 			return
 		}
 
 		if employees < 1 || employees > 1000 {
 			fmt.Println("Employees is out of range [1, 1000]")
+
 			return
 		}
 
 		err = processDepartment(employees)
 		if err != nil {
 			fmt.Println("Error processing department:", err)
+
 			return
 		}
 	}
