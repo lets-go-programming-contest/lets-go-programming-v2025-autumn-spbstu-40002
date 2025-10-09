@@ -7,12 +7,16 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[j] < h[i] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[j] < (*h)[i] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	v, ok := x.(int)
+	if !ok {
+		panic("IntHeap can only contain ints")
+	}
+	*h = append(*h, v)
 }
 
 func (h *IntHeap) Pop() any {
