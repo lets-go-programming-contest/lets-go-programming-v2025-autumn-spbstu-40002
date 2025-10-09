@@ -1,73 +1,61 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+
+	"github.com/ummmsh/task-2-1/tempdata"
 )
 
-func findOptimalTemp(sign string, temp int, maxTemp, minTemp, optimalTemp *int) {
-	switch sign {
-	case ">=":
-		if temp > *maxTemp {
-			*optimalTemp = -1
-		} else if temp > *minTemp {
-			*minTemp = temp
-		}
-	case "<=":
-		if temp < *minTemp {
-			*optimalTemp = -1
-		} else if temp < *maxTemp {
-			*maxTemp = temp
-		}
-	default:
-		return
-	}
+const (
+	minDepEmpNum = 1
+	maxDepEmpNum = 1000
+	minTemp      = 15
+	maxTemp      = 30
+)
 
-	if *optimalTemp != -1 {
-		*optimalTemp = *minTemp
-	}
-
-	fmt.Println(*optimalTemp)
-}
+var (
+	ErrInvalidDepartmentts = errors.New("invalid number of departments")
+	ErrInvalidEmployees    = errors.New("invalid number of employees")
+)
 
 func main() {
 	var numOfDepartments int
 
 	_, err := fmt.Scan(&numOfDepartments)
-	if err != nil {
-		return
-	}
-
-	if numOfDepartments < 1 || numOfDepartments > 1000 {
-		return
+	if err != nil || (numOfDepartments < minDepEmpNum || numOfDepartments > maxDepEmpNum) {
+		fmt.Println(ErrInvalidDepartmentts)
 	}
 
 	for range numOfDepartments {
 		var numOfEmployees int
 
 		_, err = fmt.Scan(&numOfEmployees)
-		if err != nil {
-			return
-		}
-
-		if numOfEmployees < 1 || numOfEmployees > 1000 {
-			return
+		if err != nil || (numOfEmployees < minDepEmpNum || numOfEmployees > maxDepEmpNum) {
+			fmt.Println(ErrInvalidEmployees)
 		}
 
 		var sign string
 
 		var temperature int
 
-		maxTemp := 30
-		minTemp := 15
-		optimalTemp := 15
+		tempData, errNewTempData := tempdata.NewTempData(15, maxTemp, minTemp)
+		if errNewTempData != nil {
+			fmt.Println(errNewTempData)
+		}
 
 		for range numOfEmployees {
 			_, err = fmt.Scan(&sign, &temperature)
 			if err != nil {
-				return
+				fmt.Println(tempdata.ErrInvalidSign)
 			}
 
-			findOptimalTemp(sign, temperature, &maxTemp, &minTemp, &optimalTemp)
+			err = tempData.ChangeOptimalTemp(sign, temperature)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			fmt.Println(tempData.GetOptimalTemp())
 		}
 	}
 }
