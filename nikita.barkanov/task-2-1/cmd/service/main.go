@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	minDepartNumber = 1
@@ -10,6 +13,8 @@ const (
 	minTemperature  = 15
 	maxTemperature  = 30
 )
+
+var ErrUnknownOperator = errors.New("unknown operator")
 
 type DepartTemperatureHandler struct {
 	optimalTemperature int
@@ -32,7 +37,7 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 			object.optimalTemperature = object.upperBound
 		}
 	default:
-		return fmt.Errorf("unknown operator: %s", operator)
+		return fmt.Errorf("%w: %s", ErrUnknownOperator, operator)
 	}
 	if object.upperBound < object.lowerBound {
 		object.optimalTemperature = -1
@@ -58,7 +63,7 @@ func main() {
 	var departNumber int
 
 	var _, err = fmt.Scanln(&departNumber)
-	if (err != nil) || (departNumber > maxDepartNumber || departNumber < minDepartNumber) {
+	if err != nil || departNumber > maxDepartNumber || departNumber < minDepartNumber {
 		fmt.Println("Invalid department number")
 		return
 	}
@@ -66,11 +71,11 @@ func main() {
 	for i := 0; i < departNumber; i++ {
 		var workersNum int
 		_, err = fmt.Scanln(&workersNum)
-		if (err != nil) || (workersNum > maxWorkersNum || workersNum < minWorkersNum) {
+		if err != nil || workersNum > maxWorkersNum || workersNum < minWorkersNum {
 			fmt.Println("Invalid temperature value")
 			return
 		}
-		var handler = NewDepartTemperatureHandler(minTemperature, maxTemperature)
+		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
 		for j := 0; j < workersNum; j++ {
 			var operator string
 			var value int
@@ -81,7 +86,10 @@ func main() {
 				continue
 			}
 
-			handler.setTemperature(operator, value)
+			if err := handler.setTemperature(operator, value); err != nil {
+				fmt.Println("Error:", err)
+				continue
+			}
 
 			var temp int = handler.getTemperature()
 			fmt.Println(temp)
