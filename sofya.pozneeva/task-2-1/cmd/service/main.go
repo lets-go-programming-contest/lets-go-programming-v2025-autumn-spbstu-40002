@@ -4,6 +4,7 @@ import "fmt"
 
 func main() {
 	var nSection uint16
+	
 	_, err := fmt.Scan(&nSection)
 	if err != nil {
 		fmt.Println("Invalid argument")
@@ -17,6 +18,7 @@ func main() {
 		var maxTemp uint16 = 30
 
 		var nPeople uint16
+		
 		_, err = fmt.Scan(&nPeople)
 		if err != nil {
 			fmt.Println("Invalid argument")
