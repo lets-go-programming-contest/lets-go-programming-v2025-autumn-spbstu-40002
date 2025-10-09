@@ -11,8 +11,11 @@ func (h *MaxHeap) Len() int           { return len(*h) }
 func (h *MaxHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
 func (h *MaxHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
-func (h *MaxHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+func (h *MaxHeap) Push(value interface{}) {
+	if v, ok := value.(int); ok {
+		*h = append(*h, v)
+	}
+
 }
 
 func (h *MaxHeap) Pop() interface{} {
@@ -20,28 +23,42 @@ func (h *MaxHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
 func main() {
 	var dishCount, preferenceK int
-	fmt.Scan(&dishCount)
+	if _, err := fmt.Scan(&dishCount); err != nil {
+
+		return
+	}
 
 	preferences := make([]int, dishCount)
-	for i := 0; i < dishCount; i++ {
-		fmt.Scan(&preferences[i])
-	}
-	fmt.Scan(&preferenceK)
+	for i := range preferences {
+		if _, err := fmt.Scan(&preferences[i]); err != nil {
 
-	h := &MaxHeap{}
-	heap.Init(h)
-	for _, x := range preferences {
-		heap.Push(h, x)
+			return
+		}
+	}
+
+	if _, err := fmt.Scan(&preferenceK); err != nil {
+
+		return
+	}
+
+	maxHeap := &MaxHeap{}
+	heap.Init(maxHeap)
+	for _, rating := range preferences {
+		heap.Push(maxHeap, rating)
 	}
 
 	var result int
-	for i := 0; i < preferenceK; i++ {
-		result = heap.Pop(h).(int)
+	for range preferenceK {
+		popped := heap.Pop(maxHeap)
+		if val, ok := popped.(int); ok {
+			result = val
+		}
 	}
 
 	fmt.Println(result)
