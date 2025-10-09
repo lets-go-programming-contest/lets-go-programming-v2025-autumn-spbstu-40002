@@ -10,6 +10,7 @@ func processDepartment(employees int) {
 
 	for range employees {
 		var operator string
+
 		var temperature int
 
 		_, err := fmt.Scanln(&operator, &temperature)
