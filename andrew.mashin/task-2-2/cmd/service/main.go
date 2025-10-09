@@ -16,9 +16,9 @@ const (
 )
 
 var (
-	errorIncorrectNumberOfDishes = errors.New("incorrect number of dishes")
-	errorIncorrectRating         = errors.New("incorrect rating")
-	errorIncorrectK              = errors.New("incorrect preferred dish")
+	errIncorrectNumberOfDishes = errors.New("incorrect number of dishes")
+	errIncorrectRating         = errors.New("incorrect rating")
+	errIncorrectK              = errors.New("incorrect preferred dish")
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 
 	_, err := fmt.Scan(&numberOfDishes)
 	if err != nil || numberOfDishes < numberOfDishesMin || numberOfDishes > numberOfDishesMax {
-		fmt.Println(errorIncorrectNumberOfDishes)
+		fmt.Println(errIncorrectNumberOfDishes)
 
 		return
 	}
@@ -39,7 +39,7 @@ func main() {
 
 		_, err = fmt.Scan(&rating)
 		if err != nil || rating < ratingMin || rating > ratingMax {
-			fmt.Println(errorIncorrectRating)
+			fmt.Println(errIncorrectRating)
 
 			return
 		}
@@ -51,7 +51,7 @@ func main() {
 
 	_, err = fmt.Scan(&preferredDish)
 	if err != nil || preferredDish > numberOfDishes || preferredDish < 1 {
-		fmt.Println(errorIncorrectK)
+		fmt.Println(errIncorrectK)
 
 		return
 	}
