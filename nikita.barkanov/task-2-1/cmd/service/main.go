@@ -74,8 +74,8 @@ func main() {
 	// for i := range departNumber не работает, потому что у меня не используются i и j в
 	//	соответствующих циклах, отсюда лезет ошибка unused variable
 	// конструкции типа for range departNumber так же не работают
-	i := 0
-	for i < departNumber {
+	index1 := 0
+	for index1 < departNumber {
 		var workersNum int
 
 		_, err = fmt.Scanln(&workersNum)
@@ -88,8 +88,8 @@ func main() {
 
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
 
-		j := 0
-		for j < workersNum {
+		index2 := 0
+		for index2 < workersNum {
 			var operator string
 
 			var value int
@@ -111,9 +111,9 @@ func main() {
 
 			fmt.Println(temp)
 
-			j++
+			index2++
 		}
 
-		i++
+		index1++
 	}
 }
