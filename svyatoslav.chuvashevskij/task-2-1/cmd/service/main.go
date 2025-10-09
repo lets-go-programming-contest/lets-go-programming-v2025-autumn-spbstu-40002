@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
-const MaxTemperature = 30
-const MinTemperature = 15
+const (
+	MaxTemperature = 30
+	MinTemperature = 15
+)
 
 type Condition struct {
 	minTemperature int
@@ -23,15 +26,17 @@ func (condition *Condition) SetTemperature(option string, temperature int) error
 			condition.maxTemperature = temperature
 		}
 	default:
-		return fmt.Errorf("invalid option \"%s\"", option)
+		return errors.New("invalid option")
 	}
+
 	return nil
 }
 
-func (condition Condition) getTemperature() int {
+func (condition *Condition) getTemperature() int {
 	if condition.maxTemperature < condition.minTemperature {
 		return -1
 	}
+
 	return condition.minTemperature
 }
 
@@ -71,6 +76,7 @@ func main() {
 			err = condition.SetTemperature(option, temperature)
 			if err != nil {
 				fmt.Println("Error:", err)
+
 				return
 			}
 
