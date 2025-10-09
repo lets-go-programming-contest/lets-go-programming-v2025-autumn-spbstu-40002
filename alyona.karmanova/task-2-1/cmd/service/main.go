@@ -27,9 +27,11 @@ func (o *Office) applyLowerBound(desiredTemp int) {
 
 		return
 	}
+
 	if desiredTemp > o.currentMax {
 		o.currentMin = desiredTemp
 		o.currentTemp = -1
+
 		return
 	}
 
@@ -56,6 +58,7 @@ func (o *Office) applyUpperBound(desiredTemp int) {
 	if desiredTemp < o.currentMin {
 		o.currentMax = desiredTemp
 		o.currentTemp = -1
+
 		return
 	}
 
