@@ -2,7 +2,10 @@ package tempdata
 
 import "errors"
 
-var ErrInvalidSign = errors.New("invalid sign")
+var (
+	ErrIncorrectRange = errors.New("minimal temperature must be greater maximum temperature")
+	ErrInvalidSign    = errors.New("invalid sign")
+)
 
 type TemperatureData struct {
 	optimalTemp int
@@ -10,11 +13,15 @@ type TemperatureData struct {
 	minTemp     int
 }
 
-func NewTempData() (*TemperatureData, error) {
+func NewTempData(optimalTemp, maxTemp, minTemp int) (*TemperatureData, error) {
+	if minTemp > maxTemp {
+		return nil, ErrIncorrectRange
+	}
+
 	return &TemperatureData{
-		optimalTemp: 15,
-		maxTemp:     30,
-		minTemp:     15,
+		optimalTemp: optimalTemp,
+		maxTemp:     maxTemp,
+		minTemp:     minTemp,
 	}, nil
 }
 

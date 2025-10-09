@@ -39,7 +39,9 @@ func main() {
 
 		var temperature int
 
-		tempData, errNewTempData := tempdata.NewTempData()
+		optimalTemp := 15
+
+		tempData, errNewTempData := tempdata.NewTempData(optimalTemp, maxTemp, minTemp)
 		if errNewTempData != nil {
 			fmt.Println(errNewTempData)
 		}
