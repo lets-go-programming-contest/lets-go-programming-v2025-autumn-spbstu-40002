@@ -10,77 +10,75 @@ const (
 	maxTemperature = 30
 )
 
-var errFormat = errors.New("invalid temperature format")
+var errInvalidFormat = errors.New("invalid temperature format")
 
-func adjustTemperature(low int, high int) (int, int, error) {
+func adjustTemperature(currentLow int, currentHigh int) (int, int, error) {
 	var operation string
-	var value int
+	var temperatureValue int
 
-	_, err := fmt.Scanln(&operation, &value)
-	if err != nil || value < minTemperature || value > maxTemperature {
-		return 0, 0, errFormat
+	_, err := fmt.Scanln(&operation, &temperatureValue)
+	if err != nil || temperatureValue < minTemperature || temperatureValue > maxTemperature {
+		return 0, 0, errInvalidFormat
 	}
 
 	switch operation {
 	case ">=":
-		if high < value {
+		if currentHigh < temperatureValue {
 			return -1, -1, nil
 		}
-		if low < value {
-			low = value
+
+		if currentLow < temperatureValue {
+			currentLow = temperatureValue
 		}
 	case "<=":
-		if low > value {
+		if currentLow > temperatureValue {
 			return -1, -1, nil
 		}
-		if high > value {
-			high = value
+
+		if currentHigh > temperatureValue {
+			currentHigh = temperatureValue
 		}
 	default:
-		return 0, 0, errFormat
+		return 0, 0, errInvalidFormat
 	}
 
-	return low, high, nil
-}
-
-func processDepartment(employees int) {
-	low := minTemperature
-	high := maxTemperature
-
-	for i := 0; i < employees; i++ {
-		low, high, err := adjustTemperature(low, high)
-		if err != nil {
-			fmt.Println(err)
-
-			return
-		}
-
-		if low == -1 || high == -1 || low > high {
-			fmt.Println(-1)
-		} else {
-			fmt.Println(low)
-		}
-	}
+	return currentLow, currentHigh, nil
 }
 
 func main() {
-	var departments, employees int
+	var numberOfDepartments, numberOfEmployees int
 
-	_, err := fmt.Scanln(&departments)
-	if err != nil || departments < 1 || departments > 1000 {
+	_, err := fmt.Scanln(&numberOfDepartments)
+	if err != nil || numberOfDepartments < 1 || numberOfDepartments > 1000 {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
-	for i := 0; i < departments; i++ {
-		_, err := fmt.Scanln(&employees)
-		if err != nil || employees < 1 || employees > 1000 {
+	for departmentIndex := 0; departmentIndex < numberOfDepartments; departmentIndex++ {
+		_, err = fmt.Scanln(&numberOfEmployees)
+		if err != nil || numberOfEmployees < 1 || numberOfEmployees > 1000 {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		processDepartment(employees)
+		currentLow := minTemperature
+		currentHigh := maxTemperature
+
+		for employeeIndex := 0; employeeIndex < numberOfEmployees; employeeIndex++ {
+			currentLow, currentHigh, err = adjustTemperature(currentLow, currentHigh)
+			if err != nil {
+				fmt.Println(err)
+
+				return
+			}
+
+			if currentLow == -1 || currentHigh == -1 || currentLow > currentHigh {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(currentLow)
+			}
+		}
 	}
 }
