@@ -21,7 +21,6 @@ type DepartTemperatureHandler struct {
 
 	upperBound int
 	lowerBound int // минимально допустимая температура, то есть начиная с нее температура приемлем
-
 }
 
 func (object *DepartTemperatureHandler) setTemperature(operator string, value int) error {
@@ -37,7 +36,7 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 			object.optimalTemperature = object.upperBound
 		}
 	default:
-		
+
 		return fmt.Errorf("%w: %s", ErrUnknownOperator, operator)
 	}
 
@@ -62,10 +61,9 @@ func NewDepartTemperatureHandler(lBound int, uBound int) *DepartTemperatureHandl
 }
 
 func main() {
-
 	var departNumber int
 
-	var _, err = fmt.Scanln(&departNumber)
+	_, err := fmt.Scanln(&departNumber)
 
 	if err != nil || departNumber > maxDepartNumber || departNumber < minDepartNumber {
 		fmt.Println("Invalid department number")
@@ -107,7 +105,5 @@ func main() {
 
 			fmt.Println(temp)
 		}
-
 	}
-
 }
