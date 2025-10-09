@@ -12,7 +12,11 @@ func (h *IntHeap) Less(i, j int) bool { return (*h)[j] < (*h)[i] }
 func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	val, ok := x.(int)
+	if !ok {
+		return
+	}
+	*h = append(*h, val)
 }
 
 func (h *IntHeap) Pop() any {
