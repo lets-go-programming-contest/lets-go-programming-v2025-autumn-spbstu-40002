@@ -39,6 +39,7 @@ func (object *DepartTemperatureHandler) setTemperature(operator string, value in
 		if object.upperBound > maxTemperature {
 			object.upperBound = maxTemperature
 		}
+
 		if object.optimalTemperature > object.upperBound {
 			object.optimalTemperature = object.upperBound
 		}
@@ -105,13 +106,13 @@ func main() {
 			if err != nil {
 				fmt.Println("Invalid input:", err)
 
-				continue
+				return
 			}
 
 			if err := handler.setTemperature(operator, value); err != nil {
 				fmt.Println("Error:", err)
 
-				continue
+				return
 			}
 
 			temp := handler.getTemperature()
