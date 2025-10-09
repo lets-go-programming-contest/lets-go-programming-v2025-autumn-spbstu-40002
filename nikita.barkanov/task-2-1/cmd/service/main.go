@@ -70,7 +70,7 @@ func main() {
 		return
 	}
 
-	for _ = range make([]struct{}, departNumber) {
+	for range make([]struct{}, departNumber) {
 		var workersNum int
 
 		_, err = fmt.Scanln(&workersNum)
@@ -82,7 +82,7 @@ func main() {
 		}
 
 		handler := NewDepartTemperatureHandler(minTemperature, maxTemperature)
-		for _ = range make([]struct{}, workersNum) {
+		for range make([]struct{}, workersNum) {
 			var operator string
 
 			var value int
@@ -100,7 +100,7 @@ func main() {
 				continue
 			}
 
-			var temp = handler.getTemperature()
+			temp := handler.getTemperature()
 
 			fmt.Println(temp)
 		}
