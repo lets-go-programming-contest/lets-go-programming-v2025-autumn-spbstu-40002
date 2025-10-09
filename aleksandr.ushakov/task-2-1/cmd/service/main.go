@@ -65,7 +65,7 @@ func main() {
 			return
 		}
 
-		var departmentTemp DepartmentTemperature = DepartmentTemperature{lowerTemperatureLimit, upperTemperatureLimit}
+		departmentTemp := DepartmentTemperature{lowerTemperatureLimit, upperTemperatureLimit}
 
 		for range numberOfPeople {
 			var sign string
@@ -79,7 +79,6 @@ func main() {
 			}
 
 			err = departmentTemp.SetOptimalTemperature(sign, temperature)
-
 			if err != nil {
 				return
 			}
