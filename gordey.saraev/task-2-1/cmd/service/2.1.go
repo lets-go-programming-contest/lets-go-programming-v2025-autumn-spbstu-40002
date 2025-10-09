@@ -30,35 +30,28 @@ func main() {
 			return
 		}
 
-		minTemp := -1000000
-		maxTemp := 1000000
+		minTemp := 15
+		maxTemp := 30
 
 		for j := 0; j < employee; j++ {
 			_, err = fmt.Scan(&operator, &temperature)
-			if err != nil {
+			if err != nil || temperature > 30 || temperature < 15 {
 				fmt.Println("Invalid temperature constraint format")
 				return
 			}
 
 			switch operator {
 			case ">=":
-				if temperature > minTemp {
+				if temperature >= minTemp {
 					minTemp = temperature
 				}
 			case "<=":
-				if temperature < maxTemp {
+				if temperature <= maxTemp {
 					maxTemp = temperature
 				}
 			default:
 				fmt.Println(-1)
 				continue
-			}
-
-			if minTemp < 15 {
-				minTemp = 15
-			}
-			if maxTemp > 30 {
-				maxTemp = 30
 			}
 
 			if minTemp > maxTemp {
