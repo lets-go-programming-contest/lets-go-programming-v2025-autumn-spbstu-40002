@@ -9,24 +9,24 @@ func main() {
 	var operator string
 	var temperature int
 
-	_, err := fmt.Scanf("%d\n", &departments)
+	_, err := fmt.Scan(&departments)
 	if err != nil {
-		fmt.Fprintln(nil, "Invalid number of departments")
+		fmt.Println("Invalid number of departments")
 		return
 	}
 	if departments < 1 || departments > 1000 {
-		fmt.Fprintln(nil, "N is out of range [1, 1000]")
+		fmt.Println("N is out of range [1, 1000]")
 		return
 	}
 
 	for i := 0; i < departments; i++ {
-		_, err = fmt.Scanf("%d\n", &employee)
+		_, err = fmt.Scan(&employee)
 		if err != nil {
-			fmt.Fprintln(nil, "Invalid number of employees")
+			fmt.Println("Invalid number of employees")
 			return
 		}
 		if employee < 1 || employee > 1000 {
-			fmt.Fprintln(nil, "K is out of range [1, 1000]")
+			fmt.Println("K is out of range [1, 1000]")
 			return
 		}
 
@@ -34,9 +34,9 @@ func main() {
 		maxTemp := 30
 
 		for j := 0; j < employee; j++ {
-			_, err = fmt.Scanf("%s %d\n", &operator, &temperature)
+			_, err = fmt.Scan(&operator, &temperature)
 			if err != nil {
-				fmt.Fprintln(nil, "Invalid temperature constraint format")
+				fmt.Println("Invalid temperature constraint format")
 				return
 			}
 
