@@ -30,8 +30,8 @@ func main() {
 			return
 		}
 
-		minTemp := 15
-		maxTemp := 30
+		minTemp := -1000000
+		maxTemp := 1000000
 
 		for j := 0; j < employee; j++ {
 			_, err = fmt.Scan(&operator, &temperature)
@@ -54,10 +54,25 @@ func main() {
 				continue
 			}
 
-			if minTemp <= maxTemp && minTemp >= 15 && maxTemp <= 30 {
-				fmt.Println(maxTemp)
-			} else {
+			if minTemp > maxTemp {
 				fmt.Println(-1)
+			} else {
+
+				if maxTemp > 30 {
+					maxTemp = 30
+				}
+				if minTemp < 15 {
+					minTemp = 15
+				}
+				if minTemp > 30 || maxTemp < 15 {
+					fmt.Println(-1)
+				} else {
+					if maxTemp < minTemp {
+						fmt.Println(-1)
+					} else {
+						fmt.Println(maxTemp)
+					}
+				}
 			}
 		}
 	}
