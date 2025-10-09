@@ -25,6 +25,7 @@ func main() {
 	_, err := fmt.Scan(&numOfDepartments)
 	if err != nil || (numOfDepartments < minDepEmpNum || numOfDepartments > maxDepEmpNum) {
 		fmt.Println(ErrInvalidDepartmentts)
+		return
 	}
 
 	for range numOfDepartments {
@@ -33,6 +34,7 @@ func main() {
 		_, err = fmt.Scan(&numOfEmployees)
 		if err != nil || (numOfEmployees < minDepEmpNum || numOfEmployees > maxDepEmpNum) {
 			fmt.Println(ErrInvalidEmployees)
+			return
 		}
 
 		var sign string
@@ -44,17 +46,20 @@ func main() {
 		tempData, errNewTempData := tempdata.NewTempData(optimalTemp, maxTemp, minTemp)
 		if errNewTempData != nil {
 			fmt.Println(errNewTempData)
+			return
 		}
 
 		for range numOfEmployees {
 			_, err = fmt.Scan(&sign, &temperature)
 			if err != nil {
 				fmt.Println(tempdata.ErrInvalidSign)
+				return
 			}
 
 			err = tempData.ChangeOptimalTemp(sign, temperature)
 			if err != nil {
 				fmt.Println(err)
+				return
 			}
 
 			fmt.Println(tempData.GetOptimalTemp())
