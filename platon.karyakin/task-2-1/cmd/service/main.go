@@ -36,7 +36,6 @@ func readOperationTemp() (string, int, error) {
 	return operation, temp, nil
 }
 
-// TemperatureManager хранит и управляет текущим диапазоном температур.
 type TemperatureManager struct {
 	minTemp int
 	maxTemp int
@@ -82,7 +81,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departmentsCount; i++ {
+	for range departmentsCount {
 		var employeesCount int
 
 		if _, err := fmt.Fscan(os.Stdin, &employeesCount); err != nil {
@@ -94,7 +93,7 @@ func main() {
 
 		tempManager := NewTemperatureManager(currentMinTemp, currentMaxTemp)
 
-		for j := 0; j < employeesCount; j++ {
+		for range employeesCount {
 			operation, temperature, err := readOperationTemp()
 			if err != nil {
 				log.Fatalf("error: %v", err)
