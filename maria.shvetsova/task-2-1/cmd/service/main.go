@@ -39,7 +39,7 @@ func main() {
 
 		var temperature int
 
-		tempData, errNewTempData := tempdata.NewTempData(maxTemp, minTemp)
+		tempData, errNewTempData := tempdata.NewTempData()
 		if errNewTempData != nil {
 			fmt.Println(errNewTempData)
 		}
