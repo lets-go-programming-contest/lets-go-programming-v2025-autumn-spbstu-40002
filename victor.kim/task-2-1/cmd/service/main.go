@@ -12,161 +12,107 @@ const (
 	expectedScanCountOperationVal = 2
 )
 
-var (
-	errFormat     = errors.New("invalid temperature format")
-	errScanFailed = errors.New("scan failed")
-)
+var errFormat = errors.New("invalid temperature format")
 
-type Thermostat struct {
-	low      int
-	high     int
-	conflict bool
-}
+func adjustTemperature(low int, high int) (int, int, error) {
+	var operation string
 
-func NewThermostat() *Thermostat {
-	return &Thermostat{
-		low:      minTemperature,
-		high:     maxTemperature,
-		conflict: false,
-	}
-}
+	var newTemp int
 
-func (t *Thermostat) Update(operation string, value int) (bool, error) {
-	if value < minTemperature || value > maxTemperature {
-		return false, errFormat
+	scanCount, scanErr := fmt.Scanln(&operation, &newTemp)
+	if scanErr != nil {
+		return 0, 0, errFormat
 	}
 
-	if t.conflict {
-		return true, nil
+	if scanCount != expectedScanCountOperationVal {
+		return 0, 0, errFormat
+	}
+
+	if newTemp < minTemperature || newTemp > maxTemperature {
+		return 0, 0, errFormat
 	}
 
 	switch operation {
 	case ">=":
-		if value > t.high {
-			t.conflict = true
-
-			return true, nil
+		if high < newTemp {
+			return -1, -1, nil
 		}
 
-		if value > t.low {
-			t.low = value
+		if low < newTemp {
+			low = newTemp
 		}
-
 	case "<=":
-		if value < t.low {
-			t.conflict = true
-
-			return true, nil
+		if low > newTemp {
+			return -1, -1, nil
 		}
 
-		if value < t.high {
-			t.high = value
+		if high > newTemp {
+			high = newTemp
 		}
-
 	default:
-		return false, errFormat
+		return 0, 0, errFormat
 	}
 
-	return t.conflict, nil
-}
-
-func (t *Thermostat) Current() int {
-	if t.conflict {
-		return -1
-	}
-
-	return t.low
-}
-
-func readInt() (int, error) {
-	var value int
-
-	scanCount, scanErr := fmt.Scan(&value)
-	if scanErr != nil {
-		return 0, errScanFailed
-	}
-
-	if scanCount != expectedScanCountSingle {
-		return 0, errScanFailed
-	}
-
-	return value, nil
-}
-
-func readOperationAndValue() (string, int, error) {
-	var operation string
-	var value int
-
-	scanCount, scanErr := fmt.Scan(&operation, &value)
-	if scanErr != nil {
-		return "", 0, errScanFailed
-	}
-
-	if scanCount != expectedScanCountOperationVal {
-		return "", 0, errScanFailed
-	}
-
-	return operation, value, nil
-}
-
-func processDepartment(employees int) error {
-	therm := NewThermostat()
-
-	for range make([]struct{}, employees) {
-		operation, value, readErr := readOperationAndValue()
-		if readErr != nil {
-			return readErr
-		}
-
-		conflict, updateErr := therm.Update(operation, value)
-		if updateErr != nil {
-			return updateErr
-		}
-
-		if conflict {
-			fmt.Println(-1)
-
-			continue
-		}
-
-		fmt.Println(therm.Current())
-	}
-
-	return nil
+	return low, high, nil
 }
 
 func main() {
-	departments, err := readInt()
-	if err != nil {
-		fmt.Println(err)
+	var dep uint16
+	var emp uint16
 
-		return
-	}
-
-	if departments <= 0 || departments > 1000 {
+	scanCount, scanErr := fmt.Scanln(&dep)
+	if scanErr != nil {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
-	for range make([]struct{}, departments) {
-		employees, err := readInt()
-		if err != nil {
-			fmt.Println(err)
+	if scanCount != expectedScanCountSingle {
+		fmt.Println("invalid number of departments")
 
-			return
-		}
+		return
+	}
 
-		if employees <= 0 || employees > 1000 {
+	if dep == 0 || dep > 1000 {
+		fmt.Println("invalid number of departments")
+
+		return
+	}
+
+	for range make([]struct{}, dep) {
+		scanCount, scanErr = fmt.Scanln(&emp)
+		if scanErr != nil {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		if procErr := processDepartment(employees); procErr != nil {
-			fmt.Println(procErr)
+		if scanCount != expectedScanCountSingle {
+			fmt.Println("invalid number of employees")
 
 			return
+		}
+
+		if emp == 0 || emp > 1000 {
+			fmt.Println("invalid number of employees")
+
+			return
+		}
+
+		lowTemp := minTemperature
+		highTemp := maxTemperature
+
+		for range make([]struct{}, emp) {
+			var err error
+
+			lowTemp, highTemp, err = adjustTemperature(lowTemp, highTemp)
+			if err != nil {
+				fmt.Println(err)
+
+				return
+			}
+
+			fmt.Println(lowTemp)
 		}
 	}
 }
