@@ -6,8 +6,10 @@ import (
 )
 
 const (
-	minTemperature = 15
-	maxTemperature = 30
+	minTemperature                  = 15
+	maxTemperature                  = 30
+	expectedScanCountOperationVal   = 2
+	expectedScanCountSingle         = 1
 )
 
 var errFormat = errors.New("invalid temperature format")
@@ -39,21 +41,25 @@ func (th *Thermostat) Update(operation string, value int) (bool, error) {
 	case ">=":
 		if value > th.high {
 			th.conflict = true
+
 			return true, nil
 		}
 
 		if value > th.low {
 			th.low = value
 		}
+
 	case "<=":
 		if value < th.low {
 			th.conflict = true
+
 			return true, nil
 		}
 
 		if value < th.high {
 			th.high = value
 		}
+
 	default:
 		return false, errFormat
 	}
@@ -69,29 +75,38 @@ func (th *Thermostat) Current() int {
 	return th.low
 }
 
-func processDepartment(employees int) error {
+func readOperationAndValue() (string, int, error) {
+	var (
+		operation string
+		value     int
+	)
+
+	scanCount, scanErr := fmt.Scanln(&operation, &value)
+	if scanErr != nil {
+		return "", 0, errFormat
+	}
+
+	if scanCount != expectedScanCountOperationVal {
+		return "", 0, errFormat
+	}
+
+	if value < minTemperature || value > maxTemperature {
+		return "", 0, errFormat
+	}
+
+	return operation, value, nil
+}
+
+func processDepartment(employees uint16) error {
 	thermostat := NewThermostat()
 
 	for range make([]struct{}, employees) {
-		var (
-			operation string
-			newTemp   int
-		)
-
-		scanCount, scanErr := fmt.Scanln(&operation, &newTemp)
-		if scanErr != nil {
-			return errFormat
+		operation, value, err := readOperationAndValue()
+		if err != nil {
+			return err
 		}
 
-		if scanCount != 2 {
-			return errFormat
-		}
-
-		if newTemp < minTemperature || newTemp > maxTemperature {
-			return errFormat
-		}
-
-		conflict, updErr := thermostat.Update(operation, newTemp)
+		conflict, updErr := thermostat.Update(operation, value)
 		if updErr != nil {
 			return updErr
 		}
@@ -107,51 +122,52 @@ func processDepartment(employees int) error {
 }
 
 func main() {
-	var departments int
+	var (
+		dep uint16
+		emp uint16
+	)
 
-	scanCount, scanErr := fmt.Scanln(&departments)
+	scanCount, scanErr := fmt.Scanln(&dep)
 	if scanErr != nil {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
-	if scanCount != 1 {
+	if scanCount != expectedScanCountSingle {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
-	if departments <= 0 || departments > 1000 {
+	if dep == 0 || dep > 1000 {
 		fmt.Println("invalid number of departments")
 
 		return
 	}
 
-	for range make([]struct{}, departments) {
-		var employees int
-
-		scanCount, scanErr = fmt.Scanln(&employees)
+	for range make([]struct{}, dep) {
+		scanCount, scanErr = fmt.Scanln(&emp)
 		if scanErr != nil {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		if scanCount != 1 {
+		if scanCount != expectedScanCountSingle {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		if employees <= 0 || employees > 1000 {
+		if emp == 0 || emp > 1000 {
 			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		if err := processDepartment(employees); err != nil {
-			fmt.Println(err)
+		if procErr := processDepartment(emp); procErr != nil {
+			fmt.Println(procErr)
 
 			return
 		}
