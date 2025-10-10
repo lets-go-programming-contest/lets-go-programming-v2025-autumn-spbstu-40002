@@ -7,6 +7,7 @@ func main() {
 	_, err := fmt.Scan(&nSection)
 	if err != nil {
 		fmt.Println("Invalid argument")
+
 		return
 	}
 
@@ -17,25 +18,25 @@ func main() {
 
 		var nPeople uint16
 		_, err = fmt.Scan(&nPeople)
-
 		if err != nil {
 			fmt.Println("Invalid argument")
+
 			return
 		}
 
 		for range nPeople {
 			var sign string
-	
+
 			var temp uint16
-			
+
 			_, err = fmt.Scanf("%s %d\n", &sign, &temp)
 			if err != nil {
 				fmt.Println("Invalid argument")
 
 					return
-			}	
+			}
 
-			if sign == ">=" {			
+			if sign == ">=" {	
 				if minTemp < temp {
 					minTemp = temp
 				}
@@ -44,7 +45,7 @@ func main() {
 					maxTemp = temp
 				}
 			}
-			
+
 			if minTemp <= maxTemp {
 				fmt.Println(minTemp)
 			} else {
