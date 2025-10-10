@@ -4,6 +4,7 @@ import "fmt"
 
 func main() {
 	var nSection uint16
+
 	_, err := fmt.Scan(&nSection)
 	if err != nil {
 		fmt.Println("Invalid argument")
@@ -18,6 +19,7 @@ func main() {
 
 		var nPeople uint16
 		_, err = fmt.Scan(&nPeople)
+
 		if err != nil {
 			fmt.Println("Invalid argument")
 
@@ -33,10 +35,10 @@ func main() {
 			if err != nil {
 				fmt.Println("Invalid argument")
 
-					return
+				return
 			}
 
-			if sign == ">=" {	
+			if sign == ">=" {
 				if minTemp < temp {
 					minTemp = temp
 				}
