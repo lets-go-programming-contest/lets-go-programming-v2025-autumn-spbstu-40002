@@ -69,8 +69,10 @@ func processDepartment(employees int) error {
 	tempRange := NewTemperatureRange()
 
 	for range make([]struct{}, employees) {
-		var operator string
-		var temperature int
+		var (
+			operator    string
+			temperature int
+		)
 
 		_, err := fmt.Scanln(&operator, &temperature)
 		if err != nil {
