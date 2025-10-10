@@ -1,3 +1,3 @@
-module awesomeProject2
+module awesomeProject3
 
-go 1.22
+go 1.22.7
