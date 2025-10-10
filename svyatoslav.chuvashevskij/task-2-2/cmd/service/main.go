@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	. "task-2-2/internal/intheap"
+	"task-2-2/internal/intheap"
 )
 
 var ErrInvalidPreferredNumber = errors.New("preferred number is more than number of dishes")
@@ -20,7 +20,7 @@ func main() {
 		return
 	}
 
-	dishes := &IntHeap{}
+	dishes := &intheap.IntHeap{}
 	heap.Init(dishes)
 
 	var rating int
