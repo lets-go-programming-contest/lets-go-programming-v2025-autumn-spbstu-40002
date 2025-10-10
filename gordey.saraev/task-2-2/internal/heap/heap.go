@@ -13,6 +13,7 @@ func (h *MaxHeap) Push(value interface{}) {
 	if !ok {
 		panic("MaxHeap.Push: value is not int")
 	}
+
 	*h = append(*h, v)
 }
 
@@ -20,6 +21,7 @@ func (h *MaxHeap) Pop() interface{} {
 	if len(*h) == 0 {
 		panic("MaxHeap.Pop: heap is empty")
 	}
+
 	old := *h
 	n := len(old)
 	x := old[n-1]
