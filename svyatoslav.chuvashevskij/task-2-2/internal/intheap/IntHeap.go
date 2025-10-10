@@ -17,7 +17,6 @@ func (h *IntHeap) Push(x any) {
 
 func (h *IntHeap) Pop() any {
 	if len(*h) == 0 {
-
 		return nil
 	}
 
