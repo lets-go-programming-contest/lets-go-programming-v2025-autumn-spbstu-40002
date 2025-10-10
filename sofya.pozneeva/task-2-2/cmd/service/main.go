@@ -7,20 +7,24 @@ import (
 
 type IntHeap []int16
 
-func (h IntHeap) Len() int {
-	return len(h)
+func (h *IntHeap) Len() int {
+	return len(*h)
 }
 
-func (h IntHeap) Less(i, j int) bool {
-	return h[i] > h[j]
+func (h *IntHeap) Less(i, j int) bool {
+	return *h[i] > *h[j]
 }
 
-func (h IntHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (h *IntHeap) Swap(i, j int) {
+	*h[i], *h[j] = *h[j], *h[i]
 }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int16))
+	if val, ok := x.(int16); ok {
+		*h = append(*h, val)
+	} else {
+		fmt.Errorln("Type conversion error ")
+	}	
 }
 
 func (h *IntHeap) Pop() any {
@@ -28,6 +32,7 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -37,6 +42,7 @@ func main() {
 	_, err := fmt.Scan(&nDish)
 	if err != nil {
 		fmt.Println("Invalid argument")
+
 		return
 	}
 
@@ -59,9 +65,9 @@ func main() {
 		heap.Push(&rating, estimation)
 	}
 
-	var k int16
+	var numberOfDish int16
 
-	_, err = fmt.Scanf("\n%d\n", &k)
+	_, err = fmt.Scanf("\n%d\n", &numberOfDish)
 	if err != nil {
 		fmt.Println("Invalid argument")
 
@@ -70,8 +76,11 @@ func main() {
 
 	var result int16
 
-	for range k {
-		result = heap.Pop(&rating).(int16)
+	for range numberOfDish {
+		if value, ok := heap.Pop(&rating).(int16); ok {
+			result = value
+		}
 	}
+	
 	fmt.Println(result)
 }
