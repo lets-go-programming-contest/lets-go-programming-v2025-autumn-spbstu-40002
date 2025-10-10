@@ -9,15 +9,13 @@ const (
 
 func main() {
 	var departmentCount int
-	_, err := fmt.Scan(&departmentCount)
-	if err != nil {
+	if _, err := fmt.Scan(&departmentCount); err != nil {
 		return
 	}
 
 	for range departmentCount {
 		var employeesCount int
-		_, err = fmt.Scan(&employeesCount)
-		if err != nil {
+		if _, err := fmt.Scan(&employeesCount); err != nil {
 			return
 		}
 
@@ -25,11 +23,12 @@ func main() {
 		high := maxTemp
 
 		for range employeesCount {
-			var operatorSign string
-			var value int
+			var (
+				operatorSign string
+				value        int
+			)
 
-			_, err = fmt.Scan(&operatorSign, &value)
-			if err != nil {
+			if _, err := fmt.Scan(&operatorSign, &value); err != nil {
 				return
 			}
 
