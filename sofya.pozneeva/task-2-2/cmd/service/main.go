@@ -67,7 +67,7 @@ func main() {
 
 	var numberOfDish int
 
-	_, err = fmt.Scanf("\n%d\n", &numberOfDish)
+	_, err = fmt.Scan(&numberOfDish)
 	if err != nil {
 		fmt.Println("Invalid argument")
 
