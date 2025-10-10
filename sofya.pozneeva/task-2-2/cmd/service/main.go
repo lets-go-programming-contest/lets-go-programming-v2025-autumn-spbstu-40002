@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type IntHeap []int16
+type IntHeap []int
 
 func (h *IntHeap) Len() int {
 	return len(*h)
@@ -20,7 +20,7 @@ func (h *IntHeap) Swap(i, j int) {
 }
 
 func (h *IntHeap) Push(x any) {
-	if val, ok := x.(int16); ok {
+	if val, ok := x.(int); ok {
 		*h = append(*h, val)
 	} else {
 		panic(fmt.Sprintf("expected int16, got %T", x))
@@ -37,7 +37,7 @@ func (h *IntHeap) Pop() any {
 }
 
 func main() {
-	var nDish uint16
+	var nDish uint
 
 	_, err := fmt.Scan(&nDish)
 	if err != nil {
@@ -53,7 +53,7 @@ func main() {
 	for range nDish {
 		var err error
 
-		var estimation int16
+		var estimation int
 
 		_, err = fmt.Scan(&estimation)
 		if err != nil {
@@ -65,7 +65,7 @@ func main() {
 		heap.Push(&rating, estimation)
 	}
 
-	var numberOfDish int16
+	var numberOfDish int
 
 	_, err = fmt.Scanf("\n%d\n", &numberOfDish)
 	if err != nil {
@@ -74,14 +74,14 @@ func main() {
 		return
 	}
 
-	var result int16
+	var result int
 
 	for range numberOfDish {
 		popped := heap.Pop(&rating)
-		if value, ok := popped.(int16); ok {
+		if value, ok := popped.(int); ok {
 			result = value
 		} else {
-			panic(fmt.Sprintf("expected int16, got %T", popped))
+			panic(fmt.Sprintf("expected int, got %T", popped))
 		}
 	}
 
