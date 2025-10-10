@@ -10,7 +10,6 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("5 + 3 ")
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
 
@@ -35,17 +34,17 @@ func main() {
 
 	switch op {
 	case "+":
-		fmt.Printf(a+b)
+		fmt.Printf("%.2f\n", a+b)
 	case "-":
-		fmt.Printf(a-b)
+		fmt.Printf("%.2f\n", a-b)
 	case "*":
-		fmt.Printf(a*b)
+		fmt.Printf("%.2f\n", a*b)
 	case "/":
 		if b == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Printf( a/b)
+		fmt.Printf("%.2f\n", a/b)
 	default:
 		fmt.Println("Invalid operation")
 	}
