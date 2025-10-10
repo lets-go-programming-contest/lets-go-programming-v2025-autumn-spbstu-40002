@@ -25,16 +25,20 @@ func main() {
 		return
 	}
 
-	h := &maxheap.MaxHeap{}
-	heap.Init(h)
+	dishHeap := &maxheap.MaxHeap{}
+	heap.Init(dishHeap)
 
 	for i := range dishCount {
-		heap.Push(h, ratings[i])
+		heap.Push(dishHeap, ratings[i])
 	}
 
 	selected := 0
 	for range kthIndex {
-		selected = heap.Pop(h).(int)
+		val, ok := heap.Pop(dishHeap).(int)
+		if !ok {
+			return
+		}
+		selected = val
 	}
 
 	fmt.Println(selected)
