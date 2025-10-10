@@ -3,36 +3,9 @@ package main
 import (
 	"container/heap"
 	"fmt"
+
+	"github.com/victor.kim/task-2-2/heaputils"
 )
-
-type IntHeap []int
-
-func (h *IntHeap) Len() int           { return len(*h) }
-func (h *IntHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
-func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
-
-func (h *IntHeap) Push(x interface{}) {
-	value, ok := x.(int)
-	if !ok {
-		panic("IntHeap: Push expects int")
-	}
-
-	*h = append(*h, value)
-}
-
-func (h *IntHeap) Pop() interface{} {
-	oldHeap := *h
-	heapSize := len(oldHeap)
-
-	if heapSize == 0 {
-		return nil
-	}
-
-	lastElement := oldHeap[heapSize-1]
-	*h = oldHeap[:heapSize-1]
-
-	return lastElement
-}
 
 func main() {
 	var total int
@@ -40,9 +13,9 @@ func main() {
 		return
 	}
 
-	array := make([]int, total)
-	for index := range array {
-		if _, err := fmt.Scan(&array[index]); err != nil {
+	arr := make([]int, total)
+	for i := range arr {
+		if _, err := fmt.Scan(&arr[i]); err != nil {
 			return
 		}
 	}
@@ -52,19 +25,19 @@ func main() {
 		return
 	}
 
-	minHeap := &IntHeap{}
-	heap.Init(minHeap)
+	heapInst := &heaputils.IntHeap{}
+	heap.Init(heapInst)
 
-	for index := range array[:kth] {
-		heap.Push(minHeap, array[index])
+	for i := range arr[:kth] {
+		heap.Push(heapInst, arr[i])
 	}
 
-	for _, value := range array[kth:] {
-		if value > (*minHeap)[0] {
-			heap.Pop(minHeap)
-			heap.Push(minHeap, value)
+	for _, v := range arr[kth:] {
+		if v > (*heapInst)[0] {
+			heap.Pop(heapInst)
+			heap.Push(heapInst, v)
 		}
 	}
 
-	fmt.Println((*minHeap)[0])
+	fmt.Println((*heapInst)[0])
 }
