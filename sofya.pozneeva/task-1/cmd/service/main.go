@@ -7,7 +7,7 @@ func calculate(a int, b int, operand rune) interface{} {
 	case '/':
 		if b == 0 {
 
-		return "Division by zero"
+			return "Division by zero"
 		}
 		return a / b
 	case '+':
