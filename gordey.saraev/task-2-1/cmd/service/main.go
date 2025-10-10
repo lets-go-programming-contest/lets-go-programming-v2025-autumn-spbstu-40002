@@ -38,9 +38,11 @@ func (tr *TemperatureRange) Update(operator string, temperature int) error {
 	if operator != ">=" && operator != "<=" {
 		return ErrInvalidOperator
 	}
+
 	if temperature < minTemperatureConditioner || temperature > maxTemperatureConditioner {
 		return ErrTemperatureOutOfRange
 	}
+
 	switch operator {
 	case ">=":
 		if temperature > tr.minTemp {
@@ -51,6 +53,7 @@ func (tr *TemperatureRange) Update(operator string, temperature int) error {
 			tr.maxTemp = temperature
 		}
 	}
+
 	return nil
 }
 
@@ -58,6 +61,7 @@ func (tr *TemperatureRange) GetResult() int {
 	if tr.minTemp <= tr.maxTemp {
 		return tr.minTemp
 	}
+
 	return -1
 }
 
@@ -99,6 +103,7 @@ func main() {
 
 	for range make([]struct{}, departments) {
 		var employees int
+
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println(ErrReadingEmployees)
