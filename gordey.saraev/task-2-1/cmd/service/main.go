@@ -36,15 +36,11 @@ func NewTemperatureRange() *TemperatureRange {
 
 func (tr *TemperatureRange) Update(operator string, temperature int) error {
 	if operator != ">=" && operator != "<=" {
-
 		return ErrInvalidOperator
 	}
-
 	if temperature < minTemperatureConditioner || temperature > maxTemperatureConditioner {
-
 		return ErrTemperatureOutOfRange
 	}
-
 	switch operator {
 	case ">=":
 		if temperature > tr.minTemp {
@@ -55,16 +51,13 @@ func (tr *TemperatureRange) Update(operator string, temperature int) error {
 			tr.maxTemp = temperature
 		}
 	}
-
 	return nil
 }
 
 func (tr *TemperatureRange) GetResult() int {
 	if tr.minTemp <= tr.maxTemp {
-
 		return tr.minTemp
 	}
-
 	return -1
 }
 
@@ -77,13 +70,11 @@ func processDepartment(employees int) error {
 
 		_, err := fmt.Scanln(&operator, &temperature)
 		if err != nil {
-
 			return ErrReadingInput
 		}
 
 		err = tempRange.Update(operator, temperature)
 		if err != nil {
-
 			return err
 		}
 
@@ -98,13 +89,11 @@ func main() {
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
 		fmt.Println(ErrReadingDepartments)
-
 		return
 	}
 
 	if departments < minDepartments || departments > maxDepartments {
 		fmt.Println("Departments is out of range [1, 1000]")
-
 		return
 	}
 
@@ -113,20 +102,17 @@ func main() {
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println(ErrReadingEmployees)
-
 			return
 		}
 
 		if employees < minEmployees || employees > maxEmployees {
 			fmt.Println("Employees is out of range [1, 1000]")
-
 			return
 		}
 
 		err = processDepartment(employees)
 		if err != nil {
 			fmt.Println(err)
-
 			return
 		}
 	}
