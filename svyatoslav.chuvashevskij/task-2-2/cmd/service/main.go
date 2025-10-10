@@ -2,32 +2,13 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
+
+	. "task-2-2/internal/intheap"
 )
 
-type IntHeap []int
-
-func (h *IntHeap) Len() int           { return len(*h) }
-func (h *IntHeap) Less(i, j int) bool { return (*h)[j] < (*h)[i] }
-func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
-
-func (h *IntHeap) Push(x any) {
-	val, ok := x.(int)
-	if !ok {
-		return
-	}
-
-	*h = append(*h, val)
-}
-
-func (h *IntHeap) Pop() any {
-	old := *h
-	n := len(old)
-	x := old[n-1]
-	*h = old[:n-1]
-
-	return x
-}
+var ErrInvalidPreferredNumber = errors.New("preferred number is more than number of dishes")
 
 func main() {
 	numberOfDishes := 0
@@ -64,7 +45,7 @@ func main() {
 	}
 
 	if preferredNumber > numberOfDishes {
-		fmt.Println("Error: preferred number is more than number of dishes")
+		fmt.Println("Error:", ErrInvalidPreferredNumber)
 
 		return
 	}
