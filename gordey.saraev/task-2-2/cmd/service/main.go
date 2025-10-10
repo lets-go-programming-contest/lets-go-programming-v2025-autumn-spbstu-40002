@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/heap"
-
 	"fmt"
 
 	workerHeap "github.com/F0LY/task-2-2/internal/heap"
@@ -31,6 +30,7 @@ func main() {
 	}
 
 	var result int
+
 	for range preferenceK {
 		popped := heap.Pop(maxHeap)
 		if val, ok := popped.(int); ok {
