@@ -1,88 +1,133 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
-func processDepartment(employees int) {
-	minTemp := 15
-	maxTemp := 30
+const (
+	minTemperatureConditioner = 15
+	maxTemperatureConditioner = 30
+	minDepartments            = 1
+	maxDepartments            = 1000
+	minEmployees              = 1
+	maxEmployees              = 1000
+)
 
-	for range employees {
+var (
+	ErrInvalidOperator       = errors.New("invalid operator. Must be '>=' or '<='")
+	ErrTemperatureOutOfRange = errors.New("temperature is out of range [15, 30]")
+	ErrReadingDepartments    = errors.New("error reading departments count")
+	ErrReadingEmployees      = errors.New("error reading employees count")
+	ErrReadingInput          = errors.New("error reading operator and temperature")
+)
+
+type TemperatureRange struct {
+	minTemp int
+	maxTemp int
+}
+
+func NewTemperatureRange() *TemperatureRange {
+	return &TemperatureRange{
+		minTemp: minTemperatureConditioner,
+		maxTemp: maxTemperatureConditioner,
+	}
+}
+
+func (tr *TemperatureRange) Update(operator string, temperature int) error {
+	if operator != ">=" && operator != "<=" {
+
+		return ErrInvalidOperator
+	}
+
+	if temperature < minTemperatureConditioner || temperature > maxTemperatureConditioner {
+
+		return ErrTemperatureOutOfRange
+	}
+
+	switch operator {
+	case ">=":
+		if temperature > tr.minTemp {
+			tr.minTemp = temperature
+		}
+	case "<=":
+		if temperature < tr.maxTemp {
+			tr.maxTemp = temperature
+		}
+	}
+
+	return nil
+}
+
+func (tr *TemperatureRange) GetResult() int {
+	if tr.minTemp <= tr.maxTemp {
+
+		return tr.minTemp
+	}
+
+	return -1
+}
+
+func processDepartment(employees int) error {
+	tempRange := NewTemperatureRange()
+
+	for range make([]struct{}, employees) {
 		var operator string
-
 		var temperature int
 
 		_, err := fmt.Scanln(&operator, &temperature)
 		if err != nil {
-			fmt.Println("Error reading operator and temperature")
 
-			return
+			return ErrReadingInput
 		}
 
-		if operator != ">=" && operator != "<=" {
-			fmt.Println("Invalid operator. Must be '>=' or '<='")
+		err = tempRange.Update(operator, temperature)
+		if err != nil {
 
-			return
+			return err
 		}
 
-		if temperature < 15 || temperature > 30 {
-			fmt.Println("Temperature is out of range [15, 30]")
-
-			return
-		}
-
-		switch operator {
-		case ">=":
-			if temperature > minTemp {
-				minTemp = temperature
-			}
-		case "<=":
-			if temperature < maxTemp {
-				maxTemp = temperature
-			}
-		}
-
-		if minTemp <= maxTemp {
-			fmt.Println(minTemp)
-		} else {
-			fmt.Println(-1)
-		}
+		fmt.Println(tempRange.GetResult())
 	}
+
+	return nil
 }
 
 func main() {
 	var departments int
-
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
-		fmt.Println("Error reading departments count")
+		fmt.Println(ErrReadingDepartments)
 
 		return
 	}
 
-	if departments < 1 || departments > 1000 {
+	if departments < minDepartments || departments > maxDepartments {
 		fmt.Println("Departments is out of range [1, 1000]")
 
 		return
 	}
 
-	for range departments {
+	for range make([]struct{}, departments) {
 		var employees int
-
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
-			fmt.Println("Error reading employees count")
+			fmt.Println(ErrReadingEmployees)
 
 			return
 		}
 
-		if employees < 1 || employees > 1000 {
+		if employees < minEmployees || employees > maxEmployees {
 			fmt.Println("Employees is out of range [1, 1000]")
 
 			return
 		}
 
-		processDepartment(employees)
+		err = processDepartment(employees)
+		if err != nil {
+			fmt.Println(err)
+
+			return
+		}
 	}
 }
