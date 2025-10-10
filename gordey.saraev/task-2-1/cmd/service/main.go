@@ -90,14 +90,17 @@ func processDepartment(employees int) error {
 
 func main() {
 	var departments int
+
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
 		fmt.Println(ErrReadingDepartments)
+
 		return
 	}
 
 	if departments < minDepartments || departments > maxDepartments {
 		fmt.Println("Departments is out of range [1, 1000]")
+
 		return
 	}
 
@@ -107,17 +110,20 @@ func main() {
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println(ErrReadingEmployees)
+
 			return
 		}
 
 		if employees < minEmployees || employees > maxEmployees {
 			fmt.Println("Employees is out of range [1, 1000]")
+
 			return
 		}
 
 		err = processDepartment(employees)
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 	}
