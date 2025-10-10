@@ -30,7 +30,7 @@ func main() {
 
 			return
 		} else if employeesCount < department.MinimumCountEmployees || employeesCount > department.MaximumCountEmployees {
-			fmt.Println(department.ErrcountEmployees)
+			fmt.Println(department.ErrCountEmployees)
 
 			return
 		}
