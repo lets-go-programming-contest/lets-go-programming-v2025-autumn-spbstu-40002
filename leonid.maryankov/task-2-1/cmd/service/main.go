@@ -1,6 +1,45 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+const (
+	MinTemp = 15
+	MaxTemp = 30
+)
+
+type Temperature struct {
+	minTemp int
+	maxTemp int
+}
+
+func (t *Temperature) changeTemp(sign string, temp int) error {
+	switch sign {
+	case ">=":
+		if temp > t.minTemp {
+			t.minTemp = temp
+		}
+	case "<=":
+		if temp < t.maxTemp {
+			t.maxTemp = temp
+		}
+	default:
+		return errors.New("invalid sign")
+	}
+
+	return nil
+}
+
+func (t *Temperature) getTemp() int {
+	if t.minTemp > t.maxTemp {
+
+		return -1
+	}
+
+	return t.minTemp
+}
 
 func main() {
 	var (
@@ -12,7 +51,7 @@ func main() {
 
 	_, err := fmt.Scan(&departments)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("", err)
 
 		return
 	}
@@ -20,41 +59,29 @@ func main() {
 	for departments > 0 {
 		_, err = fmt.Scan(&staff)
 		if err != nil {
-			fmt.Println("Error:", err)
+			fmt.Println("", err)
 
 			return
 		}
 
-		minTemp := 15
-		maxTemp := 30
+		dept := Temperature{
+			minTemp: MinTemp,
+			maxTemp: MaxTemp,
+		}
 
 		for staff > 0 {
 			_, err = fmt.Scan(&sign, &temp)
 			if err != nil {
-				fmt.Println("Error:", err)
+				fmt.Println("", err)
 
 				return
 			}
 
-			switch sign {
-			case ">=":
-				if temp > minTemp {
-					minTemp = temp
-				}
-			case "<=":
-				if temp < maxTemp {
-					maxTemp = temp
-				}
-			default:
-				fmt.Println("Error: invalid sign")
-
-				return
-			}
-
-			if minTemp > maxTemp {
+			err = dept.changeTemp(sign, temp)
+			if err != nil {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(minTemp)
+				fmt.Println(dept.getTemp())
 			}
 
 			staff--
