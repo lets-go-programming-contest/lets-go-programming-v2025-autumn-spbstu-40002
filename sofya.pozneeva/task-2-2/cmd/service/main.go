@@ -23,7 +23,7 @@ func (h *IntHeap) Push(x any) {
 	if val, ok := x.(int16); ok {
 		*h = append(*h, val)
 	} else {
-		fmt.Errorln("Type conversion error ")
+		fmt.Errorf("Type conversion error\n")
 	}	
 }
 
@@ -79,6 +79,8 @@ func main() {
 	for range numberOfDish {
 		if value, ok := heap.Pop(&rating).(int16); ok {
 			result = value
+		}  else {
+			fmt.Errorf("Type conversion error\n")
 		}
 	}
 	
