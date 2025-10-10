@@ -18,8 +18,8 @@ func main() {
 		var maxTemp uint16 = 30
 
 		var nPeople uint16
-		_, err = fmt.Scan(&nPeople)
 
+		_, err = fmt.Scan(&nPeople)
 		if err != nil {
 			fmt.Println("Invalid argument")
 
