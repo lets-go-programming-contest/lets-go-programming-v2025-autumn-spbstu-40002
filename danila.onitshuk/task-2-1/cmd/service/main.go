@@ -14,8 +14,9 @@ func main() {
 		fmt.Println(department.ErrInvalidTypeData)
 
 		return
-	} else if departmentsCount < department.MinimumCountDepartments || departmentsCount > department.MaximumCountDepartments {
-		fmt.Println(department.ErrCountDeparments)
+	} else if departmentsCount < department.MinimumCountDepartments ||
+		departmentsCount > department.MaximumCountDepartments {
+		fmt.Println(department.ErrCountDepartments)
 
 		return
 	}
