@@ -1,51 +1,52 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
-)
+import "fmt"
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
-	input = strings.TrimSpace(input)
+	var firstOperand, secondOperand int
+	var operation string
 
-	parts := strings.Split(input, " ")
-	if len(parts) != 3 {
-		fmt.Println("Invalid input format")
-		return
-	}
-
-	a, err1 := strconv.ParseFloat(parts[0], 64)
-	op := parts[1]
-	b, err2 := strconv.ParseFloat(parts[2], 64)
-
-	if err1 != nil {
+	//Reading the first operand
+	_, err := fmt.Scanln(&firstOperand)
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
-	if err2 != nil {
+
+	//Reading the second operand
+	_, err = fmt.Scanln(&secondOperand)
+	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
-	switch op {
+	//Reading the operation
+	_, err = fmt.Scanln(&operation)
+	if err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
+
+	//Calculating the expression
+	var result int
+	switch operation {
 	case "+":
-		fmt.Printf("%.2f\n", a+b)
+		result = firstOperand + secondOperand
 	case "-":
-		fmt.Printf("%.2f\n", a-b)
+		result = firstOperand - secondOperand
 	case "*":
-		fmt.Printf("%.2f\n", a*b)
+		result = firstOperand * secondOperand
 	case "/":
-		if b == 0 {
+		if secondOperand == 0 {
 			fmt.Println("Division by zero")
 			return
 		}
-		fmt.Printf("%.2f\n", a/b)
+		result = firstOperand / secondOperand
 	default:
 		fmt.Println("Invalid operation")
+		return
 	}
+
+	//Writing the result
+	fmt.Println(result)
 }
