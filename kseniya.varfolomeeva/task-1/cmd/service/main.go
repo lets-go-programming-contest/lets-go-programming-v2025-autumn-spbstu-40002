@@ -9,7 +9,7 @@ func main() {
 	var a int
 	_, err := fmt.Scan(&a)
 	if err != nil {
-		fmt.Println("Error: invalid input for first operand")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
@@ -17,7 +17,7 @@ func main() {
 	var b int
 	_, err = fmt.Scan(&b)
 	if err != nil {
-		fmt.Println("Error: invalid input for second operand")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
@@ -25,7 +25,7 @@ func main() {
 	var operation string
 	_, err = fmt.Scan(&operation)
 	if err != nil {
-		fmt.Println("Error: invalid operation")
+		fmt.Println("Invalid operation")
 		return
 	}
 
@@ -38,11 +38,11 @@ func main() {
 		fmt.Println("Result:", a*b)
 	case "/":
 		if b == 0 {
-			fmt.Println("Error: division by zero")
+			fmt.Println("Division by zero")
 			return
 		}
 		fmt.Println("Result:", a/b)
 	default:
-		fmt.Println("Error: unknown operation")
+		fmt.Println("Invalid operation")
 	}
 }
