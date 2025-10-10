@@ -10,6 +10,8 @@ const (
 	MaxTemp = 30
 )
 
+var errSign = errors.New("invalid sign")
+
 type Temperature struct {
 	minTemp int
 	maxTemp int
@@ -26,7 +28,7 @@ func (t *Temperature) changeTemp(sign string, temp int) error {
 			t.maxTemp = temp
 		}
 	default:
-		return errors.New("invalid sign")
+		return errSign
 	}
 
 	return nil
@@ -34,7 +36,6 @@ func (t *Temperature) changeTemp(sign string, temp int) error {
 
 func (t *Temperature) getTemp() int {
 	if t.minTemp > t.maxTemp {
-
 		return -1
 	}
 
