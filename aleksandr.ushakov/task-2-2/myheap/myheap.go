@@ -1,4 +1,4 @@
-package myHeap
+package myheap
 
 // Heap realization.
 type IntHeap []int
@@ -18,13 +18,14 @@ func (h *IntHeap) Push(x any) {
 
 func (h *IntHeap) Pop() any {
 	old := *h
-	n := len(old)
+	length := len(old)
 
-	if n == 0 {
+	if length == 0 {
 		return nil
 	}
 
-	x := old[n-1]
-	*h = old[0 : n-1]
+	x := old[length-1]
+	*h = old[0 : length-1]
+
 	return x
 }

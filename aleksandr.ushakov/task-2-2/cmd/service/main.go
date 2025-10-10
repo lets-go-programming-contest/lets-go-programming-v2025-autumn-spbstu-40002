@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 
-	"github.com/rachguta/task-2-2/myHeap"
+	"github.com/rachguta/task-2-2/myheap"
 )
 
 const (
@@ -31,8 +31,8 @@ func main() {
 		return
 	}
 
-	markHeap := &myHeap.IntHeap{}
-	*markHeap = make(myHeap.IntHeap, 0, numberOfDishes)
+	markHeap := &myheap.IntHeap{}
+	*markHeap = make(myheap.IntHeap, 0, numberOfDishes)
 	heap.Init(markHeap)
 
 	for range numberOfDishes {
