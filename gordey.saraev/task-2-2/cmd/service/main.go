@@ -2,29 +2,11 @@ package main
 
 import (
 	"container/heap"
+
 	"fmt"
+
+	workerHeap "github.com/F0LY/task-2-2/internal/heap"
 )
-
-type MaxHeap []int
-
-func (h *MaxHeap) Len() int           { return len(*h) }
-func (h *MaxHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
-func (h *MaxHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
-
-func (h *MaxHeap) Push(value interface{}) {
-	if v, ok := value.(int); ok {
-		*h = append(*h, v)
-	}
-}
-
-func (h *MaxHeap) Pop() interface{} {
-	old := *h
-	n := len(old)
-	x := old[n-1]
-	*h = old[:n-1]
-
-	return x
-}
 
 func main() {
 	var dishCount, preferenceK int
@@ -43,19 +25,18 @@ func main() {
 		return
 	}
 
-	maxHeap := &MaxHeap{}
-	heap.Init(maxHeap)
-
+	maxHeap := workerHeap.NewMaxHeap()
 	for _, rating := range preferences {
 		heap.Push(maxHeap, rating)
 	}
 
 	var result int
-
 	for range preferenceK {
 		popped := heap.Pop(maxHeap)
 		if val, ok := popped.(int); ok {
 			result = val
+		} else {
+			panic("heap.Pop returned non-int value")
 		}
 	}
 
