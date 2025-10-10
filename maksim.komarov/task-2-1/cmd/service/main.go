@@ -2,36 +2,45 @@ package main
 
 import "fmt"
 
+const (
+	minTemp = 15
+	maxTemp = 30
+)
+
 func main() {
-	const minT = 15
-	const maxT = 30
-
-	var n, k int
-	if _, err := fmt.Scan(&n); err != nil {
-		return
-	}
-	if _, err := fmt.Scan(&k); err != nil {
+	var departmentCount int
+	_, err := fmt.Scan(&departmentCount)
+	if err != nil {
 		return
 	}
 
-	for dept := 0; dept < n; dept++ {
-		low, high := minT, maxT
+	for range departmentCount {
+		var employeesCount int
+		_, err = fmt.Scan(&employeesCount)
+		if err != nil {
+			return
+		}
 
-		for i := 0; i < k; i++ {
-			var op string
-			var v int
-			if _, err := fmt.Scan(&op, &v); err != nil {
+		low := minTemp
+		high := maxTemp
+
+		for range employeesCount {
+			var operatorSign string
+			var value int
+
+			_, err = fmt.Scan(&operatorSign, &value)
+			if err != nil {
 				return
 			}
 
-			switch op {
+			switch operatorSign {
 			case ">=":
-				if v > low {
-					low = v
+				if value > low {
+					low = value
 				}
 			case "<=":
-				if v < high {
-					high = v
+				if value < high {
+					high = value
 				}
 			}
 
