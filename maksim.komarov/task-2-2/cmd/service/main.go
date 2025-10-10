@@ -14,6 +14,7 @@ func main() {
 	}
 
 	ratings := make([]int, dishCount)
+
 	for i := range dishCount {
 		if _, err := fmt.Scan(&ratings[i]); err != nil {
 			return
@@ -33,11 +34,13 @@ func main() {
 	}
 
 	selected := 0
+
 	for range kthIndex {
 		val, ok := heap.Pop(dishHeap).(int)
 		if !ok {
 			return
 		}
+
 		selected = val
 	}
 
