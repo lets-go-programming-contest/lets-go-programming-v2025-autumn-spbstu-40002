@@ -25,6 +25,12 @@ func (h *MinHeap) Push(elem any) {
 }
 
 func (h *MinHeap) Pop() any {
+	if h.Len() == 0 {
+		fmt.Println(myerrors.ErrNothingToDelete)
+
+		return nil
+	}
+
 	oldHeap := *h
 	lenOldHeap := len(oldHeap)
 	lastElem := oldHeap[lenOldHeap-1]
