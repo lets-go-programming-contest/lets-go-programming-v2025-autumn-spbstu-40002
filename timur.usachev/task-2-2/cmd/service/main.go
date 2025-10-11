@@ -70,8 +70,7 @@ func main() {
 
 	for j := range make([]struct{}, count-kth) {
 		val := values[kth+j]
-
-		// убедимся, что слайс не пустой перед доступом
+		
 		if minHeap.Len() == 0 {
 			continue
 		}
