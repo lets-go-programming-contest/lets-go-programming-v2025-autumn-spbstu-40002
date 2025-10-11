@@ -15,36 +15,49 @@ const (
 
 var errInvalidOp = errors.New("invalid op")
 
-func updateBounds(low, high int, operator string, value int) (int, int, error) {
+type TemperatureRange struct {
+	low  int
+	high int
+}
+
+func (t TemperatureRange) currentLow() int {
+	return t.low
+}
+
+func (t TemperatureRange) isInvalid() bool {
+	return t.low > t.high
+}
+
+func (t *TemperatureRange) update(operator string, value int) error {
 	switch operator {
 	case ">=":
-		if value > low {
-			low = value
+		if value > t.low {
+			t.low = value
 		}
 	case "<=":
-		if value < high {
-			high = value
+		if value < t.high {
+			t.high = value
 		}
 	default:
-		return low, high, errInvalidOp
+		return errInvalidOp
 	}
 
-	if low < MinTemp {
-		low = MinTemp
+	if t.low < MinTemp {
+		t.low = MinTemp
 	}
 
-	if high > MaxTemp {
-		high = MaxTemp
+	if t.high > MaxTemp {
+		t.high = MaxTemp
 	}
 
-	return low, high, nil
+	return nil
 }
 
 func main() {
 	var numCases int
 
 	if _, err := fmt.Fscanln(os.Stdin, &numCases); err != nil || numCases < 1 || numCases > MaxN {
-		fmt.Println(-1)
+		fmt.Println("invalid number of cases")
 
 		return
 	}
@@ -53,14 +66,12 @@ func main() {
 		var employees int
 
 		if _, err := fmt.Fscanln(os.Stdin, &employees); err != nil || employees < 1 || employees > MaxK {
-			fmt.Println(-1)
+			fmt.Println("invalid number of employees")
 
 			return
 		}
 
-		low := MinTemp
-
-		high := MaxTemp
+		tempRange := TemperatureRange{low: MinTemp, high: MaxTemp}
 
 		for range make([]struct{}, employees) {
 			var (
@@ -69,24 +80,21 @@ func main() {
 			)
 
 			if _, err := fmt.Fscanln(os.Stdin, &operator, &value); err != nil {
-				fmt.Println(-1)
+				fmt.Println("input error")
 
 				return
 			}
 
-			var uerr error
-			low, high, uerr = updateBounds(low, high, operator, value)
-
-			if uerr != nil {
-				fmt.Println(-1)
+			if err := tempRange.update(operator, value); err != nil {
+				fmt.Println("invalid operation")
 
 				return
 			}
 
-			if low > high {
-				fmt.Println(-1)
+			if tempRange.isInvalid() {
+				fmt.Println("temperature range invalid")
 			} else {
-				fmt.Println(low)
+				fmt.Println(tempRange.currentLow())
 			}
 		}
 	}
