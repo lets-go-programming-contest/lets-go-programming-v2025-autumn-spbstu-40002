@@ -6,18 +6,20 @@ import (
 	"os"
 )
 
-type IntHeap []int
+type IntHeap struct {
+	data []int
+}
 
 func (h *IntHeap) Len() int {
-	return len(*h)
+	return len(h.data)
 }
 
 func (h *IntHeap) Less(i, j int) bool {
-	return (*h)[i] < (*h)[j]
+	return h.data[i] < h.data[j]
 }
 
 func (h *IntHeap) Swap(i, j int) {
-	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+	h.data[i], h.data[j] = h.data[j], h.data[i]
 }
 
 func (h *IntHeap) Push(x interface{}) {
@@ -25,35 +27,38 @@ func (h *IntHeap) Push(x interface{}) {
 	if !ok {
 		return
 	}
-
-	*h = append(*h, v)
+	h.data = append(h.data, v)
 }
 
 func (h *IntHeap) Pop() interface{} {
-	old := *h
-	n := len(old)
-	x := old[n-1]
-	*h = old[:n-1]
-
+	if len(h.data) == 0 {
+		return nil
+	}
+	n := len(h.data)
+	x := h.data[n-1]
+	h.data = h.data[:n-1]
 	return x
 }
 
 func main() {
 	var count int
 	if _, err := fmt.Fscan(os.Stdin, &count); err != nil || count <= 0 {
-		return
+		fmt.Fprintln(os.Stderr, "invalid input: count must be a positive integer")
+		os.Exit(1)
 	}
 
 	values := make([]int, count)
 	for i := range make([]struct{}, count) {
 		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
-			return
+			fmt.Fprintln(os.Stderr, "invalid input: failed to read values")
+			os.Exit(1)
 		}
 	}
 
 	var kth int
 	if _, err := fmt.Fscan(os.Stdin, &kth); err != nil || kth <= 0 || kth > count {
-		return
+		fmt.Fprintln(os.Stderr, "invalid input: k must be between 1 and count")
+		os.Exit(1)
 	}
 
 	minHeap := &IntHeap{}
@@ -66,12 +71,22 @@ func main() {
 	for j := range make([]struct{}, count-kth) {
 		val := values[kth+j]
 
-		if val > (*minHeap)[0] {
+		// убедимся, что слайс не пустой перед доступом
+		if minHeap.Len() == 0 {
+			continue
+		}
+
+		if val > minHeap.data[0] {
 			heap.Pop(minHeap)
 			heap.Push(minHeap, val)
 		}
 	}
 
-	top := (*minHeap)[0]
+	if minHeap.Len() == 0 {
+		fmt.Fprintln(os.Stderr, "no result")
+		os.Exit(1)
+	}
+
+	top := minHeap.data[0]
 	fmt.Println(top)
 }
