@@ -54,6 +54,7 @@ func main() {
 
 	if _, err := fmt.Fscanln(os.Stdin, &numCases); err != nil || numCases < 1 || numCases > MaxN {
 		fmt.Println("invalid number of cases")
+
 		return
 	}
 
@@ -62,6 +63,7 @@ func main() {
 
 		if _, err := fmt.Fscanln(os.Stdin, &employees); err != nil || employees < 1 || employees > MaxK {
 			fmt.Println("invalid number of employees")
+
 			return
 		}
 
@@ -75,11 +77,13 @@ func main() {
 
 			if _, err := fmt.Fscanln(os.Stdin, &operator, &value); err != nil {
 				fmt.Println("input error")
+
 				return
 			}
 
 			if err := tempRange.update(operator, value); err != nil {
 				fmt.Println("invalid operation")
+
 				return
 			}
 
