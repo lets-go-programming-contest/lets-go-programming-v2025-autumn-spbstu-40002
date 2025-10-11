@@ -20,14 +20,6 @@ type TemperatureRange struct {
 	high int
 }
 
-func (t TemperatureRange) currentLow() int {
-	return t.low
-}
-
-func (t TemperatureRange) isInvalid() bool {
-	return t.low > t.high
-}
-
 func (t *TemperatureRange) update(operator string, value int) error {
 	switch operator {
 	case ">=":
@@ -53,12 +45,15 @@ func (t *TemperatureRange) update(operator string, value int) error {
 	return nil
 }
 
+func (t *TemperatureRange) isInvalid() bool {
+	return t.low > t.high
+}
+
 func main() {
 	var numCases int
 
 	if _, err := fmt.Fscanln(os.Stdin, &numCases); err != nil || numCases < 1 || numCases > MaxN {
 		fmt.Println("invalid number of cases")
-
 		return
 	}
 
@@ -67,7 +62,6 @@ func main() {
 
 		if _, err := fmt.Fscanln(os.Stdin, &employees); err != nil || employees < 1 || employees > MaxK {
 			fmt.Println("invalid number of employees")
-
 			return
 		}
 
@@ -81,20 +75,18 @@ func main() {
 
 			if _, err := fmt.Fscanln(os.Stdin, &operator, &value); err != nil {
 				fmt.Println("input error")
-
 				return
 			}
 
 			if err := tempRange.update(operator, value); err != nil {
 				fmt.Println("invalid operation")
-
 				return
 			}
 
 			if tempRange.isInvalid() {
-				fmt.Println("temperature range invalid")
+				fmt.Println(-1)
 			} else {
-				fmt.Println(tempRange.currentLow())
+				fmt.Println(tempRange.low)
 			}
 		}
 	}
