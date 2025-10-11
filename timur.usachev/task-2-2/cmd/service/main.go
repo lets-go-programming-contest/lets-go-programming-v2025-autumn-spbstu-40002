@@ -43,7 +43,7 @@ func (h *IntHeap) Pop() interface{} {
 	return x
 }
 
-func main() {
+func readInput() ([]int, int) {
 	var count int
 	if _, err := fmt.Fscan(os.Stdin, &count); err != nil || count <= 0 {
 		fmt.Fprintln(os.Stderr, "invalid input: count must be a positive integer")
@@ -64,6 +64,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	return values, kth
+}
+
+func main() {
+	values, kth := readInput()
+
 	minHeap := &IntHeap{data: []int{}}
 	heap.Init(minHeap)
 
@@ -71,7 +77,7 @@ func main() {
 		heap.Push(minHeap, values[i])
 	}
 
-	for j := range make([]struct{}, count-kth) {
+	for j := range make([]struct{}, len(values)-kth) {
 		val := values[kth+j]
 
 		if minHeap.Len() == 0 {
