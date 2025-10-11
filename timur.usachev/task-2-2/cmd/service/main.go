@@ -27,6 +27,7 @@ func (h *IntHeap) Push(x interface{}) {
 	if !ok {
 		return
 	}
+
 	h.data = append(h.data, v)
 }
 
@@ -34,9 +35,11 @@ func (h *IntHeap) Pop() interface{} {
 	if len(h.data) == 0 {
 		return nil
 	}
+
 	n := len(h.data)
 	x := h.data[n-1]
 	h.data = h.data[:n-1]
+
 	return x
 }
 
@@ -61,7 +64,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	minHeap := &IntHeap{}
+	minHeap := &IntHeap{data: []int{}}
 	heap.Init(minHeap)
 
 	for i := range make([]struct{}, kth) {
@@ -70,7 +73,7 @@ func main() {
 
 	for j := range make([]struct{}, count-kth) {
 		val := values[kth+j]
-		
+
 		if minHeap.Len() == 0 {
 			continue
 		}
