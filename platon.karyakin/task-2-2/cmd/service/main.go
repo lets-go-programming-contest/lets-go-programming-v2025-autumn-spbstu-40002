@@ -16,7 +16,7 @@ func main() {
 
 	if itemCount < 1 || itemCount > 10000 {
 		fmt.Fprintln(os.Stderr, ktherr.ErrInvalidItemCount)
-		
+
 		return
 	}
 
