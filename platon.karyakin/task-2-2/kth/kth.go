@@ -23,16 +23,17 @@ func (h *minHeap) Push(x any) {
 
 func (h *minHeap) Pop() any {
 	old := *h
-	n := len(old)
-	if n == 0 {
+	oldLen := len(old)
+
+	if oldLen == 0 {
 		return nil
 	}
 
-	x := old[n-1]
-	*h = old[:n-1]
+	x := old[oldLen-1]
+	*h = old[:oldLen-1]
 
 	return x
-}
+
 
 func KthMostPreferred(values []int, position int) (int, error) {
 	if position < 1 || position > len(values) {
