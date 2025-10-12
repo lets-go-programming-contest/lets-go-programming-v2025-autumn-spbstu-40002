@@ -33,7 +33,7 @@ func (h *minHeap) Pop() any {
 	*h = old[:oldLen-1]
 
 	return x
-
+}
 
 func KthMostPreferred(values []int, position int) (int, error) {
 	if position < 1 || position > len(values) {
