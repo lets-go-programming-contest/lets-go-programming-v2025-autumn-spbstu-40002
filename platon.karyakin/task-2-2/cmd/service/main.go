@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/rekottt/task-2-2/kth"
+	"github.com/rekottt/task-2-2/ktherr"
 )
 
 func main() {
@@ -14,6 +15,7 @@ func main() {
 	}
 
 	if itemCount < 1 || itemCount > 10000 {
+		fmt.Fprintln(os.Stderr, ktherr.ErrInvalidItemCount)
 		return
 	}
 
