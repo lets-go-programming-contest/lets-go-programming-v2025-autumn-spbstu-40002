@@ -2,12 +2,8 @@ package kth
 
 import (
 	"container/heap"
-	"errors"
-)
 
-var (
-	ErrPositionOutOfRange = errors.New("position out of range")
-	ErrEmptyResult        = errors.New("empty result")
+	"github.com/rekottt/task-2-2/ktherr"
 )
 
 type minHeap []int
@@ -28,6 +24,9 @@ func (h *minHeap) Push(x any) {
 func (h *minHeap) Pop() any {
 	old := *h
 	n := len(old)
+	if n == 0 {
+		return nil
+	}
 
 	x := old[n-1]
 	*h = old[:n-1]
@@ -37,7 +36,7 @@ func (h *minHeap) Pop() any {
 
 func KthMostPreferred(values []int, position int) (int, error) {
 	if position < 1 || position > len(values) {
-		return 0, ErrPositionOutOfRange
+		return 0, ktherr.ErrPositionOutOfRange
 	}
 
 	minH := &minHeap{}
@@ -52,7 +51,7 @@ func KthMostPreferred(values []int, position int) (int, error) {
 	}
 
 	if minH.Len() == 0 {
-		return 0, ErrEmptyResult
+		return 0, ktherr.ErrEmptyResult
 	}
 
 	return (*minH)[0], nil
