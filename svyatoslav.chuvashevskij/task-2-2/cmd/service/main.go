@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"task-2-2/internal/intheap"
+	"github.com/Svyatoslav2324/task-2-2/internal/intheap"
 )
 
 var ErrInvalidPreferredNumber = errors.New("preferred number is more than number of dishes")
