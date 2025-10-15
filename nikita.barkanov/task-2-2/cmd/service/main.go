@@ -26,18 +26,21 @@ func main() {
 	dishNum, err := readDishNumber()
 	if err != nil {
 		fmt.Println("Error:", err)
+
 		return
 	}
 
 	mainHeap, err := readAndCreateHeap(dishNum)
 	if err != nil {
 		fmt.Println("Error:", err)
+
 		return
 	}
 
 	kValue, err := readKValue(dishNum)
 	if err != nil {
 		fmt.Println("Error:", err)
+
 		return
 	}
 
