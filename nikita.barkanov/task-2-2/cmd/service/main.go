@@ -22,48 +22,77 @@ var (
 )
 
 func main() {
+
+	dishNum, err := readDishNumber()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	mainHeap, err := readAndCreateHeap(dishNum)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	kValue, err := readKValue(dishNum)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	result := clearHeapUntilK(mainHeap, dishNum, kValue)
+	fmt.Println(result)
+
+}
+
+func readDishNumber() (int, error) {
 	var dishNum int
 
 	_, err := fmt.Scan(&dishNum)
 	if err != nil || dishNum > maxDishNum || dishNum < minDishNum {
-		fmt.Println("Error: ", errIncorrectDishNum)
-
-		return
+		return 0, errIncorrectDishNum
 	}
 
+	return dishNum, nil
+}
+
+func readAndCreateHeap(dishNum int) (*minHeap.IntHeap, error) {
 	mainHeap := &minHeap.IntHeap{}
 	heap.Init(mainHeap)
 
-	for range dishNum {
+	for i := 0; i < dishNum; i++ {
 		var curRating int
 		_, err := fmt.Scan(&curRating)
 
 		if err != nil || curRating > maxDishRating || curRating < minDishRating {
-			fmt.Println("Error: ", errIncorrectDishRating)
-
-			return
+			return nil, errIncorrectDishRating
 		}
-
 		heap.Push(mainHeap, curRating)
-
 	}
 
+	return mainHeap, nil
+}
+
+func readKValue(dishNum int) (int, error) {
 	var kValue int
+	_, err := fmt.Scan(&kValue)
 
-	_, err = fmt.Scan(&kValue)
 	if err != nil || kValue > dishNum || kValue < 1 {
-		fmt.Println("Error: ", errIncorrectK)
-
-		return
+		return 0, errIncorrectK
 	}
 
-	var resultRating interface{}
+	return kValue, nil
+}
+
+func clearHeapUntilK(mainHeap *minHeap.IntHeap, dishNum, kValue int) interface{} {
+	var result interface{}
 
 	for range dishNum - kValue + 1 {
 		if mainHeap.Len() > 0 {
-			resultRating = heap.Pop(mainHeap)
+			result = heap.Pop(mainHeap)
 		}
 	}
 
-	fmt.Println(resultRating)
+	return result
 }
