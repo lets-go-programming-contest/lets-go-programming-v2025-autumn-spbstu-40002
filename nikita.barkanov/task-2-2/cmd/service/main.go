@@ -22,7 +22,6 @@ var (
 )
 
 func main() {
-
 	dishNum, err := readDishNumber()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -46,7 +45,6 @@ func main() {
 
 	result := clearHeapUntilK(mainHeap, dishNum, kValue)
 	fmt.Println(result)
-
 }
 
 func readDishNumber() (int, error) {
@@ -64,13 +62,14 @@ func readAndCreateHeap(dishNum int) (*minHeap.IntHeap, error) {
 	mainHeap := &minHeap.IntHeap{}
 	heap.Init(mainHeap)
 
-	for i := 0; i < dishNum; i++ {
+	for range dishNum {
 		var curRating int
 		_, err := fmt.Scan(&curRating)
 
 		if err != nil || curRating > maxDishRating || curRating < minDishRating {
 			return nil, errIncorrectDishRating
 		}
+
 		heap.Push(mainHeap, curRating)
 	}
 
