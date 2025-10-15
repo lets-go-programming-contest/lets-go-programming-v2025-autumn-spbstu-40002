@@ -37,6 +37,7 @@ func main() {
 	for range dishNum {
 		var curRating int
 		_, err := fmt.Scan(&curRating)
+
 		if err != nil || curRating > maxDishRating || curRating < minDishRating {
 			fmt.Println("Error: ", errIncorrectDishRating)
 
@@ -47,10 +48,10 @@ func main() {
 
 	}
 
-	var k int
+	var kValue int
 
-	_, err = fmt.Scan(&k)
-	if err != nil || k > dishNum || k < 1 {
+	_, err = fmt.Scan(&kValue)
+	if err != nil || kValue > dishNum || kValue < 1 {
 		fmt.Println("Error: ", errIncorrectK)
 
 		return
@@ -58,13 +59,11 @@ func main() {
 
 	var resultRating interface{}
 
-	for range dishNum - k + 1 {
+	for range dishNum - kValue + 1 {
 		if mainHeap.Len() > 0 {
 			resultRating = heap.Pop(mainHeap)
 		}
-
 	}
 
 	fmt.Println(resultRating)
-
 }
