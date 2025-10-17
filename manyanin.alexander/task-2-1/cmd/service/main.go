@@ -51,16 +51,18 @@ func main() {
 
 		for range workers {
 			var operator string
+			var temp int
+
 			_, err = fmt.Scan(&operator)
 			if err != nil {
 				return
 			}
 
-			var temp int
 			_, err = fmt.Scan(&temp)
 			if err != nil {
 				return
 			}
+
 			minTemp, maxTemp = findBestTemp(minTemp, maxTemp, operator, temp)
 
 			if minTemp <= maxTemp {
