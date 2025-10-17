@@ -9,6 +9,8 @@ import (
 	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
 )
 
+const filePerm = 0o600
+
 func ensureOutputDir(path string) error {
 	dir := filepath.Dir(path)
 
@@ -29,7 +31,7 @@ func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
 		return fmt.Errorf("couldn't encode in JSON: %w", err)
 	}
 
-	if err := os.WriteFile(filePath, jsonData, 0600); err != nil {
+	if err := os.WriteFile(filePath, jsonData, filePerm); err != nil {
 		return fmt.Errorf("couldn't write to a file: %w", err)
 	}
 
