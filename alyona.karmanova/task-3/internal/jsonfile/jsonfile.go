@@ -10,7 +10,6 @@ import (
 )
 
 func ensureOutputDir(path string) error {
-
 	dir := filepath.Dir(path)
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
@@ -36,5 +35,4 @@ func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
 	}
 
 	return nil
-
 }
