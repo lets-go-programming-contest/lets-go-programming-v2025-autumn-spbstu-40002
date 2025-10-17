@@ -22,6 +22,7 @@ func WriteToJSON(data []Output, outputPath string) error {
 	if err != nil {
 		return errFileCreating
 	}
+
 	defer func() {
 		if err = file.Close(); err != nil {
 			panic(err)
