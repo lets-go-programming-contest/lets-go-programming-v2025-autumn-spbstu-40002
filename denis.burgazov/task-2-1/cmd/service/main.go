@@ -8,9 +8,12 @@ func parse(a any, errText string) bool {
 	_, err := fmt.Scanln(a)
 	if err != nil {
 		fmt.Println(errText)
+
 		var errBuf string
+
 		_, _ = fmt.Scanln(&errBuf)
 	}
+
 	return err == nil
 }
 
@@ -45,6 +48,7 @@ func main() {
 
 			if minTemp == -1 {
 				fmt.Println(-1)
+
 				continue
 			}
 
@@ -63,11 +67,11 @@ func main() {
 				}
 			default:
 				fmt.Println("Invalid input")
+
 				return
 			}
 
 			fmt.Println(minTemp)
 		}
 	}
-
 }
