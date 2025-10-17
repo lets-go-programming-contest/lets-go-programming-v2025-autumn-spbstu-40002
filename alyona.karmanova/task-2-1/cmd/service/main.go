@@ -26,6 +26,7 @@ func main() {
 	_, err := fmt.Scan(&countDepartment)
 
 	if err != nil || !isDateCorrect(countDepartment) {
+		fmt.Println("invalid number of departments")
 		return
 	}
 
@@ -33,13 +34,14 @@ func main() {
 		_, err = fmt.Scan(&countPeople)
 
 		if err != nil || !isDateCorrect(countPeople) {
+			fmt.Println("invalid number of employees")
 			return
 		}
 
 		room := officestruct.Office{
-			СurrentMax:  MaxTempConst,
-			СurrentMin:  MinTempConst,
-			СurrentTemp: MinTempConst,
+			CurrentMax:  MaxTempConst,
+			CurrentMin:  MinTempConst,
+			CurrentTemp: MinTempConst,
 		}
 
 		for range countPeople {
