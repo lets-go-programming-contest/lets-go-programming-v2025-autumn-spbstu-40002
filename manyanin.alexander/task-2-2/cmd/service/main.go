@@ -51,37 +51,55 @@ var (
 	ErrIncorrectK        = errors.New("incorrect k-value")
 )
 
-func main() {
+func readDishNumber() (int, error) {
 	var dishNum int
 
 	_, err := fmt.Scan(&dishNum)
-	if err != nil || dishNum > MaxDishNum || dishNum < MinDishNum {
-		fmt.Printf("Error reading input: %v\n", ErrIncorrectDishNum)
-
-		return
+	if err != nil {
+		return 0, fmt.Errorf("error reading input: %w", err)
 	}
 
+	if dishNum > MaxDishNum || dishNum < MinDishNum {
+		return 0, ErrIncorrectDishNum
+	}
+
+	return dishNum, nil
+}
+
+func readDishes(dishNum int) ([]int, error) {
 	dishes := make([]int, dishNum)
+
 	for i := range dishNum {
 		_, err := fmt.Scan(&dishes[i])
-		if err != nil || dishes[i] > MaxDishRating || dishes[i] < MinDishRating {
-			fmt.Printf("Error reading input: %v\n", ErrIncorrectDishRate)
+		if err != nil {
+			return nil, fmt.Errorf("error reading input: %w", err)
+		}
 
-			return
+		if dishes[i] > MaxDishRating || dishes[i] < MinDishRating {
+			return nil, ErrIncorrectDishRate
 		}
 	}
 
+	return dishes, nil
+}
+
+func readKValue(dishNum int) (int, error) {
 	var kValue int
 
-	_, err = fmt.Scan(&kValue)
-	if err != nil || kValue > dishNum || kValue < 1 {
-		fmt.Printf("Error reading input: %v\n", ErrIncorrectK)
-
-		return
+	_, err := fmt.Scan(&kValue)
+	if err != nil {
+		return 0, fmt.Errorf("error reading input: %w", err)
 	}
 
-	intHeap := &IntHeap{}
+	if kValue > dishNum || kValue < 1 {
+		return 0, ErrIncorrectK
+	}
 
+	return kValue, nil
+}
+
+func findKLargest(dishes []int, kValue int) int {
+	intHeap := &IntHeap{}
 	heap.Init(intHeap)
 
 	for _, dish := range dishes {
@@ -101,5 +119,28 @@ func main() {
 		result = value
 	}
 
+	return result
+}
+
+func main() {
+	dishNum, err := readDishNumber()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	dishes, err := readDishes(dishNum)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	kValue, err := readKValue(dishNum)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	result := findKLargest(dishes, kValue)
 	fmt.Println(result)
 }
