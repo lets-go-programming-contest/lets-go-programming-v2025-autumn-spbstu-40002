@@ -35,6 +35,7 @@ func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error 
 	}
 
 	valStr := strings.ReplaceAll(strings.TrimSpace(aux.Value), ",", ".")
+
 	val, err := strconv.ParseFloat(valStr, 64)
 	if err != nil {
 		return fmt.Errorf("couldn't parse Value: %w", err)
