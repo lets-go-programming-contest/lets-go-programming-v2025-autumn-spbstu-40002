@@ -21,7 +21,7 @@ func ensureOutputDir(path string) error {
 
 func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
 	if err := ensureOutputDir(filePath); err != nil {
-		return err
+		return fmt.Errorf("trouble with JSON: %w", err)
 	}
 
 	jsonData, err := json.MarshalIndent(doc.Valutes, "", "  ")
@@ -29,7 +29,7 @@ func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
 		return fmt.Errorf("couldn't encode in JSON: %w", err)
 	}
 
-	err = os.WriteFile(filePath, jsonData, 0644)
+	err = os.WriteFile(filePath, jsonData, 0600)
 	if err != nil {
 		return fmt.Errorf("couldn't write to a file: %w", err)
 	}
