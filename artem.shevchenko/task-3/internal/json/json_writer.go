@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"os"
 
-	merr "github.com/slendycs/go-lab-3/cmd/myerrors"
-	"github.com/slendycs/go-lab-3/cmd/utils/xml"
+	merr "github.com/slendycs/go-lab-3/internal/myerrors"
+	"github.com/slendycs/go-lab-3/internal/xml"
 )
 
 type JsonData struct {
