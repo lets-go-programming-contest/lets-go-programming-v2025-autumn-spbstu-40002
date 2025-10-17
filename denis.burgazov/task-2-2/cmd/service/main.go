@@ -6,7 +6,7 @@ import (
 )
 
 func parse(a any, errText string) bool {
-	_, err := fmt.Scanln(a)
+	_, err := fmt.Scan(a)
 	if err != nil {
 		fmt.Println(errText)
 
@@ -20,12 +20,14 @@ func parse(a any, errText string) bool {
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	if num, ok := x.(int); ok {
+		*h = append(*h, num)
+	}
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -36,26 +38,26 @@ func (h *IntHeap) Pop() interface{} {
 	return x
 }
 
-func findKthLargest(nums []int, k int) int {
-	h := &IntHeap{}
-	heap.Init(h)
+func findKthLargest(nums []int, targetIndex int) int {
+	minHeap := &IntHeap{}
+	heap.Init(minHeap)
 
-	for i := range k {
-		heap.Push(h, nums[i])
+	for i := range targetIndex {
+		heap.Push(minHeap, nums[i])
 	}
 
-	for i := k; i < len(nums); i++ {
-		if nums[i] > (*h)[0] {
-			heap.Pop(h)
-			heap.Push(h, nums[i])
+	for i := targetIndex; i < len(nums); i++ {
+		if nums[i] > (*minHeap)[0] {
+			heap.Pop(minHeap)
+			heap.Push(minHeap, nums[i])
 		}
 	}
 
-	return (*h)[0]
+	return (*minHeap)[0]
 }
 
 func main() {
-	var numberOfDishes, k int
+	var numberOfDishes, targetIndex int
 
 	if !parse(&numberOfDishes, "Invalid number of dishes") {
 		return
@@ -63,12 +65,14 @@ func main() {
 
 	ratings := make([]int, numberOfDishes)
 	for i := range numberOfDishes {
-		fmt.Scan(&ratings[i])
+		if !parse(&ratings[i], "Invalid rating") {
+			return
+		}
 	}
 
-	if !parse(&k, "Invalid k-number") {
+	if !parse(&targetIndex, "Invalid k-number") {
 		return
 	}
 
-	fmt.Println(findKthLargest(ratings, k))
+	fmt.Println(findKthLargest(ratings, targetIndex))
 }
