@@ -27,6 +27,7 @@ func main() {
 
 	if err != nil || !isDateCorrect(countDepartment) {
 		fmt.Println("invalid number of departments")
+
 		return
 	}
 
@@ -35,6 +36,7 @@ func main() {
 
 		if err != nil || !isDateCorrect(countPeople) {
 			fmt.Println("invalid number of employees")
+
 			return
 		}
 
