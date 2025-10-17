@@ -92,7 +92,6 @@ func main() {
 		poppedValue := heap.Pop(intHeap)
 		value, ok := poppedValue.(int)
 		if !ok {
-			// обработка ошибки типа
 			continue
 		}
 		result = value
