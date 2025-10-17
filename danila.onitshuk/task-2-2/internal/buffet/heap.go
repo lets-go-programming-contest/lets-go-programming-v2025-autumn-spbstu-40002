@@ -1,10 +1,4 @@
-package heap
-
-import (
-	"fmt"
-
-	inputerror "danila.onitshuk/task-2-2/internal/errors"
-)
+package buffet
 
 type Heap []int
 
@@ -15,15 +9,17 @@ func (heap *Heap) Swap(i, j int)      { (*heap)[i], (*heap)[j] = (*heap)[j], (*h
 func (heap *Heap) Push(element any) {
 	intElement, err := element.(int)
 	if !err {
-		fmt.Println(inputerror.ErrInvalidTypeData)
-
 		return
 	}
 
 	*heap = append(*heap, intElement)
 }
 
-func (heap *Heap) Pop() interface{} {
+func (heap *Heap) Pop() any {
+	if heap.Len() == 0 {
+		return ErrUnderFlow
+	}
+
 	oldHeap := *heap
 	newHeapSize := len(oldHeap) - 1
 	lastElement := oldHeap[newHeapSize]

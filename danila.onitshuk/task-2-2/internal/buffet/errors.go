@@ -1,4 +1,4 @@
-package inputerror
+package buffet
 
 import "errors"
 
@@ -13,4 +13,5 @@ var (
 		"the ID of the preferred dish should be no more than the number of dishes themselves",
 	)
 	ErrInvalidTypeData = errors.New("invalid data type")
+	ErrUnderFlow       = errors.New("under flow")
 )
