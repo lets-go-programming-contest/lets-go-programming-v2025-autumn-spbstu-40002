@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+
+	officestruct "github.com/HuaChenju/task-2-1/officeStruct"
 )
 
 const (
@@ -10,70 +12,6 @@ const (
 	MinCorrectData = 1
 	MaxCorrectData = 1000
 )
-
-type Office struct {
-	currentMax  int
-	currentMin  int
-	currentTemp int
-}
-
-func (o *Office) GetCurrentTemp() int {
-	return o.currentTemp
-}
-
-func (o *Office) applyLowerBound(desiredTemp int) {
-	if o.currentMin > o.currentMax {
-		o.currentTemp = -1
-
-		return
-	}
-
-	if desiredTemp > o.currentMax {
-		o.currentMin = desiredTemp
-		o.currentTemp = -1
-
-		return
-	}
-
-	if desiredTemp > o.currentMin {
-		o.currentMin = desiredTemp
-
-		if o.currentTemp < desiredTemp {
-			o.currentTemp = desiredTemp
-		}
-	}
-
-	if o.currentTemp == -1 {
-		o.currentTemp = -1
-	}
-}
-
-func (o *Office) applyUpperBound(desiredTemp int) {
-	if o.currentMin > o.currentMax {
-		o.currentTemp = -1
-
-		return
-	}
-
-	if desiredTemp < o.currentMin {
-		o.currentMax = desiredTemp
-		o.currentTemp = -1
-
-		return
-	}
-
-	if desiredTemp < o.currentMax {
-		o.currentMax = desiredTemp
-
-		if o.currentTemp > desiredTemp {
-			o.currentTemp = desiredTemp
-		}
-	}
-
-	if o.currentTemp == -1 {
-		o.currentTemp = -1
-	}
-}
 
 func isDateCorrect(c int) bool {
 	return (c <= MaxCorrectData && c >= MinCorrectData)
@@ -98,10 +36,10 @@ func main() {
 			return
 		}
 
-		room := Office{
-			currentMax:  MaxTempConst,
-			currentMin:  MinTempConst,
-			currentTemp: MinTempConst,
+		room := officestruct.Office{
+			СurrentMax:  MaxTempConst,
+			СurrentMin:  MinTempConst,
+			СurrentTemp: MinTempConst,
 		}
 
 		for range countPeople {
@@ -113,9 +51,9 @@ func main() {
 			isLookGreater := sign[0] == '>'
 
 			if isLookGreater {
-				room.applyLowerBound(newBoard)
+				room.ApplyLowerBound(newBoard)
 			} else {
-				room.applyUpperBound(newBoard)
+				room.ApplyUpperBound(newBoard)
 			}
 
 			fmt.Println(room.GetCurrentTemp())
