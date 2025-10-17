@@ -1,4 +1,4 @@
-package officeStruct
+package officestruct
 
 type Office struct {
 	CurrentMax  int
