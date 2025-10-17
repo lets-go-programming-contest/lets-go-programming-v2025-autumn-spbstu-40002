@@ -43,6 +43,8 @@ func main() {
 	_, err = fmt.Scan(&preference)
 
 	if err != nil || preference > count || preference < MinPreference {
+		fmt.Println("incorrect preference")
+
 		return
 	}
 
