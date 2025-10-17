@@ -33,9 +33,9 @@ func (cond *Conditioner) SetTemp(sign string, temp uint16) error {
 			cond.MaxTemp = temp
 		}
 	default:
-
 		return errInvalidSign
 	}
+
 	return nil
 }
 
