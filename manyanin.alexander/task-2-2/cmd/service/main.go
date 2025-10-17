@@ -21,7 +21,11 @@ func (h IntHeap) Swap(i, j int) {
 }
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+	*h = append(*h, value)
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -29,6 +33,7 @@ func (h *IntHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -51,14 +56,16 @@ func main() {
 	_, err := fmt.Scan(&dishNum)
 	if err != nil || dishNum > MaxDishNum || dishNum < MinDishNum {
 		fmt.Printf("Error reading input: %v\n", ErrIncorrectDishNum)
+
 		return
 	}
 
 	dishes := make([]int, dishNum)
-	for i := 0; i < dishNum; i++ {
+	for i := range dishNum {
 		_, err := fmt.Scan(&dishes[i])
-		if err != nil || dishes[i] > MaxDishRating || dishes[i] < MinDishNum {
+		if err != nil || dishes[i] > MaxDishRating || dishes[i] < MinDishRating {
 			fmt.Printf("Error reading input: %v\n", ErrIncorrectDishRate)
+
 			return
 		}
 	}
@@ -68,20 +75,27 @@ func main() {
 	_, err = fmt.Scan(&kValue)
 	if err != nil || kValue > dishNum || kValue < 1 {
 		fmt.Printf("Error reading input: %v\n", ErrIncorrectK)
+
 		return
 	}
 
-	h := &IntHeap{}
+	intHeap := &IntHeap{}
 
-	heap.Init(h)
+	heap.Init(intHeap)
 
 	for _, dish := range dishes {
-		heap.Push(h, dish)
+		heap.Push(intHeap, dish)
 	}
 
 	var result int
-	for i := 0; i < kValue; i++ {
-		result = heap.Pop(h).(int)
+	for range kValue {
+		poppedValue := heap.Pop(intHeap)
+		value, ok := poppedValue.(int)
+		if !ok {
+			// обработка ошибки типа
+			continue
+		}
+		result = value
 	}
 
 	fmt.Println(result)
