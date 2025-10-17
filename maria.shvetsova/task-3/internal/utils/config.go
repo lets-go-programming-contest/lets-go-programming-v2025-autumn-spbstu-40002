@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -27,7 +27,9 @@ type Config struct {
 
 func parseFlags() (string, error) {
 	var configPath string
+
 	flag.StringVar(&configPath, "config", "", "path to config file")
+
 	flag.Parse()
 
 	if configPath == "" {
@@ -43,6 +45,7 @@ func createOutputFile(path string) error {
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		return errFileCreating
 	}
+
 	return nil
 }
 

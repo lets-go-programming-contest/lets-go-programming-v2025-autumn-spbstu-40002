@@ -7,7 +7,7 @@ import (
 
 type Valute struct {
 	ID        string `xml:"ID,attr"`
-	NumCode   string `xml:"NumCode"`
+	NumCode   int    `xml:"NumCode"`
 	CharCode  string `xml:"CharCode"`
 	Nominal   int    `xml:"Nominal"`
 	Name      string `xml:"Name"`
@@ -17,6 +17,7 @@ type Valute struct {
 
 func (v *Valute) GetFloatValue() (float64, error) {
 	normalized := strings.Replace(v.Value, ",", ".", -1)
+
 	return strconv.ParseFloat(normalized, 64)
 }
 
