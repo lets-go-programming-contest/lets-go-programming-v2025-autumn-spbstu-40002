@@ -31,5 +31,5 @@ func main() {
 	xml.SortVal(valData)
 
 	// Write JSON file of Valutes
-	json.MakeJsonFromData(cfg.OutputFile, valData)
+	json.WriteJSONData(cfg.OutputFile, valData)
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 	"github.com/slendycs/go-lab-3/internal/xml"
@@ -17,7 +18,7 @@ type JsonData struct {
 	Value    float64 `json:"value"`
 }
 
-func MakeJsonFromData(path string, data *xml.ValCurs) {
+func MakeJsonData(data *xml.ValCurs) []JsonData {
 	// Create a slice of valute data.
 	output := make([]JsonData, 0)
 	for _, valute := range data.Valute {
@@ -25,12 +26,13 @@ func MakeJsonFromData(path string, data *xml.ValCurs) {
 		intNumCode, err := strconv.Atoi(valute.NumCode)
 		if err != nil {
 			fmt.Println(merr.ErrNumCodeIsNotIneger)
-			return
+			return nil
 		}
-		floatValue, err := strconv.ParseFloat(valute.Value, 64)
+		formatedValue := strings.ReplaceAll(valute.Value, ",", ".")
+		floatValue, err := strconv.ParseFloat(formatedValue, 64)
 		if err != nil {
 			fmt.Println(merr.ErrValueIsNotFloat)
-			return
+			return nil
 		}
 
 		outputData := JsonData{
@@ -41,9 +43,13 @@ func MakeJsonFromData(path string, data *xml.ValCurs) {
 
 		output = append(output, outputData)
 	}
+	return output
+}
 
+
+func WriteJSONData(path string, data *xml.ValCurs) {
 	// Serialize data
-	rawData, err := json.MarshalIndent(output, "", "  ")
+	rawData, err := json.MarshalIndent(MakeJsonData(data), "", "  ")
 	if err != nil {
 		panic(merr.ErrFailedToSerializeJSON)
 	}
