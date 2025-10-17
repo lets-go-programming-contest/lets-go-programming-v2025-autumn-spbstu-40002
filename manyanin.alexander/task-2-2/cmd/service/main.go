@@ -69,13 +69,13 @@ func readDishNumber() (int, error) {
 func readDishes(dishNum int) ([]int, error) {
 	dishes := make([]int, dishNum)
 
-	for i := range dishNum {
-		_, err := fmt.Scan(&dishes[i])
+	for dish := range dishNum {
+		_, err := fmt.Scan(&dishes[dish])
 		if err != nil {
 			return nil, fmt.Errorf("error reading input: %w", err)
 		}
 
-		if dishes[i] > MaxDishRating || dishes[i] < MinDishRating {
+		if dishes[dish] > MaxDishRating || dishes[dish] < MinDishRating {
 			return nil, ErrIncorrectDishRate
 		}
 	}
@@ -126,18 +126,21 @@ func main() {
 	dishNum, err := readDishNumber()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
+
 		return
 	}
 
 	dishes, err := readDishes(dishNum)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
+
 		return
 	}
 
 	kValue, err := readKValue(dishNum)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
+
 		return
 	}
 
