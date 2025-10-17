@@ -21,7 +21,7 @@ func (cond *Conditioner) GetTemp() error {
 
 var errInvalidSign = errors.New("invalid sign")
 
-func (cond *Conditioner) SetTemp(sign string, temp uint16) {
+func (cond *Conditioner) SetTemp(sign string, temp uint16) error {
 	switch sign {
 	case ">=":
 		if cond.MinTemp < temp {
