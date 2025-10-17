@@ -13,4 +13,5 @@ var (
 	ErrFailedToOpenOutputFile    = errors.New("failed to open output file")
 	ErrFailedToSerializeJSON     = errors.New("failed to create json from data")
 	ErrFailedToWriteData         = errors.New("failed to write output file")
+	ErrFailedToCreateDir         = errors.New("failde to create directory")
 )

@@ -3,6 +3,7 @@ package json
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 	"github.com/slendycs/go-lab-3/internal/xml"
@@ -15,6 +16,12 @@ type JsonData struct {
 }
 
 func MakeJsonFromData(path string, data *xml.ValCurs) {
+	// Creating output directory
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		panic(merr.ErrFailedToCreateDir)
+	}
+
 	// Try to open output file.
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
