@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 
-	"github.com/slendycs/go-lab-3/cmd/config"
-	merr "github.com/slendycs/go-lab-3/cmd/myerrors"
-	"github.com/slendycs/go-lab-3/cmd/utils/json"
-	"github.com/slendycs/go-lab-3/cmd/utils/xml"
+	"github.com/slendycs/go-lab-3/internal/config"
+	merr "github.com/slendycs/go-lab-3/internal/myerrors"
+	"github.com/slendycs/go-lab-3/internal/json"
+	"github.com/slendycs/go-lab-3/internal/xml"
 )
 
 func main() {
