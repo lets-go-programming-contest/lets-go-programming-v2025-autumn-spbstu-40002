@@ -2,11 +2,8 @@ module github.com/HuaChenju/task-3
 
 go 1.22.7
 
-toolchain go1.24.9
-
 require (
-	golang.org/x/net v0.46.0
-	gopkg.in/yaml.v3 v3.0.1
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-require golang.org/x/text v0.30.0 // indirect
