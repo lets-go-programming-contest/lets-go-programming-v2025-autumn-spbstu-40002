@@ -18,7 +18,6 @@ func main() {
 	valCurs.SortByValue()
 
 	outputData, err := valCurs.ConvertToOutput()
-
 	if err != nil {
 		panic(err)
 	}

@@ -22,7 +22,11 @@ func WriteToJSON(data []Output, outputPath string) error {
 	if err != nil {
 		return errFileCreating
 	}
-	defer file.Close()
+	defer func() {
+		if err = file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")

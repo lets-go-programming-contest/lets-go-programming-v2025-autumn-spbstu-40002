@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -16,9 +17,14 @@ type Valute struct {
 }
 
 func (v *Valute) GetFloatValue() (float64, error) {
-	normalized := strings.Replace(v.Value, ",", ".", -1)
+	normalized := strings.ReplaceAll(v.Value, ",", ".")
 
-	return strconv.ParseFloat(normalized, 64)
+	value, err := strconv.ParseFloat(normalized, 64)
+	if err != nil {
+		return 0, fmt.Errorf("parse float value: %w", err)
+	}
+
+	return value, nil
 }
 
 type Valutes []Valute
