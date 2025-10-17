@@ -51,6 +51,7 @@ func main() {
 
 		for range workers {
 			var operator string
+
 			var temp int
 
 			_, err = fmt.Scan(&operator)
