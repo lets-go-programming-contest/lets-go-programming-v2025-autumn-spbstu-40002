@@ -21,7 +21,7 @@ func (cond *Conditioner) GetTemp() error {
 
 var errInvalidSign = errors.New("invalid sign")
 
-func (cond *Conditioner) SetTemp(sign string, temp uint16)
+func (cond *Conditioner) SetTemp(sign string, temp uint16) {
 	switch sign {
 	case ">=":
 		if cond.MinTemp < temp {
@@ -40,7 +40,7 @@ func (cond *Conditioner) SetTemp(sign string, temp uint16)
 func main() {
 	var nSection uint16
 
-	var errInvalidArgument = errors.New("invalid argument"
+	var errInvalidArgument = errors.New("invalid argument")
 
 	_, err := fmt.Scan(&nSection)
 	if err != nil {
