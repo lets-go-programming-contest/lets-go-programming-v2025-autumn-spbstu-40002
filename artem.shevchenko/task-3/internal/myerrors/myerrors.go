@@ -14,4 +14,6 @@ var (
 	ErrFailedToSerializeJSON     = errors.New("failed to create json from data")
 	ErrFailedToWriteData         = errors.New("failed to write output file")
 	ErrFailedToCreateDir         = errors.New("failde to create directory")
+	ErrNumCodeIsNotIneger        = errors.New("numcode is not integer")
+	ErrValueIsNotFloat           = errors.New("value is not float")
 )
