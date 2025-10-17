@@ -27,7 +27,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < numberOfDept; i++ {
+	for range numberOfDept {
 		if !parse(&numberOfEmp, "Invalid number of employee") {
 			return
 		}
@@ -39,7 +39,7 @@ func main() {
 			currTemp int
 		)
 
-		for j := 0; j < numberOfEmp; j++ {
+		for range numberOfEmp {
 			_, _ = fmt.Scan(&sign)
 
 			if !parse(&currTemp, "Invalid temperature value") {
