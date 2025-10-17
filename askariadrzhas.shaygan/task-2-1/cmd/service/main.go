@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -12,6 +13,8 @@ const (
 	minTemp      = 15
 	maxTemp      = 30
 )
+
+var ErrUnknownOperation = errors.New("unknown operation")
 
 type TempController struct {
 	optimalTemp int
@@ -25,9 +28,11 @@ func (tc *TempController) adjustTemp(operation string, val int) error {
 		if tc.minimumTemp < val {
 			tc.minimumTemp = val
 		}
+
 		if tc.minimumTemp < minTemp {
 			tc.minimumTemp = minTemp
 		}
+
 		if tc.optimalTemp < tc.minimumTemp {
 			tc.optimalTemp = tc.minimumTemp
 		}
@@ -35,14 +40,16 @@ func (tc *TempController) adjustTemp(operation string, val int) error {
 		if tc.maximumTemp > val {
 			tc.maximumTemp = val
 		}
+
 		if tc.maximumTemp > maxTemp {
 			tc.maximumTemp = maxTemp
 		}
+
 		if tc.optimalTemp > tc.maximumTemp {
 			tc.optimalTemp = tc.maximumTemp
 		}
 	default:
-		return fmt.Errorf("unknown operation: %s", operation)
+		return fmt.Errorf("%w: %s", ErrUnknownOperation, operation)
 	}
 
 	if tc.maximumTemp < tc.minimumTemp {
@@ -70,6 +77,7 @@ func main() {
 	_, err := fmt.Scanln(&deptCount)
 	if err != nil || deptCount > maxDeptNum || deptCount < minDeptNum {
 		fmt.Println("Invalid department count")
+
 		return
 	}
 
@@ -80,6 +88,7 @@ func main() {
 		_, err = fmt.Scanln(&employeeCount)
 		if err != nil || employeeCount > maxEmployees || employeeCount < minEmployees {
 			fmt.Println("Invalid employee count")
+
 			return
 		}
 
@@ -93,11 +102,13 @@ func main() {
 			_, err = fmt.Scanln(&operation, &value)
 			if err != nil {
 				fmt.Println("Invalid input")
+
 				return
 			}
 
 			if err := controller.adjustTemp(operation, value); err != nil {
 				fmt.Println("Error:", err)
+
 				return
 			}
 
