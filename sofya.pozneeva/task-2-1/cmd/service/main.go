@@ -16,6 +16,7 @@ func (cond *Conditioner) GetTemp() error {
 	if cond.MinTemp <= cond.MaxTemp {
 		return nil
 	}
+
 	return errInvalidTemp
 }
 
@@ -32,6 +33,7 @@ func (cond *Conditioner) SetTemp(sign string, temp uint16) error {
 			cond.MaxTemp = temp
 		}
 	default:
+
 		return errInvalidSign
 	}
 	return nil
@@ -48,12 +50,12 @@ func main() {
 
 		return
 	}
+
 	const minCond uint16 = 15
 
 	const maxCond uint16 = 30
 
 	for range nSection {
-
 		var nPeople uint16
 
 		_, err = fmt.Scan(&nPeople)
@@ -73,6 +75,7 @@ func main() {
 			_, err = fmt.Scan(&sign)
 			if err != nil {
 				fmt.Println(errInvalidArgument)
+
 				return
 			}
 
