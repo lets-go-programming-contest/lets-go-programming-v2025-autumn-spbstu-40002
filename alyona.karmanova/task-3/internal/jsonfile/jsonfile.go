@@ -29,8 +29,7 @@ func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
 		return fmt.Errorf("couldn't encode in JSON: %w", err)
 	}
 
-	err = os.WriteFile(filePath, jsonData, 0600)
-	if err != nil {
+	if err := os.WriteFile(filePath, jsonData, 0600); err != nil {
 		return fmt.Errorf("couldn't write to a file: %w", err)
 	}
 

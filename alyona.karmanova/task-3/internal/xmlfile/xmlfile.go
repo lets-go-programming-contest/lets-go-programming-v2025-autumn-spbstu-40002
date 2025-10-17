@@ -36,7 +36,6 @@ func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error 
 
 	valStr := strings.ReplaceAll(strings.TrimSpace(aux.Value), ",", ".")
 	val, err := strconv.ParseFloat(valStr, 64)
-
 	if err != nil {
 		return fmt.Errorf("couldn't parse Value: %w", err)
 	}
@@ -55,6 +54,7 @@ func GetValCursStruct(inputPath string) (ValCurs, error) {
 	if err != nil {
 		return doc, fmt.Errorf("couldn't open XML file: %w", err)
 	}
+
 	defer func() {
 		if err := file.Close(); err != nil {
 			fmt.Printf("error closing file: %v", err)
