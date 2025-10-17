@@ -1,30 +1,22 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-)
+import "fmt"
 
 func main() {
-	in := bufio.NewReader(os.Stdin)
 	var a, b int
 	var op string
 
-	// Read first operand
-	if _, err := fmt.Fscan(in, &a); err != nil {
+	if _, err := fmt.Scan(&a); err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	// Read second operand
-	if _, err := fmt.Fscan(in, &b); err != nil {
+	if _, err := fmt.Scan(&b); err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
-	// Read operator
-	if _, err := fmt.Fscan(in, &op); err != nil {
+	if _, err := fmt.Scan(&op); err != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
