@@ -33,13 +33,13 @@ func (v Valutes) Len() int { return len(v) }
 
 func (v Valutes) Swap(i, j int) { v[i], v[j] = v[j], v[i] }
 
-func (v Valutes) Less(i, j int) bool {
-	valueI, err := v[i].GetFloatValue()
+func (v Valutes) Less(indI, indJ int) bool {
+	valueI, err := v[indI].GetFloatValue()
 	if err != nil {
 		panic(err)
 	}
 
-	valueJ, err := v[j].GetFloatValue()
+	valueJ, err := v[indJ].GetFloatValue()
 	if err != nil {
 		panic(err)
 	}
