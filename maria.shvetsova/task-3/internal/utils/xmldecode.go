@@ -22,7 +22,11 @@ func GetCurrencyData(inputFile string) (*ValCurs, error) {
 		return nil, errOpeningFile
 	}
 
-	defer data.Close()
+	defer func() {
+		if err = data.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	decoder := xml.NewDecoder(data)
 	decoder.CharsetReader = charset.NewReaderLabel

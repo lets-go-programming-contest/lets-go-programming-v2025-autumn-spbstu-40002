@@ -17,7 +17,7 @@ func (v *ValCurs) SortByValue() {
 }
 
 func (v *ValCurs) ConvertToOutput() ([]Output, error) {
-	var output []Output
+	output := make([]Output, 0, len(v.Valutes))
 
 	for _, valute := range v.Valutes {
 		value, err := valute.GetFloatValue()
