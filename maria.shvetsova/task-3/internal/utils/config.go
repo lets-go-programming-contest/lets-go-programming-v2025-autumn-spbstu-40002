@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	errFileDoesntExist = errors.New("file doesn't exist")
+	errFileDoesntExist = errors.New("no such file or directory")
 	errReadingFile     = errors.New("failed to read the file")
 	errOpeningFile     = errors.New("failed to open the file")
-	errDecoding        = errors.New("failed to decode data")
+	errDecoding        = errors.New("did not find expected key")
 	errEmptyFile       = errors.New("file is empty")
 	errFileCreating    = errors.New("failed to create a file")
 	errInvalidPath     = errors.New("invalid path")
