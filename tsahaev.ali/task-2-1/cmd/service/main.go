@@ -13,61 +13,76 @@ type Employee struct {
 	maxTemp int
 }
 
+func readInt(scanner *bufio.Scanner) (int, error) {
+	scanner.Scan()
+	return strconv.Atoi(strings.TrimSpace(scanner.Text()))
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	scanner.Scan()
-	departmentsCount, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
+	departmentsCount, err := readInt(scanner)
 	if err != nil || departmentsCount <= 0 {
-		panic("Ошибка чтения количества департаментов")
+		fmt.Fprintln(os.Stderr, "Ошибка чтения количества департаментов")
+		return
 	}
 
-	scanner.Scan()
-	employeesCount, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
+	employeesCount, err := readInt(scanner)
 	if err != nil || employeesCount <= 0 {
-		panic("Ошибка чтения количества сотрудников")
+		fmt.Fprintln(os.Stderr, "Ошибка чтения количества сотрудников")
+		return
 	}
 
 	employees := make([]*Employee, employeesCount)
-
-	for empIndex := 0; empIndex < employeesCount; empIndex++ {
+	for i := range employees {
 		scanner.Scan()
-		line := scanner.Text()
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+
 		parts := strings.Fields(line)
+		if len(parts) != 2 {
+			continue
+		}
+
+		value, convErr := strconv.Atoi(parts[1])
+		if convErr != nil {
+			continue
+		}
+
+		employees[i] = &Employee{}
 
 		switch parts[0] {
 		case ">=":
-			value, _ := strconv.Atoi(parts[1])
-			employees[empIndex].minTemp = value
+			employees[i].minTemp = value
 		case "<=":
-			value, _ := strconv.Atoi(parts[1])
-			employees[empIndex].maxTemp = value
+			employees[i].maxTemp = value
 		default:
 			continue
 		}
 	}
 
-	for deptIndex := 0; deptIndex < departmentsCount; deptIndex++ {
+	for range make([]struct{}, departmentsCount) {
 		commonMinTemp := 15
 		commonMaxTemp := 30
 
-		for _, employee := range employees {
-			if commonMinTemp < employee.minTemp {
-				commonMinTemp = employee.minTemp
+		for _, emp := range employees {
+			if emp == nil {
+				continue
 			}
-			if commonMaxTemp > employee.maxTemp {
-				commonMaxTemp = employee.maxTemp
+			if emp.minTemp > commonMinTemp {
+				commonMinTemp = emp.minTemp
+			}
+			if emp.maxTemp < commonMaxTemp {
+				commonMaxTemp = emp.maxTemp
 			}
 		}
 
 		if commonMinTemp <= commonMaxTemp {
-			fmt.Printf("%d\n", commonMinTemp)
+			fmt.Println(commonMinTemp)
 		} else {
-			fmt.Printf("-1\n")
-		}
-
-		if deptIndex+1 < departmentsCount {
-			fmt.Println("")
+			fmt.Println(-1)
 		}
 	}
 }
