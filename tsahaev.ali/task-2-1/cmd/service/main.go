@@ -11,21 +11,17 @@ import (
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	// Читаем N и K
 	scanner.Scan()
 	n, _ := strconv.Atoi(scanner.Text())
 	scanner.Scan()
-	k, _ := strconv.Atoi(scanner.Text())
+	employeeCount, _ := strconv.Atoi(scanner.Text())
 
-	// Обрабатываем каждый отдел
-	for i := 0; i < n; i++ {
-		// Диапазон температур для текущего отдела
+	for department := 0; department < n; department++ {
 		minTemp := 15
 		maxTemp := 30
 		possible := true
 
-		// Обрабатываем каждого сотрудника в отделе
-		for j := 0; j < k; j++ {
+		for employee := 0; employee < employeeCount; employee++ {
 			scanner.Scan()
 			line := scanner.Text()
 			parts := strings.Split(line, " ")
@@ -33,7 +29,6 @@ func main() {
 			operator := parts[0]
 			temp, _ := strconv.Atoi(parts[1])
 
-			// Обновляем диапазон в зависимости от требования
 			if operator == ">=" {
 				if temp > minTemp {
 					minTemp = temp
@@ -44,9 +39,7 @@ func main() {
 				}
 			}
 
-			// Проверяем, возможен ли диапазон
 			if minTemp <= maxTemp && possible {
-				// Выбираем минимально возможную температуру (как в примере)
 				fmt.Println(minTemp)
 			} else {
 				fmt.Println(-1)
