@@ -6,84 +6,119 @@ import (
 )
 
 const (
-	defaultMinTemp = 15
-	defaultMaxTemp = 30
-	minAllowed     = 1
-	maxAllowed     = 1000
+	minDeptNum   = 1
+	maxDeptNum   = 1000
+	minEmployees = 1
+	maxEmployees = 1000
+	minTemp      = 15
+	maxTemp      = 30
 )
 
-func validateRange(value int) bool {
-	return value >= minAllowed && value <= maxAllowed
+var ErrUnknownOperation = errors.New("unknown operation")
+
+type TempController struct {
+	optimalTemp int
+	minimumTemp int
+	maximumTemp int
 }
 
-func adjustLimits(currentMin, currentMax int, sign string, t int) (int, int) {
-	switch sign {
+func (tc *TempController) adjustTemp(operation string, val int) error {
+	switch operation {
 	case ">=":
-		if t > currentMin {
-			currentMin = t
+		if tc.minimumTemp < val {
+			tc.minimumTemp = val
+		}
+
+		if tc.minimumTemp < minTemp {
+			tc.minimumTemp = minTemp
+		}
+
+		if tc.optimalTemp < tc.minimumTemp {
+			tc.optimalTemp = tc.minimumTemp
 		}
 	case "<=":
-		if t < currentMax {
-			currentMax = t
+		if tc.maximumTemp > val {
+			tc.maximumTemp = val
 		}
+
+		if tc.maximumTemp > maxTemp {
+			tc.maximumTemp = maxTemp
+		}
+
+		if tc.optimalTemp > tc.maximumTemp {
+			tc.optimalTemp = tc.maximumTemp
+		}
+	default:
+		return fmt.Errorf("%w: %s", ErrUnknownOperation, operation)
 	}
 
-	return currentMin, currentMax
-}
-
-func readInt(target *int) error {
-	if _, err := fmt.Scan(target); err != nil {
-		return fmt.Errorf("read integer: %w", err)
+	if tc.maximumTemp < tc.minimumTemp {
+		tc.optimalTemp = -1
 	}
 
 	return nil
 }
 
-func readString(target *string) error {
-	if _, err := fmt.Scan(target); err != nil {
-		return fmt.Errorf("read string: %w", err)
-	}
+func (tc *TempController) currentTemp() int {
+	return tc.optimalTemp
+}
 
-	return nil
+func NewTempController(low int, high int) *TempController {
+	return &TempController{
+		optimalTemp: low,
+		minimumTemp: low,
+		maximumTemp: high,
+	}
 }
 
 func main() {
-	var departments int
+	var deptCount int
 
-	if err := readInt(&departments); err != nil || !validateRange(departments) {
-		_ = errors.New("invalid departments input")
+	_, err := fmt.Scanln(&deptCount)
+	if err != nil || deptCount > maxDeptNum || deptCount < minDeptNum {
+		fmt.Println("Invalid department count")
+
 		return
 	}
 
-	for i := 0; i < departments; i++ {
-		minTemp := defaultMinTemp
-		maxTemp := defaultMaxTemp
+	deptIndex := 0
+	for deptIndex < deptCount {
+		var employeeCount int
 
-		var workers int
-		if err := readInt(&workers); err != nil || !validateRange(workers) {
-			_ = errors.New("invalid workers input")
+		_, err = fmt.Scanln(&employeeCount)
+		if err != nil || employeeCount > maxEmployees || employeeCount < minEmployees {
+			fmt.Println("Invalid employee count")
+
 			return
 		}
 
-		for j := 0; j < workers; j++ {
-			var op string
-			var t int
+		controller := NewTempController(minTemp, maxTemp)
 
-			if err := readString(&op); err != nil {
+		empIndex := 0
+		for empIndex < employeeCount {
+			var operation string
+
+			var value int
+
+			_, err = fmt.Scanln(&operation, &value)
+			if err != nil {
+				fmt.Println("Invalid input")
+
 				return
 			}
 
-			if err := readInt(&t); err != nil {
+			if err := controller.adjustTemp(operation, value); err != nil {
+				fmt.Println("Error:", err)
+
 				return
 			}
 
-			minTemp, maxTemp = adjustLimits(minTemp, maxTemp, op, t)
+			currentTemp := controller.currentTemp()
+			fmt.Println(currentTemp)
+
+			empIndex++
 		}
 
-		if minTemp <= maxTemp {
-			fmt.Println(minTemp)
-		} else {
-			fmt.Println(-1)
-		}
+		deptIndex++
 	}
 }
