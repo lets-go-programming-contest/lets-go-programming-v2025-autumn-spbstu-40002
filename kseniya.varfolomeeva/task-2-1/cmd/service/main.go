@@ -15,6 +15,7 @@ func main() {
 
 		for j := 0; j < employeesCount; j++ {
 			var operator string
+
 			var temp int
 			_, _ = fmt.Scan(&operator, &temp)
 
