@@ -12,16 +12,17 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	scanner.Scan()
-	n, _ := strconv.Atoi(scanner.Text())
-	scanner.Scan()
-	employeeCount, _ := strconv.Atoi(scanner.Text())
+	departmentsCount, _ := strconv.Atoi(scanner.Text())
 
-	for department := 0; department < n; department++ {
+	scanner.Scan()
+	employeesCount, _ := strconv.Atoi(scanner.Text())
+
+	for range departmentsCount {
 		minTemp := 15
 		maxTemp := 30
-		possible := true
+		results := make([]int, employeesCount)
 
-		for employee := 0; employee < employeeCount; employee++ {
+		for i := range employeesCount {
 			scanner.Scan()
 			line := scanner.Text()
 			parts := strings.Split(line, " ")
@@ -39,12 +40,19 @@ func main() {
 				}
 			}
 
-			if minTemp <= maxTemp && possible {
-				fmt.Println(minTemp)
+			if minTemp <= maxTemp {
+				results[i] = minTemp
 			} else {
-				fmt.Println(-1)
-				possible = false
+				results[i] = -1
 			}
+		}
+
+		for _, result := range results {
+			fmt.Println(result)
+		}
+
+		if departmentsCount > 1 {
+			fmt.Println()
 		}
 	}
 }
