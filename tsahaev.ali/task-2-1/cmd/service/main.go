@@ -8,51 +8,66 @@ import (
 	"strings"
 )
 
+type Employee struct {
+	minTemp int
+	maxTemp int
+}
+
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	scanner.Scan()
-	departmentsCount, _ := strconv.Atoi(scanner.Text())
+	departmentsCount, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
+	if err != nil || departmentsCount <= 0 {
+		panic("Ошибка чтения количества департаментов")
+	}
 
 	scanner.Scan()
-	employeesCount, _ := strconv.Atoi(scanner.Text())
+	employeesCount, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
+	if err != nil || employeesCount <= 0 {
+		panic("Ошибка чтения количества сотрудников")
+	}
 
-	for range departmentsCount {
-		minTemp := 15
-		maxTemp := 30
-		results := make([]int, employeesCount)
+	employees := make([]*Employee, employeesCount)
 
-		for i := range employeesCount {
-			scanner.Scan()
-			line := scanner.Text()
-			parts := strings.Split(line, " ")
+	for empIndex := 0; empIndex < employeesCount; empIndex++ {
+		scanner.Scan()
+		line := scanner.Text()
+		parts := strings.Fields(line)
 
-			operator := parts[0]
-			temp, _ := strconv.Atoi(parts[1])
+		switch parts[0] {
+		case ">=":
+			value, _ := strconv.Atoi(parts[1])
+			employees[empIndex].minTemp = value
+		case "<=":
+			value, _ := strconv.Atoi(parts[1])
+			employees[empIndex].maxTemp = value
+		default:
+			continue
+		}
+	}
 
-			if operator == ">=" {
-				if temp > minTemp {
-					minTemp = temp
-				}
-			} else if operator == "<=" {
-				if temp < maxTemp {
-					maxTemp = temp
-				}
+	for deptIndex := 0; deptIndex < departmentsCount; deptIndex++ {
+		commonMinTemp := 15
+		commonMaxTemp := 30
+
+		for _, employee := range employees {
+			if commonMinTemp < employee.minTemp {
+				commonMinTemp = employee.minTemp
 			}
-
-			if minTemp <= maxTemp {
-				results[i] = minTemp
-			} else {
-				results[i] = -1
+			if commonMaxTemp > employee.maxTemp {
+				commonMaxTemp = employee.maxTemp
 			}
 		}
 
-		for _, result := range results {
-			fmt.Println(result)
+		if commonMinTemp <= commonMaxTemp {
+			fmt.Printf("%d\n", commonMinTemp)
+		} else {
+			fmt.Printf("-1\n")
 		}
 
-		if departmentsCount > 1 {
-			fmt.Println()
+		if deptIndex+1 < departmentsCount {
+			fmt.Println("")
 		}
 	}
 }
