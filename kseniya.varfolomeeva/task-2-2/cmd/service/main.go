@@ -18,6 +18,7 @@ func (h *MaxHeap) Push(v interface{}) {
 	if !ok {
 		return
 	}
+
 	*h = append(*h, val)
 }
 
@@ -64,6 +65,7 @@ func main() {
 	}
 
 	var result int
+
 	for i := 0; i < order; i++ {
 		if v, ok := heap.Pop(maxHeap).(int); ok {
 			result = v
