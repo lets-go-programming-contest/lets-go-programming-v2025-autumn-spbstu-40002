@@ -46,12 +46,12 @@ func ParseXML(r io.Reader) (*Bank, error) {
 }
 
 func ParseFileXML(path string) (*Bank, error) {
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("open input file: %w", err)
 	}
 
-	defer func() { _ = f.Close() }()
+	defer func() { _ = file.Close() }()
 
-	return ParseXML(f)
+	return ParseXML(file)
 }

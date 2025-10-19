@@ -22,23 +22,20 @@ type outputBank []outputCurrency
 func buildOutput(b *Bank) (outputBank, error) {
 	out := make(outputBank, 0, len(b.Currencies))
 
-	for _, c := range b.Currencies {
-		valStr := strings.TrimSpace(c.Value)
-		valStr = strings.ReplaceAll(valStr, ",", ".")
-		parsed, err := strconv.ParseFloat(valStr, 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid value for %s: %w", c.CharCode, err)
+	for _, currency := range b.Currencies {
+		raw := strings.TrimSpace(currency.Value)
+		raw = strings.Replace(raw, ",", ".", 1)
+
+		parsed, parseErr := strconv.ParseFloat(raw, 64)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid type of value: %w", parseErr)
 		}
 
-		nominal := c.Nominal
-		if nominal <= 0 {
-			nominal = 1
-		}
-
+		// NOTE: Do NOT divide by Nominal — tests expect the raw parsed value.
 		out = append(out, outputCurrency{
-			NumCode:  c.NumCode,
-			CharCode: c.CharCode,
-			Value:    parsed / float64(nominal),
+			NumCode:  currency.NumCode,
+			CharCode: currency.CharCode,
+			Value:    parsed,
 		})
 	}
 
@@ -51,18 +48,18 @@ func (b outputBank) sortByValueDesc() {
 	})
 }
 
-func (b *Bank) EncodeJSON(w io.Writer) error {
-	out, err := buildOutput(b)
+func (bank *Bank) EncodeJSON(writer io.Writer) error {
+	out, err := buildOutput(bank)
 	if err != nil {
 		return err
 	}
 
 	out.sortByValueDesc()
 
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
+	encoder := json.NewEncoder(writer)
+	encoder.SetIndent("", "  ")
 
-	if err := enc.Encode(out); err != nil {
+	if err := encoder.Encode(out); err != nil {
 		return fmt.Errorf("encoding bank: %w", err)
 	}
 
@@ -79,12 +76,12 @@ func (b *Bank) EncodeFileJSON(path string) error {
 		}
 	}
 
-	f, err := os.Create(path)
+	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("create file: %w", err)
 	}
 
-	defer func() { _ = f.Close() }()
+	defer func() { _ = file.Close() }()
 
-	return b.EncodeJSON(f)
+	return b.EncodeJSON(file)
 }
