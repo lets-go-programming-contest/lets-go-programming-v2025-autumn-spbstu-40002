@@ -42,14 +42,14 @@ func buildOutput(b *Bank) (outputBank, error) {
 	return out, nil
 }
 
-func (b outputBank) sortByValueDesc() {
-	sort.Slice(b, func(i, j int) bool {
-		return b[i].Value > b[j].Value
+func (ob outputBank) sortByValueDesc() {
+	sort.Slice(ob, func(i, j int) bool {
+		return ob[i].Value > ob[j].Value
 	})
 }
 
-func (bank *Bank) EncodeJSON(writer io.Writer) error {
-	out, err := buildOutput(bank)
+func (b *Bank) EncodeJSON(writer io.Writer) error {
+	out, err := buildOutput(b)
 	if err != nil {
 		return err
 	}
