@@ -31,7 +31,6 @@ func buildOutput(bankData *Bank) (outputBank, error) {
 			return nil, fmt.Errorf("parse value failed: %w", parseErr)
 		}
 
-		// NOTE: Do NOT divide by Nominal — tests expect the raw parsed value.
 		result = append(result, outputCurrency{
 			NumCode:  curr.NumCode,
 			CharCode: curr.CharCode,
