@@ -17,7 +17,7 @@ func ParseConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file %q: %w", path, err)
 	}
-	
+
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config file %q: %w", path, err)
