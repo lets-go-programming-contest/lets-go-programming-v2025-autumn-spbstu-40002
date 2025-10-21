@@ -7,7 +7,6 @@ import (
 
 func Must(operation string, err error) {
 	if err != nil {
-		// changed wording to reduce similarity
 		panic(fmt.Errorf("operation %q failed: %w", operation, err))
 	}
 }
