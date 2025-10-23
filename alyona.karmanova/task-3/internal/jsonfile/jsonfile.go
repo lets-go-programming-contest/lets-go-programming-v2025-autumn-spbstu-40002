@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
+	"github.com/HuaChenju/task-3/internal/xmlfile"
 )
 
 const filePerm = 0o600
