@@ -17,12 +17,12 @@ func GetConfigStruct(path string) (Config, error) {
 
 	dataConf, err := os.ReadFile(path)
 	if err != nil {
-		return cfg, fmt.Errorf("couldn't read the file: %w", err)
+		return cfg, fmt.Errorf("couldn't read the file: %v", err)
 	}
 
 	err = yaml.Unmarshal(dataConf, &cfg)
 	if err != nil {
-		return cfg, fmt.Errorf("yaml parsing error: %w", err)
+		return cfg, fmt.Errorf("yaml parsing error: %v", err)
 	}
 
 	return cfg, nil
