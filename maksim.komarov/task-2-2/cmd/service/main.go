@@ -11,6 +11,7 @@ func main() {
 	var dishCount int
 	if _, err := fmt.Scan(&dishCount); err != nil {
 		fmt.Println("invalid dishes count")
+
 		return
 	}
 
@@ -19,6 +20,7 @@ func main() {
 	for i := range dishCount {
 		if _, err := fmt.Scan(&ratings[i]); err != nil {
 			fmt.Println("invalid rating")
+
 			return
 		}
 	}
@@ -26,6 +28,7 @@ func main() {
 	var kthIndex int
 	if _, err := fmt.Scan(&kthIndex); err != nil {
 		fmt.Println("invalid k")
+
 		return
 	}
 
@@ -42,6 +45,7 @@ func main() {
 		val, ok := heap.Pop(dishHeap).(int)
 		if !ok {
 			fmt.Println("heap pop type error")
+
 			return
 		}
 
