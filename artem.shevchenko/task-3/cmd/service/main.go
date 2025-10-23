@@ -13,6 +13,7 @@ func main() {
 	// Read config path from cli flags.
 	var configPath string
 	flag.StringVar(&configPath, "config", "", "path to config file")
+
 	flag.Parse()
 
 	if configPath == "" {
@@ -21,6 +22,7 @@ func main() {
 
 	// Read config from YAML.
 	var cfg config.Config
+	
 	config.ReadConfig(configPath, &cfg)
 
 	// Read Valute data from XML.
