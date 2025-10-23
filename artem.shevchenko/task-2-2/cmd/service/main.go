@@ -15,26 +15,26 @@ func main() {
 	dishesRaitingList := make([]int, 0)
 
 	// Get the number of dishes.
-	dishCount, success := utils.ReadDishesCount()
-	if !success {
-		return
+	dishCount, err := utils.ReadDishesCount()
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	// Create a list of dish ratings.
 	for range dishCount {
 		// get the raiting of dish
-		dishRaiting, success := utils.ReadDishesRaiting()
-		if !success {
-			return
+		dishRaiting, err := utils.ReadDishesRaiting()
+		if err != nil {
+			fmt.Println(err)
 		}
 
 		dishesRaitingList = append(dishesRaitingList, dishRaiting)
 	}
 
 	// Get the selected dish.
-	pickedDishID, success = utils.ReadPickedDish(dishCount)
-	if !success {
-		return
+	pickedDishID, err = utils.ReadPickedDish(dishCount)
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	fmt.Println(utils.GetPreferredDish(pickedDishID, dishesRaitingList))

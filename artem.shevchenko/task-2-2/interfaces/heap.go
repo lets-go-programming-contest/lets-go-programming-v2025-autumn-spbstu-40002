@@ -16,9 +16,7 @@ func (h *MinHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *MinHeap) Push(elem any) {
 	intElem, success := elem.(int)
 	if !success {
-		fmt.Println(myerrors.ErrIncorrectHeapPushedType)
-
-		return
+		panic(myerrors.ErrIncorrectHeapPushedType)
 	}
 
 	*h = append(*h, intElem)
