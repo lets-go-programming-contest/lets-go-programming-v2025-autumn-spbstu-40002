@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	merr "github.com/slendycs/go-lab-3/cmd/internal/myerrors"
+	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 )
 
 func (value CommaFloat64) MarshalJSON() ([]byte, error) {
