@@ -29,8 +29,10 @@ func WriteToFile(filePath string, doc xmlfile.ValCurs, format string) error {
 		return fmt.Errorf("trouble with JSON: %w", err)
 	}
 
-	var data []byte
-	var err error
+	var (
+		data []byte
+		err  error
+	)
 
 	switch format {
 	case "yaml":

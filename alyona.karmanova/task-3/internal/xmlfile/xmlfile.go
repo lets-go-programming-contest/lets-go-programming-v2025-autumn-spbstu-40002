@@ -18,9 +18,9 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	NumCode  int     `xml:"num_code" json:"num_code" yaml:"num_code"`
-	CharCode string  `xml:"char_code" json:"char_code" yaml:"char_code"`
-	Value    float64 `xml:"value" json:"value" yaml:"value"`
+	NumCode  int     `json:"num_code"  xml:"num_code"  yaml:"num_code"`
+	CharCode string  `json:"char_code" xml:"char_code" yaml:"char_code"`
+	Value    float64 `json:"value"     xml:"value"     yaml:"value"`
 }
 
 func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error {
