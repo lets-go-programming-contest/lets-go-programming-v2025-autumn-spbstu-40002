@@ -27,7 +27,7 @@ func main() {
 		panic(errIncorrectPath)
 	}
 
-	if *outputFormat != "" && *outputFormat != "json" && *outputFormat != "yaml" && *outputFormat != "xml" {
+	if *outputFormat != "json" && *outputFormat != "yaml" && *outputFormat != "xml" {
 		panic(errIncorrectFormat)
 	}
 
@@ -36,7 +36,7 @@ func main() {
 		panic(err)
 	}
 
-	if *outputFormat != "" && strings.TrimPrefix(filepath.Ext(cfg.OutputFile), ".") != *outputFormat {
+	if strings.TrimPrefix(filepath.Ext(cfg.OutputFile), ".") != *outputFormat {
 		panic(errMismatchedTypes)
 	}
 
@@ -47,7 +47,7 @@ func main() {
 
 	xmlfile.SortValCursByValue(&doc)
 
-	err = jsonFile.WriteJSONToFile(cfg.OutputFile, doc)
+	err = jsonFile.WriteToFile(cfg.OutputFile, doc, *outputFormat)
 	if err != nil {
 		panic(err)
 	}
