@@ -10,7 +10,7 @@ func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *IntHeap) Push(x any) {
 	val, ok := x.(int)
 	if !ok {
-		return
+		panic("can not convert interface to int")
 	}
 
 	*h = append(*h, val)
@@ -21,7 +21,7 @@ func (h *IntHeap) Pop() any {
 	length := len(old)
 
 	if length == 0 {
-		return nil
+		panic("heap is empty")
 	}
 
 	x := old[length-1]
