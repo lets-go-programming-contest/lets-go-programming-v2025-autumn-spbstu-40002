@@ -7,20 +7,57 @@ const (
 	maxTemp = 30
 )
 
+type TempManager struct {
+	low  int
+	high int
+}
+
+func NewTempManager() *TempManager {
+	return &TempManager{low: minTemp, high: maxTemp}
+}
+
+func (t *TempManager) Apply(operatorSign string, value int) error {
+	switch operatorSign {
+	case ">=":
+		if value > t.low {
+			t.low = value
+		}
+	case "<=":
+		if value < t.high {
+			t.high = value
+		}
+	default:
+		return fmt.Errorf("unknown operator: %q", operatorSign)
+	}
+
+	return nil
+}
+
+func (t *TempManager) Current() (int, error) {
+	if t.low > t.high {
+		return -1, fmt.Errorf("no feasible temperature")
+	}
+
+	return t.low, nil
+}
+
 func main() {
 	var departmentCount int
 	if _, err := fmt.Scan(&departmentCount); err != nil {
+		fmt.Println("invalid department count")
+
 		return
 	}
 
 	for range departmentCount {
 		var employeesCount int
 		if _, err := fmt.Scan(&employeesCount); err != nil {
+			fmt.Println("invalid employees count")
+
 			return
 		}
 
-		low := minTemp
-		high := maxTemp
+		manager := NewTempManager()
 
 		for range employeesCount {
 			var (
@@ -29,24 +66,22 @@ func main() {
 			)
 
 			if _, err := fmt.Scan(&operatorSign, &value); err != nil {
+				fmt.Println("invalid constraint")
+
 				return
 			}
 
-			switch operatorSign {
-			case ">=":
-				if value > low {
-					low = value
-				}
-			case "<=":
-				if value < high {
-					high = value
-				}
+			if err := manager.Apply(operatorSign, value); err != nil {
+				fmt.Println("invalid operation")
+
+				return
 			}
 
-			if low > high {
+			current, err := manager.Current()
+			if err != nil {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(low)
+				fmt.Println(current)
 			}
 		}
 	}
