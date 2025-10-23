@@ -23,22 +23,21 @@ type Valute struct {
 	Value    float64 `json:"value"`
 }
 
-func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error {
+func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var aux struct {
 		NumCode  int    `xml:"NumCode"`
 		CharCode string `xml:"CharCode"`
 		Value    string `xml:"Value"`
 	}
 
-	if err := decod.DecodeElement(&aux, &start); err != nil {
-		return fmt.Errorf("couldn't decode elem: %w", err)
+	if err := d.DecodeElement(&aux, &start); err != nil {
+		return err
 	}
 
 	valStr := strings.ReplaceAll(strings.TrimSpace(aux.Value), ",", ".")
-
 	val, err := strconv.ParseFloat(valStr, 64)
 	if err != nil {
-		return fmt.Errorf("couldn't parse Value: %w", err)
+		return fmt.Errorf("couldn't parse Value: %v", err)
 	}
 
 	v.NumCode = aux.NumCode
@@ -55,12 +54,7 @@ func GetValCursStruct(inputPath string) (ValCurs, error) {
 	if err != nil {
 		return doc, fmt.Errorf("couldn't open XML file: %w", err)
 	}
-
-	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Printf("error closing file: %v", err)
-		}
-	}()
+	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
