@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	conf "github.com/HuaChenju/task-3/internal/configfile"
-	jsonFile "github.com/HuaChenju/task-3/internal/outputfile"
+	outputFile "github.com/HuaChenju/task-3/internal/outputfile"
 	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
 )
 
@@ -47,7 +47,7 @@ func main() {
 
 	xmlfile.SortValCursByValue(&doc)
 
-	err = jsonFile.WriteToFile(cfg.OutputFile, doc, *outputFormat)
+	err = outputFile.WriteToFile(cfg.OutputFile, doc, *outputFormat)
 	if err != nil {
 		panic(err)
 	}
