@@ -36,5 +36,4 @@ func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
 	}
 
 	return nil
-
 }
