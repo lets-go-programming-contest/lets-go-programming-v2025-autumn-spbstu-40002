@@ -1,0 +1,36 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable-all: true
+  disable:
+    - execinquery
+    - exportloopref
+    - gomnd
+    - depguard
+    - forbidigo
+    - tagliatelle
+  fast: false
+
+issues:
+  include:
+    - EXC0001 # check error from os funcs
+    - EXC0004 # govet
+    - EXC0005 # C-style breaks
+
+  exclude-rules:
+    - linters:
+        - ireturn
+      text: "returns generic interface"
+    - linters:
+        - revive
+      text: "unexported-return: exported func .+ returns unexported type .+, which can be annoying to use"
+
+linters-settings:
+  revive:
+    rules:
+      - name: duplicated-imports
+        severity: error
+  cyclop:
+    max-complexity: 12
