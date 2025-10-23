@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/Expeline/task-3/internal/utils"
+	utils "github.com/Expeline/task-3/internal/utils"
 )
 
 func main() {
