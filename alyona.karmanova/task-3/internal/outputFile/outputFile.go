@@ -1,10 +1,13 @@
-package jsonfile
+package outputFile
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 
 	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
 )
@@ -21,17 +24,29 @@ func ensureOutputDir(path string) error {
 	return nil
 }
 
-func WriteJSONToFile(filePath string, doc xmlfile.ValCurs) error {
+func WriteToFile(filePath string, doc xmlfile.ValCurs, format string) error {
 	if err := ensureOutputDir(filePath); err != nil {
 		return fmt.Errorf("trouble with JSON: %w", err)
 	}
+	var (
+		data []byte
+		err  error
+	)
 
-	jsonData, err := json.MarshalIndent(doc.Valutes, "", "  ")
-	if err != nil {
-		return fmt.Errorf("couldn't encode in JSON: %w", err)
+	switch format {
+	case "yaml":
+		data, err = yaml.Marshal(doc.Valutes)
+	case "xml":
+		data, err = xml.MarshalIndent(doc.Valutes, "", "  ")
+	default:
+		data, err = json.MarshalIndent(doc.Valutes, "", "  ")
 	}
 
-	if err := os.WriteFile(filePath, jsonData, filePerm); err != nil {
+	if err != nil {
+		return fmt.Errorf("couldn't encode in %s: %w", format, err)
+	}
+
+	if err := os.WriteFile(filePath, data, filePerm); err != nil {
 		return fmt.Errorf("couldn't write to a file: %w", err)
 	}
 
