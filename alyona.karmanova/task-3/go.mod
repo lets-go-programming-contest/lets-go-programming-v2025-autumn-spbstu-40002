@@ -1,4 +1,4 @@
-module github.com/HuaChenju/task-3
+module task-3
 
 go 1.22.7
 

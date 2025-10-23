@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	conf "github.com/HuaChenju/task-3/internal/configfile"
-	outputFile "github.com/HuaChenju/task-3/internal/outputfile"
-	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
+	conf "task-3/internal/configfile"
+	outputFile "task-3/internal/outputfile"
+	xmlfile "task-3/internal/xmlfile"
 )
 
 var (
