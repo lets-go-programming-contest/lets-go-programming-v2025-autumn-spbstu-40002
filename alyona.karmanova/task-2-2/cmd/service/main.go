@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 
 	myheap "github.com/HuaChenju/task-2-2/iternal/heap"
@@ -15,6 +16,12 @@ const (
 	MinPreference = 1
 )
 
+var (
+	errIncorrectDishes = errors.New("invalid amount of dishes")
+	errIncorrectRating = errors.New("incorrect rating")
+	errIncorrectPref   = errors.New("incorrect preference")
+)
+
 func main() {
 	var count, preference, rating int
 
@@ -23,7 +30,7 @@ func main() {
 	_, err := fmt.Scan(&count)
 
 	if err != nil || count < MinCount || count > MaxCount {
-		fmt.Println("incorrect amount of dishes")
+		fmt.Println(errIncorrectDishes)
 
 		return
 	}
@@ -32,7 +39,7 @@ func main() {
 		_, err = fmt.Scan(&rating)
 
 		if err != nil || rating < MinRating || rating > MaxRating {
-			fmt.Println("incorrect rating")
+			fmt.Println(errIncorrectRating)
 
 			return
 		}
@@ -43,7 +50,7 @@ func main() {
 	_, err = fmt.Scan(&preference)
 
 	if err != nil || preference > count || preference < MinPreference {
-		fmt.Println("incorrect preference")
+		fmt.Println(errIncorrectPref)
 
 		return
 	}
