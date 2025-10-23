@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"flag"
+	"path/filepath"
+	"strings"
 
 	conf "github.com/HuaChenju/task-3/internal/configfile"
 	jsonFile "github.com/HuaChenju/task-3/internal/jsonfile"
@@ -10,11 +12,14 @@ import (
 )
 
 var (
-	errIncorrectPath = errors.New("config path is required")
+	errIncorrectPath   = errors.New("config path is required")
+	errIncorrectFormat = errors.New("unsupported output format")
+	errMismatchedTypes = errors.New("mismatched types")
 )
 
 func main() {
 	configPath := flag.String("config", "", "Path to configuration file")
+	outputFormat := flag.String("output-format", "json", "Output file format (default: json)")
 
 	flag.Parse()
 
@@ -22,9 +27,17 @@ func main() {
 		panic(errIncorrectPath)
 	}
 
+	if *outputFormat != "" && *outputFormat != "json" && *outputFormat != "yaml" && *outputFormat != "xml" {
+		panic(errIncorrectFormat)
+	}
+
 	cfg, err := conf.GetConfigStruct(*configPath)
 	if err != nil {
 		panic(err)
+	}
+
+	if *outputFormat != "" && strings.TrimPrefix(filepath.Ext(cfg.OutputFile), ".") != *outputFormat {
+		panic(errMismatchedTypes)
 	}
 
 	doc, err := xmlfile.GetValCursStruct(cfg.InputFile)
