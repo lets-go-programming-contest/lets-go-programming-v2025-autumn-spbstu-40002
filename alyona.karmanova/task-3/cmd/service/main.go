@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 
 	conf "github.com/HuaChenju/task-3/internal/configfile"
@@ -8,12 +9,17 @@ import (
 	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
 )
 
+var (
+	errIncorrectPath = errors.New("config path is required")
+)
+
 func main() {
 	configPath := flag.String("config", "", "Path to configuration file")
+
 	flag.Parse()
 
 	if *configPath == "" {
-		panic("config path is required")
+		panic(errIncorrectPath)
 	}
 
 	cfg, err := conf.GetConfigStruct(*configPath)
