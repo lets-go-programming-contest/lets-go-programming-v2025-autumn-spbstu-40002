@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 
-	"github.com/slendycs/go-lab-3/internal/config"
-	merr "github.com/slendycs/go-lab-3/internal/myerrors"
-	"github.com/slendycs/go-lab-3/internal/json"
-	"github.com/slendycs/go-lab-3/internal/xml"
+	"github.com/slendycs/go-lab-3/cmd/internal/config"
+	merr "github.com/slendycs/go-lab-3/cmd/internal/myerrors"
+	"github.com/slendycs/go-lab-3/cmd/internal/parsers"
+	"github.com/slendycs/go-lab-3/cmd/internal/utils"
 )
 
 func main() {
@@ -24,12 +24,12 @@ func main() {
 	config.ReadConfig(configPath, &cfg)
 
 	// Read Valute data from XML.
-	valData := new(xml.ValCurs)
-	xml.ReadXML(cfg.InputFile, valData)
+	valData := new(parsers.ValStruct)
+	parsers.ReadXML(cfg.InputFile, valData)
 
 	// Sort Valute data.
-	xml.SortVal(valData)
+	utils.SortVal(valData)
 
 	// Write JSON file of Valutes
-	json.WriteJSONData(cfg.OutputFile, valData)
+	parsers.WriteJSON(cfg.OutputFile, valData)
 }
