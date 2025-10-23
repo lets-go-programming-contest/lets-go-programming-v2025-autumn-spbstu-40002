@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	merr "github.com/slendycs/go-lab-3/cmd/internal/myerrors"
+	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 	"golang.org/x/net/html/charset"
 )
 

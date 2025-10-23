@@ -3,7 +3,7 @@ package utils
 import (
 	"sort"
 
-	"github.com/slendycs/go-lab-3/cmd/internal/parsers"
+	"github.com/slendycs/go-lab-3/internal/parsers"
 )
 
 func SortVal(data *parsers.ValStruct) {

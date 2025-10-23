@@ -4,7 +4,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 
-	merr "github.com/slendycs/go-lab-3/cmd/internal/myerrors"
+	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 )
 
 type Config struct {
