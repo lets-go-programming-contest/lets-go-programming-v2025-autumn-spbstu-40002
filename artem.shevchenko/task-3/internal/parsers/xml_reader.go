@@ -11,25 +11,29 @@ import (
 )
 
 func (value *CommaFloat64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	err := d.DecodeElement(&s, &start)
+	var bufferString string
+	err := d.DecodeElement(&bufferString, &start)
 	if err != nil {
 		return err
 	}
 
 	// Checking if a string is empty.
-	if s == "" {
+	if bufferString == "" {
 		*value = CommaFloat64(0.0)
+
 		return nil
 	}
 
 	// Replace the comma with a dot and decode the value as float64.
-	s = strings.Replace(s, ",", ".", 1)
-	dotFloat64, err := strconv.ParseFloat(s, 64)
+	bufferString = strings.Replace(bufferString, ",", ".", 1)
+
+	dotFloat64, err := strconv.ParseFloat(bufferString, 64)
 	if err != nil {
 		return err
 	}
+
 	*value = CommaFloat64(dotFloat64)
+
 	return nil
 }
 
