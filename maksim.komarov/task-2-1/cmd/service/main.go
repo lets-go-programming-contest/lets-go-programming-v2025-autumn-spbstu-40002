@@ -69,6 +69,7 @@ func main() {
 				fmt.Println("invalid constraint")
 
 				return
+
 			}
 
 			if err := manager.Apply(operatorSign, value); err != nil {
