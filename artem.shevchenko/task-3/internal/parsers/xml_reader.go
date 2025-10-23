@@ -12,9 +12,10 @@ import (
 
 func (value *CommaFloat64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var bufferString string
+
 	err := d.DecodeElement(&bufferString, &start)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// Checking if a string is empty.
@@ -29,7 +30,7 @@ func (value *CommaFloat64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) 
 
 	dotFloat64, err := strconv.ParseFloat(bufferString, 64)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	*value = CommaFloat64(dotFloat64)
