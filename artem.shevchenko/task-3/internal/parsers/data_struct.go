@@ -9,18 +9,18 @@ type CommaFloat64 float64
 
 // Data struct for XML/JSON marshalling/unmarshalling.
 type ValStruct struct {
-	XMLName xml.Name `xml:"ValCurs" json:"-"`
-	Text    string   `xml:",chardata" json:"-"`
-	Date    string   `xml:"Date,attr" json:"-"`
-	Name    string   `xml:"name,attr" json:"-"`
+	XMLName xml.Name `json:"-" xml:"ValCurs"`
+	Text    string   `json:"-" xml:",chardata"`
+	Date    string   `json:"-" xml:"Date,attr"`
+	Name    string   `json:"-" xml:"name,attr"`
 	Valute  []struct {
-		Text      string       `xml:",chardata" json:"-"`
-		ID        string       `xml:"ID,attr" json:"-"`
-		NumCode   int          `xml:"NumCode" json:"num_code"`
-		CharCode  string       `xml:"CharCode" json:"char_code"`
-		Nominal   string       `xml:"Nominal" json:"-"`
-		Name      string       `xml:"Name" json:"-"`
-		Value     CommaFloat64 `xml:"Value" json:"value"`
-		VunitRate CommaFloat64 `xml:"VunitRate" json:"-"`
-	} `xml:"Valute" json:"-"`
+		Text      string       `json:"-" xml:",chardata"`
+		ID        string       `json:"-" xml:"ID,attr"`
+		NumCode   int          `json:"num_code" xml:"NumCode"`
+		CharCode  string       `json:"char_code" xml:"CharCode"`
+		Nominal   string       `json:"-" xml:"Nominal"`
+		Name      string       `json:"-" xml:"Name"`
+		Value     CommaFloat64 `json:"value" xml:"Value"`
+		VunitRate CommaFloat64 `json:"-" xml:"VunitRate"`
+	} `json:"-" xml:"Valute"`
 }
