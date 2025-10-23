@@ -75,6 +75,7 @@ func main() {
 				fmt.Println("invalid operation")
 
 				return
+
 			}
 
 			current, err := manager.Current()
