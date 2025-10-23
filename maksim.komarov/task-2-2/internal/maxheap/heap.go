@@ -9,7 +9,7 @@ func (h *MaxHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *MaxHeap) Push(x any) {
 	v, ok := x.(int)
 	if !ok {
-		return
+		panic("maxheap: Push expects int")
 	}
 
 	*h = append(*h, v)
