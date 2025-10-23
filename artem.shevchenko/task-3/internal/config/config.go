@@ -1,10 +1,10 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
 
 	merr "github.com/slendycs/go-lab-3/internal/myerrors"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
