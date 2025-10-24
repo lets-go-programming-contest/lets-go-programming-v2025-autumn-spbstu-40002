@@ -20,6 +20,8 @@ var (
 	ErrReadingDepartments    = errors.New("error reading departments count")
 	ErrReadingEmployees      = errors.New("error reading employees count")
 	ErrReadingInput          = errors.New("error reading operator and temperature")
+	ErrDepartmentsOutOfRange = errors.New("departments is out of range [1, 1000]")
+	ErrEmployeesOutOfRange   = errors.New("employees is out of range [1, 1000]")
 )
 
 type TemperatureRange struct {
@@ -96,13 +98,11 @@ func main() {
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
 		fmt.Println(ErrReadingDepartments)
-
 		return
 	}
 
 	if departments < minDepartments || departments > maxDepartments {
-		fmt.Println("Departments is out of range [1, 1000]")
-
+		fmt.Println(ErrDepartmentsOutOfRange)
 		return
 	}
 
@@ -112,20 +112,17 @@ func main() {
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println(ErrReadingEmployees)
-
 			return
 		}
 
 		if employees < minEmployees || employees > maxEmployees {
-			fmt.Println("Employees is out of range [1, 1000]")
-
+			fmt.Println(ErrEmployeesOutOfRange)
 			return
 		}
 
 		err = processDepartment(employees)
 		if err != nil {
 			fmt.Println(err)
-
 			return
 		}
 	}
