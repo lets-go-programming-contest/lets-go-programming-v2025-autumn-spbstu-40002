@@ -98,11 +98,13 @@ func main() {
 	_, err := fmt.Scanln(&departments)
 	if err != nil {
 		fmt.Println(ErrReadingDepartments)
+
 		return
 	}
 
 	if departments < minDepartments || departments > maxDepartments {
 		fmt.Println(ErrDepartmentsOutOfRange)
+
 		return
 	}
 
@@ -112,6 +114,7 @@ func main() {
 		_, err = fmt.Scanln(&employees)
 		if err != nil {
 			fmt.Println(ErrReadingEmployees)
+
 			return
 		}
 
