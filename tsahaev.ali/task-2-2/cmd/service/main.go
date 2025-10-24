@@ -12,7 +12,11 @@ func (h IntHeap) Less(i, j int) bool { return h[i] > h[j] }
 func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+	*h = append(*h, value)
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -20,35 +24,46 @@ func (h *IntHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
 func main() {
-	var N, k int
-	fmt.Scan(&N)
+	var dishCount, preferenceRank int
 
-	dishes := make([]int, N)
-	for i := 0; i < N; i++ {
-		fmt.Scan(&dishes[i])
+	_, err := fmt.Scan(&dishCount)
+	if err != nil {
+		return
 	}
 
-	fmt.Scan(&k)
+	dishes := make([]int, dishCount)
+	for index := range dishes {
+		_, err = fmt.Scan(&dishes[index])
+		if err != nil {
+			return
+		}
+	}
 
-	result := findKthPreference(dishes, k)
+	_, err = fmt.Scan(&preferenceRank)
+	if err != nil {
+		return
+	}
+
+	result := findKthPreference(dishes, preferenceRank)
 	fmt.Println(result)
 }
 
-func findKthPreference(dishes []int, k int) int {
-	h := &IntHeap{}
-	heap.Init(h)
+func findKthPreference(dishes []int, preferenceRank int) int {
+	heapInstance := &IntHeap{}
+	heap.Init(heapInstance)
 
 	for _, dish := range dishes {
-		heap.Push(h, dish)
+		heap.Push(heapInstance, dish)
 	}
 
-	for i := 0; i < k-1; i++ {
-		heap.Pop(h)
+	for range preferenceRank - 1 {
+		heap.Pop(heapInstance)
 	}
 
-	return (*h)[0]
+	return (*heapInstance)[0]
 }
