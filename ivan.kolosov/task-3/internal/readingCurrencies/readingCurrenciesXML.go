@@ -19,25 +19,27 @@ var (
 )
 
 func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) error {
-	err := dc.DecodeElement(&cur, &start)
+	var temp CurrencyXML
+
+	err := dc.DecodeElement(&temp, &start)
 	if err != nil {
 		return errParsingXML
 	}
 
-	s := strings.ReplaceAll(cur.Value, ",", ".")
+	s := strings.ReplaceAll(temp.Value, ",", ".")
 
-	cur.ValueFloat, err = strconv.ParseFloat(s, 64)
+	temp.ValueFloat, err = strconv.ParseFloat(s, 64)
 	if err != nil {
 		return errParsingFloat
 	}
 
-	s = strings.ReplaceAll(cur.VunitRate, ",", ".")
+	s = strings.ReplaceAll(temp.VunitRate, ",", ".")
 
-	cur.VunitRateFloat, err = strconv.ParseFloat(s, 64)
+	temp.VunitRateFloat, err = strconv.ParseFloat(s, 64)
 	if err != nil {
 		return errParsingFloat
 	}
-
+	*cur = temp
 	return nil
 }
 
