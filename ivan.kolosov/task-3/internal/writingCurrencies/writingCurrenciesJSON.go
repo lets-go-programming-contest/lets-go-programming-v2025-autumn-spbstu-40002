@@ -22,21 +22,21 @@ func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
 
 	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
-		return errCreatingDir
+		return fmt.Errorf("%v: %w", errCreatingDir, err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return errCreatingFile
+		return fmt.Errorf("%v: %w", errCreatingFile, err)
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
 			if returnError != nil {
-				returnError = fmt.Errorf("%w; %v", returnError, errClosingJSONFile)
+				returnError = fmt.Errorf("%v: %w; %v", returnError, err, errClosingJSONFile)
 			} else {
-				returnError = errClosingJSONFile
+				returnError = fmt.Errorf("%v: %w", errClosingJSONFile, err)
 			}
 		}
 	}()
@@ -46,7 +46,7 @@ func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
 
 	err = enc.Encode(data)
 	if err != nil {
-		return errEncodingJSON
+		return fmt.Errorf("%v: %w", errEncodingJSON, err)
 	}
 
 	return nil
