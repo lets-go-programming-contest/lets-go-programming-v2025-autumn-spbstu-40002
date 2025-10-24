@@ -1,22 +1,92 @@
 package readingCurrencies
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
 
-type CurrencyXML struct {
-	ID             string `xml:"ID,attr"`
-	NumCode        int    `xml:"NumCode"`
-	CharCode       string `xml:"CharCode"`
-	Nominal        int    `xml:"Nominal"`
-	Name           string `xml:"Name"`
-	Value          string `xml:"Value"`
-	VunitRate      string `xml:"VunitRate"`
-	ValueFloat     float64
-	VunitRateFloat float64
+	"golang.org/x/net/html/charset"
+)
+
+var (
+	errParsingXML     = errors.New("error occurred while parsing xml file")
+	errParsingFloat   = errors.New("error occurred while parsing float")
+	errOpeningXMLFile = errors.New("error occurred while opening xml file")
+	errClosingXMLFile = errors.New("error occurred while closing xml file")
+)
+
+func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) error {
+	var temp struct {
+		ID        string `xml:"ID,attr"`
+		NumCode   int    `xml:"NumCode"`
+		CharCode  string `xml:"CharCode"`
+		Nominal   int    `xml:"Nominal"`
+		Name      string `xml:"Name"`
+		Value     string `xml:"Value"`
+		VunitRate string `xml:"VunitRate"`
+	}
+
+	err := dc.DecodeElement(&temp, &start)
+	if err != nil {
+		return errParsingXML
+	}
+
+	s := strings.ReplaceAll(temp.Value, ",", ".")
+	if s == "" {
+		cur.ValueFloat = 0.0
+	} else {
+		cur.ValueFloat, err = strconv.ParseFloat(s, 64)
+		if err != nil {
+			return errParsingFloat
+		}
+	}
+
+	s = strings.ReplaceAll(temp.VunitRate, ",", ".")
+	if s == "" {
+		cur.VunitRateFloat = 0.0
+	} else {
+		cur.VunitRateFloat, err = strconv.ParseFloat(s, 64)
+		if err != nil {
+			return errParsingFloat
+		}
+	}
+
+	cur.ID = temp.ID
+	cur.NumCode = temp.NumCode
+	cur.CharCode = temp.CharCode
+	cur.Nominal = temp.Nominal
+	cur.Name = temp.Name
+	cur.Value = temp.Value
+	cur.VunitRate = temp.VunitRate
+	return nil
 }
 
-type CurrenciesXML struct {
-	XMLName    xml.Name      `xml:"ValCurs"`
-	Date       string        `xml:"Date,attr"`
-	Name       string        `xml:"name,attr"`
-	Currencies []CurrencyXML `xml:"Valute"`
+func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return cur, errOpeningXMLFile
+	}
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			if returnError != nil {
+				returnError = fmt.Errorf("%w; %v", returnError, errClosingXMLFile)
+			} else {
+				returnError = errClosingXMLFile
+			}
+		}
+	}()
+
+	dc := xml.NewDecoder(file)
+	dc.CharsetReader = charset.NewReaderLabel
+	err = dc.Decode(&cur)
+	if err != nil {
+		return cur, errParsingXML
+	}
+
+	return cur, nil
 }
