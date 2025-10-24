@@ -8,6 +8,9 @@ import (
 	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 )
 
+const defaultDirPerm = 0o755
+const defaultFilePerm = 0o644
+
 func (value CommaFloat64) MarshalJSON() ([]byte, error) {
 	data, err := json.Marshal(float64(value))
 	if err != nil {
@@ -18,28 +21,28 @@ func (value CommaFloat64) MarshalJSON() ([]byte, error) {
 }
 
 func WriteJSON(path string, data *ValStruct) {
-	// Serialize data
+	// Serialize data.
 	rawData, err := json.MarshalIndent(data.Valute, "", "  ")
 	if err != nil {
 		panic(merr.ErrFailedToSerializeJSON)
 	}
 
-	// Creating output directory
+	// Creating output directory.
 	dir := filepath.Dir(path)
 
-	err = os.MkdirAll(dir, 755)
+	err = os.MkdirAll(dir, defaultDirPerm)
 	if err != nil {
 		panic(merr.ErrFailedToCreateDir)
 	}
 
 	// Try to open output file.
-	file, err := os.OpenFile(path, os.O_APPEND | os.O_CREATE | os.O_RDWR, 644)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, defaultFilePerm)
 	if err != nil {
 		panic(merr.ErrFailedToOpenOutputFile)
 	}
 	defer file.Close()
 
-	// Write data
+	// Write data.
 	_, err = file.Write(rawData)
 	if err != nil {
 		panic(merr.ErrFailedToWriteData)
