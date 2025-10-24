@@ -31,7 +31,7 @@ type Valute struct {
 func ReadFile(path string) (Document, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return Document{}, fmt.Errorf("%s: %w", ErrOpenInputXML, err)
+		return Document{}, fmt.Errorf("%s: %w", ErrOpenInputXML.Error(), err)
 	}
 
 	defer func() {
@@ -54,7 +54,7 @@ func ReadFile(path string) (Document, error) {
 	var doc Document
 
 	if err := decoder.Decode(&doc); err != nil {
-		return Document{}, fmt.Errorf("%s: %w", ErrDecodeInputXML, err)
+		+ return Document{}, fmt.Errorf("%s: %w", ErrDecodeInputXML.Error(), err)
 	}
 
 	return doc, nil
