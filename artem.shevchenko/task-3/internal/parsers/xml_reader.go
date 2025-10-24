@@ -44,6 +44,7 @@ func ReadXML(path string, data *ValStruct) {
 	if err != nil {
 		panic(merr.ErrFailedToOpenXML)
 	}
+	
 	defer func() {
 		err := file.Close()
 		if err != nil {
