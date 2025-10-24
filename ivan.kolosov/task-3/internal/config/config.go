@@ -1,15 +1,16 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	errOpeningConfigFile = "error occurred while opening config file"
-	errParsingYAML       = "error occurred while parsing yaml"
+var (
+	errOpeningConfigFile = errors.New("error occurred while opening config file")
+	errParsingYAML       = errors.New("error occurred while parsing yaml")
 )
 
 type Config struct {
@@ -22,12 +23,12 @@ func GetConfig(path string) (Config, error) {
 
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return cfg, fmt.Errorf("%s: %w", errOpeningConfigFile, err)
+		return cfg, fmt.Errorf("%w: %w", errOpeningConfigFile, err)
 	}
 
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return cfg, fmt.Errorf("%s: %w", errParsingYAML, err)
+		return cfg, fmt.Errorf("%w: %w", errParsingYAML, err)
 	}
 
 	return cfg, nil

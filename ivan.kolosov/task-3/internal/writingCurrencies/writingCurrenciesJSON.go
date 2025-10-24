@@ -2,16 +2,17 @@ package writingcurrencies
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
-const (
-	errCreatingDir     = "error occurred while creating specified directory"
-	errCreatingFile    = "error occurred while creating specified file"
-	errClosingJSONFile = "error occurred while closing json file"
-	errEncodingJSON    = "error occurred while encoding json file"
+var (
+	errCreatingDir     = errors.New("error occurred while creating specified directory")
+	errCreatingFile    = errors.New("error occurred while creating specified file")
+	errClosingJSONFile = errors.New("error occurred while closing json file")
+	errEncodingJSON    = errors.New("error occurred while encoding json file")
 )
 
 const dirPerm = 0o755
@@ -21,21 +22,21 @@ func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
 
 	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errCreatingDir, err)
+		return fmt.Errorf("%w: %w", errCreatingDir, err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errCreatingFile, err)
+		return fmt.Errorf("%w: %w", errCreatingFile, err)
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
 			if returnError != nil {
-				returnError = fmt.Errorf("%s: %w; %s", returnError, err, errClosingJSONFile)
+				returnError = fmt.Errorf("%w: %w; %w", returnError, err, errClosingJSONFile)
 			} else {
-				returnError = fmt.Errorf("%s: %w", errClosingJSONFile, err)
+				returnError = fmt.Errorf("%w: %w", errClosingJSONFile, err)
 			}
 		}
 	}()
@@ -45,7 +46,7 @@ func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
 
 	err = enc.Encode(data)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errEncodingJSON, err)
+		return fmt.Errorf("%w: %w", errEncodingJSON, err)
 	}
 
 	return nil
