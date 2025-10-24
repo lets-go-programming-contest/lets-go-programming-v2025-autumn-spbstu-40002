@@ -1,4 +1,4 @@
-package confing
+package config
 
 import (
 	"errors"
@@ -13,11 +13,11 @@ var (
 )
 
 type Config struct {
-	inputFile  string `yaml:"input-file"`
-	outputFile string `yaml:"output-file"`
+	InputFile  string `yaml:"input-file"`
+	OutputFile string `yaml:"output-file"`
 }
 
-func getConfig(path string) (Config, error) {
+func GetConfig(path string) (Config, error) {
 	var cfg Config
 
 	data, err := os.ReadFile(path)
