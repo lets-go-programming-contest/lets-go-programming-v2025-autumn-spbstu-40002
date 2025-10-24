@@ -8,8 +8,10 @@ import (
 	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 )
 
-const defaultDirPerm = 0o755
-const defaultFilePerm = 0o644
+const (
+	defaultDirPerm  = 0o755
+	defaultFilePerm = 0o644
+)
 
 func (value CommaFloat64) MarshalJSON() ([]byte, error) {
 	data, err := json.Marshal(float64(value))
