@@ -44,7 +44,12 @@ func ReadXML(path string, data *ValStruct) {
 	if err != nil {
 		panic(merr.ErrFailedToOpenXML)
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(merr.ErrFailedToCloseFile)
+		}
+	}()
 
 	// Create a new decoder for XML file.
 	decoder := xml.NewDecoder(file)
