@@ -19,7 +19,15 @@ var (
 )
 
 func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) error {
-	var temp CurrencyXML
+	var temp struct {
+		ID             string `xml:"ID,attr"`
+		NumCode        int    `xml:"NumCode"`
+		CharCode       string `xml:"CharCode"`
+		Nominal        int    `xml:"Nominal"`
+		Name           string `xml:"Name"`
+		Value          string `xml:"Value"`
+		VunitRate      string `xml:"VunitRate"`
+	}
 
 	err := dc.DecodeElement(&temp, &start)
 	if err != nil {
@@ -28,14 +36,14 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 
 	s := strings.ReplaceAll(temp.Value, ",", ".")
 
-	temp.ValueFloat, err = strconv.ParseFloat(s, 64)
+	cur.ValueFloat, err = strconv.ParseFloat(s, 64)
 	if err != nil {
 		return errParsingFloat
 	}
 
 	s = strings.ReplaceAll(temp.VunitRate, ",", ".")
 
-	temp.VunitRateFloat, err = strconv.ParseFloat(s, 64)
+	cur.VunitRateFloat, err = strconv.ParseFloat(s, 64)
 	if err != nil {
 		return errParsingFloat
 	}
@@ -46,8 +54,6 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 	cur.Name = temp.Name
 	cur.Value = temp.Value
 	cur.VunitRate = temp.VunitRate
-	cur.ValueFloat = temp.ValueFloat
-	cur.VunitRateFloat = temp.VunitRateFloat
 	return nil
 }
 
