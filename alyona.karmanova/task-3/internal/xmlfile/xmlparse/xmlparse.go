@@ -16,7 +16,12 @@ func GetValCursStruct(inputPath string) (model.ValCurs, error) {
 	if err != nil {
 		return doc, fmt.Errorf("couldn't open XML file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Printf("error closing file: %v", err)
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
