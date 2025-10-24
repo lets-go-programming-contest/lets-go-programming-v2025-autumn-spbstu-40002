@@ -2,6 +2,7 @@ package readingcurrencies
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,11 +11,11 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-const (
-	errParsingXML     = "error occurred while parsing xml file"
-	errParsingFloat   = "error occurred while parsing float"
-	errOpeningXMLFile = "error occurred while opening xml file"
-	errClosingXMLFile = "error occurred while closing xml file"
+var (
+	errParsingXML     = errors.New("error occurred while parsing xml file")
+	errParsingFloat   = errors.New("error occurred while parsing float")
+	errOpeningXMLFile = errors.New("error occurred while opening xml file")
+	errClosingXMLFile = errors.New("error occurred while closing xml file")
 )
 
 func (cur *CurrencyXML) UnmarshalXML(dec *xml.Decoder, start xml.StartElement) error {
@@ -30,7 +31,7 @@ func (cur *CurrencyXML) UnmarshalXML(dec *xml.Decoder, start xml.StartElement) e
 
 	err := dec.DecodeElement(&temp, &start)
 	if err != nil {
-		return fmt.Errorf("%s: %w", errParsingXML, err)
+		return fmt.Errorf("%w: %w", errParsingXML, err)
 	}
 
 	str := strings.ReplaceAll(temp.Value, ",", ".")
@@ -39,7 +40,7 @@ func (cur *CurrencyXML) UnmarshalXML(dec *xml.Decoder, start xml.StartElement) e
 	} else {
 		cur.ValueFloat, err = strconv.ParseFloat(str, 64)
 		if err != nil {
-			return fmt.Errorf("%s: %w", errParsingFloat, err)
+			return fmt.Errorf("%w: %w", errParsingFloat, err)
 		}
 	}
 
@@ -49,7 +50,7 @@ func (cur *CurrencyXML) UnmarshalXML(dec *xml.Decoder, start xml.StartElement) e
 	} else {
 		cur.VunitRateFloat, err = strconv.ParseFloat(str, 64)
 		if err != nil {
-			return fmt.Errorf("%s: %w", errParsingFloat, err)
+			return fmt.Errorf("%w: %w", errParsingFloat, err)
 		}
 	}
 
@@ -69,16 +70,16 @@ func GetCurrencies(path string) (_ CurrenciesXML, returnError error) {
 
 	file, err := os.Open(path)
 	if err != nil {
-		return cur, fmt.Errorf("%s: %w", errOpeningXMLFile, err)
+		return cur, fmt.Errorf("%w: %w", errOpeningXMLFile, err)
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
 			if returnError != nil {
-				returnError = fmt.Errorf("%s: %w; %v", returnError, err, errClosingXMLFile)
+				returnError = fmt.Errorf("%w: %w; %w", returnError, err, errClosingXMLFile)
 			} else {
-				returnError = fmt.Errorf("%s: %w", errClosingXMLFile, err)
+				returnError = fmt.Errorf("%w: %w", errClosingXMLFile, err)
 			}
 		}
 	}()
@@ -88,7 +89,7 @@ func GetCurrencies(path string) (_ CurrenciesXML, returnError error) {
 
 	err = dc.Decode(&cur)
 	if err != nil {
-		return cur, fmt.Errorf("%s: %w", errParsingXML, err)
+		return cur, fmt.Errorf("%w: %w", errParsingXML, err)
 	}
 
 	return cur, nil
