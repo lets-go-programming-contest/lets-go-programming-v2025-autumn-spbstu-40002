@@ -23,7 +23,7 @@ func Load(path string) (AppConfig, error) {
 
 	file, err := os.Open(path)
 	if err != nil {
-		return AppConfig{}, fmt.Errorf("%s: %w", ErrOpenConfig, err)
+		return AppConfig{}, fmt.Errorf("%w: %v", ErrOpenConfig, err)
 	}
 
 	defer func() {
@@ -33,7 +33,7 @@ func Load(path string) (AppConfig, error) {
 	decoder := yaml.NewDecoder(file)
 
 	if err := decoder.Decode(&cfg); err != nil {
-		return AppConfig{}, fmt.Errorf("%s: %w", ErrDecodeConfig, err)
+		return AppConfig{}, fmt.Errorf("%w: %v", ErrDecodeConfig, err)
 	}
 
 	return cfg, nil
