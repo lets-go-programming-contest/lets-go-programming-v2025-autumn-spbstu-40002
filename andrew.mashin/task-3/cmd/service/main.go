@@ -4,8 +4,8 @@ import (
 	"flag"
 
 	"github.com/Exam-Play/task-3/internal/config"
-	"github.com/Exam-Play/task-3/internal/jsonFiles"
-	"github.com/Exam-Play/task-3/internal/xmlFiles"
+	"github.com/Exam-Play/task-3/internal/jsonfiles"
+	"github.com/Exam-Play/task-3/internal/xmlfiles"
 )
 
 func main() {
@@ -17,14 +17,14 @@ func main() {
 		panic(err)
 	}
 
-	data, err := xmlFiles.GetCurrencies(cfg.InputFile)
+	data, err := xmlfiles.GetCurrencies(cfg.InputFile)
 	if err != nil {
 		panic(err)
 	}
 
 	data.SortOfCurrencies()
 
-	err = jsonFiles.EncodeJSON(data, cfg.OutputFile)
+	err = jsonfiles.EncodeJSON(data, cfg.OutputFile)
 	if err != nil {
 		panic(err)
 	}

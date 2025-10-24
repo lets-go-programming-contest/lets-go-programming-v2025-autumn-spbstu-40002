@@ -1,4 +1,4 @@
-package xmlFiles
+package xmlfiles
 
 import (
 	"encoding/xml"
@@ -29,8 +29,8 @@ func GetCurrencies(fileName string) (*CurrenciesXML, error) {
 	}()
 
 	var currencies CurrenciesXML
-	decoder := xml.NewDecoder(file)
 
+	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	err = decoder.Decode(&currencies)

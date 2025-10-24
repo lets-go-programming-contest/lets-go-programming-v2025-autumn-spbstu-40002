@@ -1,4 +1,4 @@
-package xmlFiles
+package xmlfiles
 
 import (
 	"fmt"
@@ -17,11 +17,11 @@ type CurrencyXML struct {
 }
 
 func (currency CurrencyXML) GetFloat() (float64, error) {
-	commaReplacement := strings.Replace(currency.Value, ",", ".", -1)
+	commaReplacement := strings.ReplaceAll(currency.Value, ",", ".")
 
 	value, err := strconv.ParseFloat(commaReplacement, 64)
 	if err != nil {
-		return 0, fmt.Errorf("cannot convert value %s to float", commaReplacement)
+		return 0, fmt.Errorf("cannot convert value %s to float: %w", commaReplacement, err)
 	}
 
 	return value, nil
@@ -37,13 +37,13 @@ func (currency Currencies) Swap(i, j int) {
 	currency[i], currency[j] = currency[j], currency[i]
 }
 
-func (currency Currencies) Less(i, j int) bool {
-	currencyI, err := currency[i].GetFloat()
+func (currency Currencies) Less(iCurr, jCurr int) bool {
+	currencyI, err := currency[iCurr].GetFloat()
 	if err != nil {
 		panic(err)
 	}
 
-	currencyJ, err := currency[j].GetFloat()
+	currencyJ, err := currency[jCurr].GetFloat()
 	if err != nil {
 		panic(err)
 	}
