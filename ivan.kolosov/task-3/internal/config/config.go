@@ -1,16 +1,15 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	errOpeningConfigFile = errors.New("error occurred while opening config file")
-	errParsingYAML       = errors.New("error occurred while parsing yaml")
+const (
+	errOpeningConfigFile = "error occurred while opening config file"
+	errParsingYAML       = "error occurred while parsing yaml"
 )
 
 type Config struct {

@@ -2,17 +2,16 @@ package writingcurrencies
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
-var (
-	errCreatingDir     = errors.New("error occurred while creating specified directory")
-	errCreatingFile    = errors.New("error occurred while creating specified file")
-	errClosingJSONFile = errors.New("error occurred while closing json file")
-	errEncodingJSON    = errors.New("error occurred while encoding json file")
+const (
+	errCreatingDir     = "error occurred while creating specified directory"
+	errCreatingFile    = "error occurred while creating specified file"
+	errClosingJSONFile = "error occurred while closing json file"
+	errEncodingJSON    = "error occurred while encoding json file"
 )
 
 const dirPerm = 0o755
