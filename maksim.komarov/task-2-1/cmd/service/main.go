@@ -1,10 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 const (
 	minTemp = 15
 	maxTemp = 30
+)
+
+var (
+	ErrUnknownOperator = errors.New("unknown operator")
+	ErrNoFeasibleTemp  = errors.New("no feasible temperature")
 )
 
 type TempManager struct {
@@ -27,7 +35,7 @@ func (t *TempManager) Apply(operatorSign string, value int) error {
 			t.high = value
 		}
 	default:
-		return fmt.Errorf("unknown operator: %q", operatorSign)
+		return fmt.Errorf("%w: %q", ErrUnknownOperator, operatorSign)
 	}
 
 	return nil
@@ -35,7 +43,7 @@ func (t *TempManager) Apply(operatorSign string, value int) error {
 
 func (t *TempManager) Current() (int, error) {
 	if t.low > t.high {
-		return -1, fmt.Errorf("no feasible temperature")
+		return -1, ErrNoFeasibleTemp
 	}
 
 	return t.low, nil
@@ -69,14 +77,12 @@ func main() {
 				fmt.Println("invalid constraint")
 
 				return
-
 			}
 
 			if err := manager.Apply(operatorSign, value); err != nil {
 				fmt.Println("invalid operation")
 
 				return
-
 			}
 
 			current, err := manager.Current()
