@@ -9,7 +9,11 @@ import (
 )
 
 func (value CommaFloat64) MarshalJSON() ([]byte, error) {
-	return json.Marshal(float64(value))
+	data, err := json.Marshal(float64(value))
+	if err != nil {
+		panic(err)
+	}
+	return data, err
 }
 
 func WriteJSON(path string, data *ValStruct) {
