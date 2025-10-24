@@ -39,7 +39,15 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 	if err != nil {
 		return errParsingFloat
 	}
-	*cur = temp
+	cur.ID = temp.ID
+	cur.NumCode = temp.NumCode
+	cur.CharCode = temp.CharCode
+	cur.Nominal = temp.Nominal
+	cur.Name = temp.Name
+	cur.Value = temp.Value
+	cur.VunitRate = temp.VunitRate
+	cur.ValueFloat = temp.ValueFloat
+	cur.VunitRateFloat = temp.VunitRateFloat
 	return nil
 }
 
