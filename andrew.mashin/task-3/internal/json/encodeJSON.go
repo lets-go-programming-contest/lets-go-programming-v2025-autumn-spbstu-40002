@@ -52,9 +52,7 @@ func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	err = encoder.Encode(simpleCurrencies)
-	
-	if err != nil {
+	if err := encoder.Encode(simpleCurrencies); err != nil {
 		return fmt.Errorf("unable to encode json: %w", err)
 	}
 
