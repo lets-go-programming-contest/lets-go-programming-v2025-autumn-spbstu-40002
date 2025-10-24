@@ -7,11 +7,12 @@ import (
 
 func GetCurrenciesJSON(curIn curxml.CurrenciesXML) curjson.CurrenciesJSON {
 	var curOut curjson.CurrenciesJSON
-	for i, currency := range curIn.Currencies {
-		curOut = append(curOut, curjson.CurrencyJSON{})
-		curOut[i].NumCode = currency.NumCode
-		curOut[i].CharCode = currency.CharCode
-		curOut[i].Value = currency.ValueFloat
+	for _, currency := range curIn.Currencies {
+		curOut = append(curOut, curjson.CurrencyJSON{
+			NumCode:  currency.NumCode,
+			CharCode: currency.CharCode,
+			Value:    currency.ValueFloat,
+		})
 	}
 
 	return curOut
