@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	outputfile "github.com/HuaChenju/task-3/internal/outputFile"
+	outputfile "github.com/HuaChenju/task-3/internal/outputfile"
 	xmlmodel "github.com/HuaChenju/task-3/internal/xmlfile/model"
 	"gopkg.in/yaml.v3"
 )
