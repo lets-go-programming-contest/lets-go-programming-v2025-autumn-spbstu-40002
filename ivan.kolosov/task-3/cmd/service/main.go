@@ -10,9 +10,7 @@ import (
 	writing "github.com/InsomniaDemon/task-3/internal/writingCurrencies"
 )
 
-var (
-	errNoConfigFileProvided = errors.New("no config file was provided")
-)
+var errNoConfigFileProvided = errors.New("no config file was provided")
 
 func main() {
 	pathToConfig := flag.String("config", "", "Path to config file")
