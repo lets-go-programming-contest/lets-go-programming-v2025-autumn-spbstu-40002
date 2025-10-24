@@ -120,12 +120,14 @@ func main() {
 
 		if employees < minEmployees || employees > maxEmployees {
 			fmt.Println(ErrEmployeesOutOfRange)
+
 			return
 		}
 
 		err = processDepartment(employees)
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 	}
