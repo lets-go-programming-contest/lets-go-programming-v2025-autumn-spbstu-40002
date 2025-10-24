@@ -17,9 +17,18 @@ var (
 	errMismatchedTypes = errors.New("mismatched types")
 )
 
+const (
+	configFlag    string = "config"
+	configDefault string = ""
+	configHelp    string = "Path to configuration file"
+	fomatFlag     string = "output-format"
+	formatDefault        = "json"
+	formatHelp           = "Output file format (default: json)"
+)
+
 func main() {
-	configPath := flag.String("config", "", "Path to configuration file")
-	outputFormat := flag.String("output-format", "json", "Output file format (default: json)")
+	configPath := flag.String(configFlag, configDefault, configHelp)
+	outputFormat := flag.String(fomatFlag, formatDefault, formatHelp)
 
 	flag.Parse()
 
