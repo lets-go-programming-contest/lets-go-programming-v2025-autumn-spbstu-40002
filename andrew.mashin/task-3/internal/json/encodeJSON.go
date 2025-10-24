@@ -9,6 +9,8 @@ import (
 	"github.com/Exam-Play/task-3/internal/xml"
 )
 
+const dirPermission = 0o755
+
 type CurrencySimple struct {
 	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
@@ -17,7 +19,7 @@ type CurrencySimple struct {
 
 func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 	dir := filepath.Dir(outputFile)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPermission); err != nil {
 		return fmt.Errorf("unable to create directory: %w", err)
 	}
 
@@ -50,6 +52,7 @@ func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+	
 	if err := encoder.Encode(simpleCurrencies); err != nil {
 		return fmt.Errorf("unable to encode json: %w", err)
 	}
