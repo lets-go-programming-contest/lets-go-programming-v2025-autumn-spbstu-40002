@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/bolatbyek/task-3/internal/config"
-	"github.com/bolatbyek/task-3/internal/currency"
+	"github.com/bolatbyek/task-3/internal/cbr"
+	"github.com/bolatbyek/task-3/internal/convert"
+	"github.com/bolatbyek/task-3/internal/output"
 )
 
 func main() {
@@ -22,20 +24,20 @@ func main() {
 		panic("Failed to load config: " + err.Error())
 	}
 
-	// Process currency data
-	processor := currency.NewProcessor()
-	
 	// Parse XML
-	valCurs, err := processor.ParseXML(cfg.InputFile)
+	parser := cbr.NewParser()
+	valCurs, err := parser.ParseXML(cfg.InputFile)
 	if err != nil {
 		panic("Failed to parse XML: " + err.Error())
 	}
 
 	// Sort currencies by value (descending)
-	sortedCurrencies := processor.SortByValue(valCurs.Currencies)
+	converter := convert.NewConverter()
+	sortedCurrencies := converter.SortByValue(valCurs.Currencies)
 
 	// Save to JSON
-	err = processor.SaveToJSON(sortedCurrencies, cfg.OutputFile)
+	writer := output.NewWriter()
+	err = writer.SaveToJSON(sortedCurrencies, cfg.OutputFile)
 	if err != nil {
 		panic("Failed to save JSON: " + err.Error())
 	}
