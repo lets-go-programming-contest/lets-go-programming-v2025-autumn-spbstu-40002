@@ -13,7 +13,8 @@ func (value CommaFloat64) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
-	return data, err
+
+	return data, nil
 }
 
 func WriteJSON(path string, data *ValStruct) {
@@ -25,12 +26,14 @@ func WriteJSON(path string, data *ValStruct) {
 
 	// Creating output directory
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
 		panic(merr.ErrFailedToCreateDir)
 	}
 
 	// Try to open output file.
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	file, err := os.OpenFile(path, os.O_APPEND | os.O_CREATE | os.O_RDWR, 0644)
 	if err != nil {
 		panic(merr.ErrFailedToOpenOutputFile)
 	}
