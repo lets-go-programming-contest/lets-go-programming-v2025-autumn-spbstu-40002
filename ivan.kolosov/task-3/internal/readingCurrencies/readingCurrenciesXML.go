@@ -31,7 +31,7 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 
 	err := dc.DecodeElement(&temp, &start)
 	if err != nil {
-		return errParsingXML
+		return fmt.Errorf("%v: %w", errParsingXML, err)
 	}
 
 	s := strings.ReplaceAll(temp.Value, ",", ".")
@@ -40,7 +40,7 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 	} else {
 		cur.ValueFloat, err = strconv.ParseFloat(s, 64)
 		if err != nil {
-			return errParsingFloat
+			return fmt.Errorf("%v: %w", errParsingFloat, err)
 		}
 	}
 
@@ -50,7 +50,7 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 	} else {
 		cur.VunitRateFloat, err = strconv.ParseFloat(s, 64)
 		if err != nil {
-			return errParsingFloat
+			return fmt.Errorf("%v: %w", errParsingFloat, err)
 		}
 	}
 
@@ -67,16 +67,16 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return cur, errOpeningXMLFile
+		return cur, fmt.Errorf("%v: %w", errOpeningXMLFile, err)
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
 			if returnError != nil {
-				returnError = fmt.Errorf("%w; %v", returnError, errClosingXMLFile)
+				returnError = fmt.Errorf("%v: %w; %v", returnError, err, errClosingXMLFile)
 			} else {
-				returnError = errClosingXMLFile
+				returnError = fmt.Errorf("%v: %w", errClosingXMLFile, err)
 			}
 		}
 	}()
@@ -85,7 +85,7 @@ func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
 	dc.CharsetReader = charset.NewReaderLabel
 	err = dc.Decode(&cur)
 	if err != nil {
-		return cur, errParsingXML
+		return cur, fmt.Errorf("%v: %w", errParsingXML, err)
 	}
 
 	return cur, nil
