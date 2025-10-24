@@ -1,4 +1,4 @@
-package readingCurrencies
+package readingcurrencies
 
 import "encoding/xml"
 
