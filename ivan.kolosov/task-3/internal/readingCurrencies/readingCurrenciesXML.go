@@ -20,32 +20,32 @@ var (
 
 func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) error {
 	var temp struct {
-		ID             string `xml:"ID,attr"`
-		NumCode        int    `xml:"NumCode"`
-		CharCode       string `xml:"CharCode"`
-		Nominal        int    `xml:"Nominal"`
-		Name           string `xml:"Name"`
-		Value          string `xml:"Value"`
-		VunitRate      string `xml:"VunitRate"`
+		ID        string `xml:"ID,attr"`
+		NumCode   int    `xml:"NumCode"`
+		CharCode  string `xml:"CharCode"`
+		Nominal   int    `xml:"Nominal"`
+		Name      string `xml:"Name"`
+		Value     string `xml:"Value"`
+		VunitRate string `xml:"VunitRate"`
 	}
 
 	err := dc.DecodeElement(&temp, &start)
 	if err != nil {
-		return errParsingXML
+		return fmt.Errorf("%v: %w", errParsingXML, err)
 	}
 
 	s := strings.ReplaceAll(temp.Value, ",", ".")
 
 	cur.ValueFloat, err = strconv.ParseFloat(s, 64)
 	if err != nil {
-		return errParsingFloat
+		return fmt.Errorf("%v: %w", errParsingFloat, err)
 	}
 
 	s = strings.ReplaceAll(temp.VunitRate, ",", ".")
 
 	cur.VunitRateFloat, err = strconv.ParseFloat(s, 64)
 	if err != nil {
-		return errParsingFloat
+		return fmt.Errorf("%v: %w", errParsingFloat, err)
 	}
 	cur.ID = temp.ID
 	cur.NumCode = temp.NumCode
@@ -60,16 +60,16 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return cur, errOpeningXMLFile
+		return cur, fmt.Errorf("%v: %w", errOpeningXMLFile, err)
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
 			if returnError != nil {
-				returnError = fmt.Errorf("%w; %v", returnError, errClosingXMLFile)
+				returnError = fmt.Errorf("%v: %w; %v", returnError, err, errClosingXMLFile)
 			} else {
-				returnError = errClosingXMLFile
+				returnError = fmt.Errorf("%v: %w", errClosingXMLFile, err)
 			}
 		}
 	}()
@@ -78,7 +78,7 @@ func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
 	dc.CharsetReader = charset.NewReaderLabel
 	err = dc.Decode(&cur)
 	if err != nil {
-		return cur, errParsingXML
+		return cur, fmt.Errorf("%v: %w", errParsingXML, err)
 	}
 
 	return cur, nil
