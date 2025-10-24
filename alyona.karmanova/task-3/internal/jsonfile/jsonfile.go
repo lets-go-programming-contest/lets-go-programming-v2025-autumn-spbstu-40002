@@ -5,26 +5,16 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"path/filepath"
 
+	outputfile "github.com/HuaChenju/task-3/internal/outputFile"
 	xmlmodel "github.com/HuaChenju/task-3/internal/xmlfile/model"
 	"gopkg.in/yaml.v3"
 )
 
 const filePerm = 0o600
 
-func ensureOutputDir(path string) error {
-	dir := filepath.Dir(path)
-
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		return fmt.Errorf("couldn't create a directory %s: %w", dir, err)
-	}
-
-	return nil
-}
-
 func WriteToFile(filePath string, doc xmlmodel.ValCurs, format string) error {
-	if err := ensureOutputDir(filePath); err != nil {
+	if err := outputfile.EnsureOutputDir(filePath); err != nil {
 		return fmt.Errorf("trouble with JSON: %w", err)
 	}
 
