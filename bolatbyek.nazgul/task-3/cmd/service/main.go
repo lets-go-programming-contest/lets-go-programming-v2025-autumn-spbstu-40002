@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/bolatbyek/task-3/internal/config"
+
 	"github.com/bolatbyek/task-3/internal/cbr"
+	"github.com/bolatbyek/task-3/internal/config"
 	"github.com/bolatbyek/task-3/internal/convert"
 	"github.com/bolatbyek/task-3/internal/output"
 )
@@ -42,6 +43,6 @@ func main() {
 		panic("Failed to save JSON: " + err.Error())
 	}
 
-	fmt.Printf("Successfully processed %d currencies and saved to %s\n", 
+	fmt.Printf("Successfully processed %d currencies and saved to %s\n",
 		len(sortedCurrencies), cfg.OutputFile)
 }
