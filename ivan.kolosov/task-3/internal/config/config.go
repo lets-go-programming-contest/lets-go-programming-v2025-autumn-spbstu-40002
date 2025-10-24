@@ -13,8 +13,8 @@ var (
 )
 
 type Config struct {
-	inputFile string `yaml:"input-file"`
-	oututFile string `yaml:"output-file"`
+	inputFile  string `yaml:"input-file"`
+	outputFile string `yaml:"output-file"`
 }
 
 func getConfig(path string) (Config, error) {
