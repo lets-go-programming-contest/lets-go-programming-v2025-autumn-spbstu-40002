@@ -1,14 +1,10 @@
-package xmlfile
+package model
 
 import (
 	"encoding/xml"
 	"fmt"
-	"os"
-	"sort"
 	"strconv"
 	"strings"
-
-	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
@@ -46,34 +42,4 @@ func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error 
 	v.Value = val
 
 	return nil
-}
-
-func GetValCursStruct(inputPath string) (ValCurs, error) {
-	var doc ValCurs
-
-	file, err := os.Open(inputPath)
-	if err != nil {
-		return doc, fmt.Errorf("couldn't open XML file: %w", err)
-	}
-
-	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Printf("error closing file: %v", err)
-		}
-	}()
-
-	decoder := xml.NewDecoder(file)
-	decoder.CharsetReader = charset.NewReaderLabel
-
-	if err := decoder.Decode(&doc); err != nil {
-		return doc, fmt.Errorf("xml parsing error: %w", err)
-	}
-
-	return doc, nil
-}
-
-func SortValCursByValue(doc *ValCurs) {
-	sort.Slice(doc.Valutes, func(i, j int) bool {
-		return doc.Valutes[i].Value > doc.Valutes[j].Value
-	})
 }
