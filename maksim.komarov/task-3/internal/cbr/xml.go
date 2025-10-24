@@ -4,9 +4,12 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
-	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/transform"
 )
 
 var (
@@ -34,7 +37,18 @@ func ReadFile(path string) (Document, error) {
 	}()
 
 	decoder := xml.NewDecoder(file)
-	decoder.CharsetReader = charset.NewReaderLabel
+
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		cs := strings.ToLower(strings.TrimSpace(charset))
+		switch cs {
+		case "utf-8", "utf8", "":
+			return input, nil
+		case "windows-1251", "windows1251", "cp1251":
+			return transform.NewReader(input, charmap.Windows1251.NewDecoder()), nil
+		default:
+			return nil, fmt.Errorf("%s: unsupported charset %q", ErrDecodeInputXML, charset)
+		}
+	}
 
 	var doc Document
 
