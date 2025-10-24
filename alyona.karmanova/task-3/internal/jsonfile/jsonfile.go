@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/HuaChenju/task-3/internal/xmlfile"
+	xmlmodel "github.com/HuaChenju/task-3/internal/xmlfile/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,7 +23,7 @@ func ensureOutputDir(path string) error {
 	return nil
 }
 
-func WriteToFile(filePath string, doc xmlfile.ValCurs, format string) error {
+func WriteToFile(filePath string, doc xmlmodel.ValCurs, format string) error {
 	if err := ensureOutputDir(filePath); err != nil {
 		return fmt.Errorf("trouble with JSON: %w", err)
 	}

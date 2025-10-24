@@ -8,7 +8,8 @@ import (
 
 	conf "github.com/HuaChenju/task-3/internal/configfile"
 	jsonFile "github.com/HuaChenju/task-3/internal/jsonfile"
-	xmlfile "github.com/HuaChenju/task-3/internal/xmlfile"
+	xmlsorter "github.com/HuaChenju/task-3/internal/xmlfile/sorter"
+	xmlfileparse "github.com/HuaChenju/task-3/internal/xmlfile/xmlparse"
 )
 
 var (
@@ -22,8 +23,8 @@ const (
 	configDefault string = ""
 	configHelp    string = "Path to configuration file"
 	fomatFlag     string = "output-format"
-	formatDefault        = "json"
-	formatHelp           = "Output file format (default: json)"
+	formatDefault string = "json"
+	formatHelp    string = "Output file format (default: json)"
 )
 
 func main() {
@@ -49,12 +50,12 @@ func main() {
 		panic(errMismatchedTypes)
 	}
 
-	doc, err := xmlfile.GetValCursStruct(cfg.InputFile)
+	doc, err := xmlfileparse.GetValCursStruct(cfg.InputFile)
 	if err != nil {
 		panic(err)
 	}
 
-	xmlfile.SortValCursByValue(&doc)
+	xmlsorter.SortValCursByValue(&doc)
 
 	err = jsonFile.WriteToFile(cfg.OutputFile, doc, *outputFormat)
 	if err != nil {
