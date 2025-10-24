@@ -2,7 +2,6 @@ package readingcurrencies
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,11 +10,11 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-var (
-	errParsingXML     = errors.New("error occurred while parsing xml file")
-	errParsingFloat   = errors.New("error occurred while parsing float")
-	errOpeningXMLFile = errors.New("error occurred while opening xml file")
-	errClosingXMLFile = errors.New("error occurred while closing xml file")
+const (
+	errParsingXML     = "error occurred while parsing xml file"
+	errParsingFloat   = "error occurred while parsing float"
+	errOpeningXMLFile = "error occurred while opening xml file"
+	errClosingXMLFile = "error occurred while closing xml file"
 )
 
 func (cur *CurrencyXML) UnmarshalXML(dec *xml.Decoder, start xml.StartElement) error {
