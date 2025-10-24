@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"github.com/bolatbyek/task-2-1/internal/department"
 )
 
 func main() {
@@ -11,35 +11,15 @@ func main() {
 
 	for i := 0; i < N; i++ {
 		// Process each department
-		minTemp := 15
-		maxTemp := 30
-		
+		manager := department.NewManager()
+
 		for j := 0; j < K; j++ {
 			var constraint string
 			fmt.Scan(&constraint)
-			
-			// Parse constraint (e.g., ">=30" or "<=25")
-			if strings.HasPrefix(constraint, ">=") {
-				var temp int
-				fmt.Sscanf(constraint, ">=%d", &temp)
-				if temp > minTemp {
-					minTemp = temp
-				}
-			} else if strings.HasPrefix(constraint, "<=") {
-				var temp int
-				fmt.Sscanf(constraint, "<=%d", &temp)
-				if temp < maxTemp {
-					maxTemp = temp
-				}
-			}
-			
-			// Check if valid range exists
-			if minTemp > maxTemp {
-				fmt.Println(-1)
-			} else {
-				// Output the minimum valid temperature
-				fmt.Println(minTemp)
-			}
+
+			// Add constraint and get optimal temperature
+			optimalTemp := manager.AddConstraint(constraint)
+			fmt.Println(optimalTemp)
 		}
 	}
 }
