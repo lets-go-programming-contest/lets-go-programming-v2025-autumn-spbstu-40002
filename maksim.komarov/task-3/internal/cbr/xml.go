@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"golang.org/x/net/html/charset"
 )
 
 var (
@@ -23,17 +25,22 @@ type Valute struct {
 }
 
 func ReadFile(path string) (Document, error) {
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
-		return Document{}, fmt.Errorf("%w: %v", ErrOpenInputXML, err)
+		return Document{}, fmt.Errorf("%s: %w", ErrOpenInputXML, err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
-	var d Document
-	dec := xml.NewDecoder(f)
-	if err := dec.Decode(&d); err != nil {
-		return Document{}, fmt.Errorf("%w: %v", ErrDecodeInputXML, err)
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
+
+	var doc Document
+
+	if err := decoder.Decode(&doc); err != nil {
+		return Document{}, fmt.Errorf("%s: %w", ErrDecodeInputXML, err)
 	}
 
-	return d, nil
+	return doc, nil
 }

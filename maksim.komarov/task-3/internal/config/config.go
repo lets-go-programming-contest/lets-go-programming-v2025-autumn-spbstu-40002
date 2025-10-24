@@ -21,15 +21,18 @@ type AppConfig struct {
 func Load(path string) (AppConfig, error) {
 	var cfg AppConfig
 
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
-		return AppConfig{}, fmt.Errorf("%w: %v", ErrOpenConfig, err)
+		return AppConfig{}, fmt.Errorf("%s: %w", ErrOpenConfig, err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
-	dec := yaml.NewDecoder(f)
-	if err := dec.Decode(&cfg); err != nil {
-		return AppConfig{}, fmt.Errorf("%w: %v", ErrDecodeConfig, err)
+	decoder := yaml.NewDecoder(file)
+
+	if err := decoder.Decode(&cfg); err != nil {
+		return AppConfig{}, fmt.Errorf("%s: %w", ErrDecodeConfig, err)
 	}
 
 	return cfg, nil

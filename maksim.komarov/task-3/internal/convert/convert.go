@@ -21,17 +21,18 @@ type CurrencyOut struct {
 func MapAndSort(doc cbr.Document) ([]CurrencyOut, error) {
 	out := make([]CurrencyOut, 0, len(doc.Valutes))
 
-	for _, v := range doc.Valutes {
-		num := strings.ReplaceAll(strings.TrimSpace(v.Value), ",", ".")
-		f, err := strconv.ParseFloat(num, 64)
+	for _, val := range doc.Valutes {
+		num := strings.ReplaceAll(strings.TrimSpace(val.Value), ",", ".")
+
+		parsed, err := strconv.ParseFloat(num, 64)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %q", ErrParseValue, v.Value)
+			return nil, fmt.Errorf("%s: %q", ErrParseValue, val.Value)
 		}
 
 		out = append(out, CurrencyOut{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    f,
+			NumCode:  val.NumCode,
+			CharCode: val.CharCode,
+			Value:    parsed,
 		})
 	}
 
