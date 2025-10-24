@@ -1,4 +1,4 @@
-package writingсurrencies
+package writingcurrencies
 
 import (
 	"encoding/json"
