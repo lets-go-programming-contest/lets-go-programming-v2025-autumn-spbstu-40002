@@ -1,92 +1,53 @@
-package readingCurrencies
+package writingCurrencies
 
 import (
-	"encoding/xml"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
-
-	"golang.org/x/net/html/charset"
+	"path/filepath"
 )
 
 var (
-	errParsingXML     = errors.New("error occurred while parsing xml file")
-	errParsingFloat   = errors.New("error occurred while parsing float")
-	errOpeningXMLFile = errors.New("error occurred while opening xml file")
-	errClosingXMLFile = errors.New("error occurred while closing xml file")
+	errCreatingDir     = errors.New("error occurred while creating specified directory")
+	errCreatingFile    = errors.New("error occurred while creating specified file")
+	errClosingJSONFile = errors.New("error occurred while closing json file")
+	errEncodingJSON    = errors.New("error occurred while encoding json file")
 )
 
-func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) error {
-	var temp struct {
-		ID        string `xml:"ID,attr"`
-		NumCode   int    `xml:"NumCode"`
-		CharCode  string `xml:"CharCode"`
-		Nominal   int    `xml:"Nominal"`
-		Name      string `xml:"Name"`
-		Value     string `xml:"Value"`
-		VunitRate string `xml:"VunitRate"`
-	}
+const dirPerm = 0o755
 
-	err := dc.DecodeElement(&temp, &start)
+func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
+	dir := filepath.Dir(path)
+
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
-		return errParsingXML
+		return fmt.Errorf("%v: %w", errCreatingDir, err)
 	}
 
-	s := strings.ReplaceAll(temp.Value, ",", ".")
-	if s == "" {
-		cur.ValueFloat = 0.0
-	} else {
-		cur.ValueFloat, err = strconv.ParseFloat(s, 64)
-		if err != nil {
-			return errParsingFloat
-		}
-	}
-
-	s = strings.ReplaceAll(temp.VunitRate, ",", ".")
-	if s == "" {
-		cur.VunitRateFloat = 0.0
-	} else {
-		cur.VunitRateFloat, err = strconv.ParseFloat(s, 64)
-		if err != nil {
-			return errParsingFloat
-		}
-	}
-
-	cur.ID = temp.ID
-	cur.NumCode = temp.NumCode
-	cur.CharCode = temp.CharCode
-	cur.Nominal = temp.Nominal
-	cur.Name = temp.Name
-	cur.Value = temp.Value
-	cur.VunitRate = temp.VunitRate
-	return nil
-}
-
-func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
-	file, err := os.Open(path)
+	file, err := os.Create(path)
 	if err != nil {
-		return cur, errOpeningXMLFile
+		return fmt.Errorf("%v: %w", errCreatingFile, err)
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
 			if returnError != nil {
-				returnError = fmt.Errorf("%w; %v", returnError, errClosingXMLFile)
+				returnError = fmt.Errorf("%v: %w; %v", returnError, err, errClosingJSONFile)
 			} else {
-				returnError = errClosingXMLFile
+				returnError = fmt.Errorf("%v: %w", errClosingJSONFile, err)
 			}
 		}
 	}()
 
-	dc := xml.NewDecoder(file)
-	dc.CharsetReader = charset.NewReaderLabel
-	err = dc.Decode(&cur)
+	enc := json.NewEncoder(file)
+	enc.SetIndent("", " ")
+
+	err = enc.Encode(data)
 	if err != nil {
-		return cur, errParsingXML
+		return fmt.Errorf("%v: %w", errEncodingJSON, err)
 	}
 
-	return cur, nil
+	return nil
 }
