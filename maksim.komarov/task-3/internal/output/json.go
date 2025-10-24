@@ -25,25 +25,26 @@ func WriteJSON(path string, data []convert.CurrencyOut) error {
 	dir := filepath.Dir(path)
 	if dir != "." && dir != "" {
 		if err := os.MkdirAll(dir, permDir); err != nil {
-			return fmt.Errorf("%s: %w", ErrMakeOutputDir, err)
+			return fmt.Errorf("%w: %v", ErrMakeOutputDir, err)
 		}
 	}
 
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, permFile)
 	if err != nil {
-		return fmt.Errorf("%s: %w", ErrCreateOutputFile, err)
+		return fmt.Errorf("%w: %v", ErrCreateOutputFile, err)
 	}
+
 	defer func() {
 		_ = file.Close()
 	}()
 
 	blob, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
-		return fmt.Errorf("%s: %w", ErrWriteJSON, err)
+		return fmt.Errorf("%w: %v", ErrWriteJSON, err)
 	}
 
 	if _, err := file.Write(append(blob, '\n')); err != nil {
-		return fmt.Errorf("%s: %w", ErrWriteJSON, err)
+		return fmt.Errorf("%w: %v", ErrWriteJSON, err)
 	}
 
 	return nil
