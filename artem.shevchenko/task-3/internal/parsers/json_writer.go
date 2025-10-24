@@ -42,6 +42,7 @@ func WriteJSON(path string, data *ValStruct) {
 	if err != nil {
 		panic(merr.ErrFailedToOpenOutputFile)
 	}
+	
 	defer func() {
 		err := file.Close()
 		if err != nil {
