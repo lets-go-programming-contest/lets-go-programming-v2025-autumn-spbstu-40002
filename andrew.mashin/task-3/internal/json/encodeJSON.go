@@ -1,4 +1,4 @@
-package jsonfiles
+package json
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Exam-Play/task-3/internal/xmlfiles"
+	"github.com/Exam-Play/task-3/internal/xml"
 )
 
 type CurrencySimple struct {
@@ -15,7 +15,7 @@ type CurrencySimple struct {
 	Value    float64 `json:"value"`
 }
 
-func EncodeJSON(currencies *xmlfiles.CurrenciesXML, outputFile string) error {
+func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 	dir := filepath.Dir(outputFile)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("unable to create directory: %w", err)
@@ -50,7 +50,6 @@ func EncodeJSON(currencies *xmlfiles.CurrenciesXML, outputFile string) error {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-
 	if err := encoder.Encode(simpleCurrencies); err != nil {
 		return fmt.Errorf("unable to encode json: %w", err)
 	}
