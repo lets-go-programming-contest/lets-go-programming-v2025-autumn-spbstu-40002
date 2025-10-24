@@ -27,13 +27,13 @@ func WriteJSON(path string, data *ValStruct) {
 	// Creating output directory
 	dir := filepath.Dir(path)
 
-	err = os.MkdirAll(dir, 0755)
+	err = os.MkdirAll(dir, 755)
 	if err != nil {
 		panic(merr.ErrFailedToCreateDir)
 	}
 
 	// Try to open output file.
-	file, err := os.OpenFile(path, os.O_APPEND | os.O_CREATE | os.O_RDWR, 0644)
+	file, err := os.OpenFile(path, os.O_APPEND | os.O_CREATE | os.O_RDWR, 644)
 	if err != nil {
 		panic(merr.ErrFailedToOpenOutputFile)
 	}
