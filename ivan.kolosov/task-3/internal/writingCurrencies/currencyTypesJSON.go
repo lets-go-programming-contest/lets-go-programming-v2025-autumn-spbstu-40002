@@ -1,4 +1,4 @@
-package writingCurrencies
+package writingcurrencies
 
 type CurrencyJSON struct {
 	NumCode  int     `json:"num_code"`
