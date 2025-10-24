@@ -1,4 +1,4 @@
-package outputFile
+package outputfile
 
 import (
 	"fmt"
