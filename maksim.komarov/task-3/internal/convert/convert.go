@@ -24,7 +24,6 @@ func MapAndSort(doc cbr.Document) ([]CurrencyOut, error) {
 	for _, val := range doc.Valutes {
 		num := strings.ReplaceAll(strings.TrimSpace(val.Value), ",", ".")
 		parsed, err := strconv.ParseFloat(num, 64)
-
 		if err != nil {
 			return nil, fmt.Errorf("%w: %q", ErrParseValue, val.Value)
 		}
