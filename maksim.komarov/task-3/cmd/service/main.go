@@ -30,12 +30,12 @@ func main() {
 		panic(err)
 	}
 
-	out, err := convert.MapAndSort(doc)
+	data, err := convert.MapAndSort(doc)
 	if err != nil {
 		panic(err)
 	}
-	
-	if err := output.WriteJSON(cfg.OutputFile, out); err != nil {
+
+	if err := output.WriteJSON(cfg.OutputFile, data); err != nil {
 		panic(err)
 	}
 }

@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	ErrOpenInputXML   = errors.New("open input xml")
-	ErrDecodeInputXML = errors.New("decode input xml")
+	ErrOpenInputXML       = errors.New("open input xml")
+	ErrDecodeInputXML     = errors.New("decode input xml")
+	ErrUnsupportedCharset = errors.New("unsupported charset")
 )
 
 type Document struct {
@@ -30,14 +31,14 @@ type Valute struct {
 func ReadFile(path string) (Document, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return Document{}, fmt.Errorf("%s: %w", ErrOpenInputXML, err)
+		return Document{}, fmt.Errorf("%w: %v", ErrOpenInputXML, err)
 	}
+
 	defer func() {
 		_ = file.Close()
 	}()
 
 	decoder := xml.NewDecoder(file)
-
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		cs := strings.ToLower(strings.TrimSpace(charset))
 		switch cs {
@@ -46,14 +47,14 @@ func ReadFile(path string) (Document, error) {
 		case "windows-1251", "windows1251", "cp1251":
 			return transform.NewReader(input, charmap.Windows1251.NewDecoder()), nil
 		default:
-			return nil, fmt.Errorf("%s: unsupported charset %q", ErrDecodeInputXML, charset)
+			return nil, fmt.Errorf("%w: %q", ErrUnsupportedCharset, charset)
 		}
 	}
 
 	var doc Document
 
 	if err := decoder.Decode(&doc); err != nil {
-		return Document{}, fmt.Errorf("%s: %w", ErrDecodeInputXML, err)
+		return Document{}, fmt.Errorf("%w: %v", ErrDecodeInputXML, err)
 	}
 
 	return doc, nil
