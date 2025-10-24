@@ -3,6 +3,11 @@ package main
 import (
 	"errors"
 	"flag"
+
+	cfg "github.com/InsomniaDemon/task-3/internal/config"
+	reading "github.com/InsomniaDemon/task-3/internal/readingCurrencies"
+	utils "github.com/InsomniaDemon/task-3/internal/utils"
+	writing "github.com/InsomniaDemon/task-3/internal/writingCurrencies"
 )
 
 var (
@@ -17,21 +22,21 @@ func main() {
 		panic(errNoConfigFileProvided)
 	}
 
-	config, err := cfg.getConfig(*pathToConfig)
+	config, err := cfg.GetConfig(*pathToConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	curxml, err := reading.getCurrencies(config.inputFile)
+	curxml, err := reading.GetCurrencies(config.InputFile)
 	if err != nil {
 		panic(err)
 	}
 
-	utils.sortCurrenciesXML(curxml)
+	utils.SortCurrenciesXML(&curxml)
 
-	curjson := utils.getCurrenciesJSON(curxml)
+	curjson := utils.GetCurrenciesJSON(curxml)
 
-	err = writing.writeCurrencies(curjson, config.outputFile)
+	err = writing.WriteCurrencies(curjson, config.OutputFile)
 	if err != nil {
 		panic(err)
 	}

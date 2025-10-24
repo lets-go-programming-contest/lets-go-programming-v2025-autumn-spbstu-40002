@@ -41,7 +41,7 @@ func (cur *CurrencyXML) UnmarshalXML(dc *xml.Decoder, start xml.StartElement) er
 	return nil
 }
 
-func getCurrencies(path string) (cur CurrenciesXML, returnError error) {
+func GetCurrencies(path string) (cur CurrenciesXML, returnError error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return cur, errOpeningXMLFile

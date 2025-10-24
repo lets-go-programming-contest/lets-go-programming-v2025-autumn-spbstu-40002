@@ -17,7 +17,7 @@ var (
 
 const dirPerm = 0o755
 
-func writeCurrencies(data CurrenciesJSON, path string) (returnError error) {
+func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
 	dir := filepath.Dir(path)
 
 	err := os.MkdirAll(dir, dirPerm)
