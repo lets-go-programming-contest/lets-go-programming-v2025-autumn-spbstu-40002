@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 )
 
+const dirPerm = 0o755
+
 type JSONData struct {
 	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
@@ -15,7 +17,7 @@ type JSONData struct {
 func WriteJSON(path string, recordData []JSONData) {
 	dir := filepath.Dir(path)
 
-	err := os.MkdirAll(dir, 0o755)
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
 		panic(ErrCreatDir)
 	}
