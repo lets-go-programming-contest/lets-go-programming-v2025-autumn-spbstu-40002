@@ -51,12 +51,7 @@ func ParseXML(path string) ([]Valute, error) {
 			return nil, fmt.Errorf("value parsing error for %s: %w", v.CharCode, err)
 		}
 
-		denom := 1
-		if v.Nominal > 0 {
-			denom = v.Nominal
-		}
-
-		v.Value = f / float64(denom)
+		v.Value = f
 	}
 
 	return curs.Valutes, nil
