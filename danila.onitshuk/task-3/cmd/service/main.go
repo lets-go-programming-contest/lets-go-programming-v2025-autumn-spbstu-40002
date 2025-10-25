@@ -30,5 +30,5 @@ func main() {
 	outputData := utils.ToCurrency(inputData.Valute)
 	utils.SortVal(outputData)
 
-	parser.WriteJson(cfg.OutputFile, outputData)
+	parser.WriteJSON(cfg.OutputFile, outputData)
 }
