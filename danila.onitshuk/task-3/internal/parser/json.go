@@ -32,6 +32,7 @@ func WriteJSON(path string, recordData []JSONData) {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+
 	err = encoder.Encode(recordData)
 	if err != nil {
 		panic(ErrWriteJSON)

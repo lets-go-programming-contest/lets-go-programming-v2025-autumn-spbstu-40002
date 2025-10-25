@@ -9,6 +9,7 @@ import (
 
 func parseValue(numberWithDot string) float64 {
 	numberWithDot = strings.ReplaceAll(numberWithDot, ",", ".")
+
 	num, err := strconv.ParseFloat(numberWithDot, 64)
 	if err != nil {
 		panic(err)
