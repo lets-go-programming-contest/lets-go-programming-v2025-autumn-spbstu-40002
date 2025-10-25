@@ -38,20 +38,20 @@ func ParseXML(path string) ([]Valute, error) {
 		return nil, fmt.Errorf("xml parsing error: %s: %w", path, err)
 	}
 
-	for i := range curs.Valutes {
-		v := &curs.Valutes[i]
+	for ind := range curs.Valutes {
+		value := &curs.Valutes[ind]
 
-		s := strings.TrimSpace(strings.ReplaceAll(v.ValueStr, ",", "."))
-		if s == "" {
-			return nil, fmt.Errorf("empty value for currency %s", v.CharCode)
+		str := strings.TrimSpace(strings.ReplaceAll(value.ValueStr, ",", "."))
+		if str == "" {
+			return nil, fmt.Errorf("empty value for currency %s", value.CharCode)
 		}
 
-		f, err := strconv.ParseFloat(s, 64)
+		fl, err := strconv.ParseFloat(str, 64)
 		if err != nil {
-			return nil, fmt.Errorf("value parsing error for %s: %w", v.CharCode, err)
+			return nil, fmt.Errorf("value parsing error for %s: %w", value.CharCode, err)
 		}
 
-		v.Value = f
+		value.Value = fl
 	}
 
 	return curs.Valutes, nil

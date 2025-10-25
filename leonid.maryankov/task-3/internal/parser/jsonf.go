@@ -14,7 +14,7 @@ func SortValute(vs []Valute) {
 	})
 }
 
-func SaveToJson(path string, valutes []Valute) error {
+func SaveToJSON(path string, valutes []Valute) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return fmt.Errorf("error creating directory for %s: %w", path, err)
 	}
