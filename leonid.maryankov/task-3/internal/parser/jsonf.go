@@ -15,7 +15,7 @@ func SortValute(vs []Valute) {
 }
 
 func SaveToJSON(path string, valutes []Valute) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("error creating directory for %s: %w", path, err)
 	}
 
@@ -39,8 +39,9 @@ func SaveToJSON(path string, valutes []Valute) error {
 		return fmt.Errorf("error in json serialization: %w", err)
 	}
 
-	if err := os.WriteFile(path, data, 0644); err != nil {
+	if err := os.WriteFile(path, data, 0o600); err != nil {
 		return fmt.Errorf("file write error: %s: %w", path, err)
 	}
+
 	return nil
 }

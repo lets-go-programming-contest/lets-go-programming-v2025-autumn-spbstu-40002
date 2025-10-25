@@ -3,6 +3,7 @@ package parser
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,6 +25,8 @@ type Valute struct {
 	Value    float64 `xml:"-"`
 }
 
+var errEmptyValue = errors.New("empty value for currency")
+
 func ParseXML(path string) ([]Valute, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -43,7 +46,7 @@ func ParseXML(path string) ([]Valute, error) {
 
 		str := strings.TrimSpace(strings.ReplaceAll(value.ValueStr, ",", "."))
 		if str == "" {
-			return nil, fmt.Errorf("empty value for currency %s", value.CharCode)
+			return nil, fmt.Errorf("%w %s", errEmptyValue, value.CharCode)
 		}
 
 		fl, err := strconv.ParseFloat(str, 64)
