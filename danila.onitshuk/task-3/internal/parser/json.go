@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 )
 
-type JsonData struct {
+type JSONData struct {
 	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
 
-func WriteJson(path string, recordData []JsonData) {
+func WriteJSON(path string, recordData []JSONData) {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		panic(ErrCreatDir)
@@ -20,7 +20,7 @@ func WriteJson(path string, recordData []JsonData) {
 
 	file, err := os.Create(path)
 	if err != nil {
-		panic(ErrCreatJson)
+		panic(ErrCreatJSON)
 	}
 
 	defer func() {
@@ -34,6 +34,6 @@ func WriteJson(path string, recordData []JsonData) {
 	encoder.SetIndent("", "  ")
 	err = encoder.Encode(recordData)
 	if err != nil {
-		panic(ErrWriteJson)
+		panic(ErrWriteJSON)
 	}
 }

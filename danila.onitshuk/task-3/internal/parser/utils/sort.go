@@ -6,7 +6,7 @@ import (
 	"danila.onitshuk/task-3/internal/parser"
 )
 
-func SortVal(data []parser.JsonData) {
+func SortVal(data []parser.JSONData) {
 	sort.Slice(data, func(i, j int) bool {
 		return data[i].Value > data[j].Value
 	})

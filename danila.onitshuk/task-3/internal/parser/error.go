@@ -7,6 +7,6 @@ var (
 	ErrCloseFile    = errors.New("failed to close file")
 	ErrDecodeXML    = errors.New("failed to decode data from XML")
 	ErrCreatDir     = errors.New("could not create a directory")
-	ErrCreatJson    = errors.New("could not create a json")
-	ErrWriteJson    = errors.New("could not write a json")
+	ErrCreatJSON    = errors.New("could not create a json")
+	ErrWriteJSON    = errors.New("could not write a json")
 )

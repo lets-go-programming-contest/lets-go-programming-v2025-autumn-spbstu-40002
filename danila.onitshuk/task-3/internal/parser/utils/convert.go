@@ -7,22 +7,22 @@ import (
 	"danila.onitshuk/task-3/internal/parser"
 )
 
-func parseValue(numberWithDot string) (float64, error) {
+func parseValue(numberWithDot string) float64 {
 	numberWithDot = strings.ReplaceAll(numberWithDot, ",", ".")
+	num, err := strconv.ParseFloat(numberWithDot, 64)
+	if err != nil {
+		panic(err)
+	}
 
-	return strconv.ParseFloat(numberWithDot, 64)
+	return num
 }
 
-func ToCurrency(data []parser.Valute) []parser.JsonData {
-	result := make([]parser.JsonData, 0, len(data))
+func ToCurrency(data []parser.Valute) []parser.JSONData {
+	result := make([]parser.JSONData, 0, len(data))
 
 	for _, currency := range data {
-		value, err := parseValue(currency.Value)
-		if err != nil {
-			panic(err)
-		}
-
-		result = append(result, parser.JsonData{
+		value := parseValue(currency.Value)
+		result = append(result, parser.JSONData{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
 			Value:    value,
