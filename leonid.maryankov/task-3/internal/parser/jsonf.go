@@ -16,7 +16,7 @@ func SortValute(vs []Valute) {
 
 func SaveToJson(path string, valutes []Valute) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return fmt.Errorf("Error creating a directory for " + path + err.Error())
+		return fmt.Errorf("error creating directory for %s: %w", path, err)
 	}
 
 	type Currency struct {
@@ -36,11 +36,11 @@ func SaveToJson(path string, valutes []Valute) error {
 
 	data, err := json.MarshalIndent(output, "", "  ")
 	if err != nil {
-		return fmt.Errorf("Error in JSON serialization: " + err.Error())
+		return fmt.Errorf("error in json serialization: %w", err)
 	}
 
 	if err := os.WriteFile(path, data, 0644); err != nil {
-		return fmt.Errorf("File recording error: " + path + err.Error())
+		return fmt.Errorf("file write error: %s: %w", path, err)
 	}
 	return nil
 }

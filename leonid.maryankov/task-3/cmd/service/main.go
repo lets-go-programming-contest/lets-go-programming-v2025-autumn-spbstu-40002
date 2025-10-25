@@ -10,32 +10,32 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path")
+	cfgPath := flag.String("config", "", "Path to YAML")
 	flag.Parse()
 
-	if *configPath == "" {
-		panic("The path to the configuration file is not specified")
+	if *cfgPath == "" {
+		log.Fatal("The path to the configuration file is not specified")
 	}
 
-	cfg, err := config.LoadConfig(*configPath)
+	cfg, err := config.LoadConfig(*cfgPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		log.Fatalln("The input XML file was not found" + cfg.InputFile)
+	if _, err := os.Stat(cfg.InputFile); err != nil {
+		log.Fatal(err)
 	}
 
 	valutes, err := parser.ParseXML(cfg.InputFile)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	parser.SortValute(valutes)
 
 	if err := parser.SaveToJson(cfg.OutputFile, valutes); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	log.Println("Saved in" + cfg.OutputFile)
+	log.Println("Saved in " + cfg.OutputFile)
 }
