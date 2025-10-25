@@ -32,7 +32,7 @@ func main() {
 
 	parser.SortValute(valutes)
 
-	if err := parser.SaveToJson(cfg.OutputFile, valutes); err != nil {
+	if err := parser.SaveToJSON(cfg.OutputFile, valutes); err != nil {
 		panic(err)
 	}
 }
