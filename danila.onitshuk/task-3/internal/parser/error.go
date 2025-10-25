@@ -3,12 +3,10 @@ package parser
 import "errors"
 
 var (
-	ErrFileNotFound = errors.New("file not found")
+	ErrFileNotFound = errors.New("no such file or directory")
 	ErrCloseFile    = errors.New("failed to close file")
 	ErrDecodeXML    = errors.New("failed to decode data from XML")
-	ErrCreatDir     = errors.New("")
-	ErrCreatJson    = errors.New("")
-	ErrWriteJson    = errors.New("")
-
-	Err = errors.New("")
+	ErrCreatDir     = errors.New("could not create a directory")
+	ErrCreatJson    = errors.New("could not create a json")
+	ErrWriteJson    = errors.New("could not write a json")
 )
