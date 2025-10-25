@@ -22,7 +22,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Проверяем наличие входного XML файла — при ошибке выводим сам err (например, "no such file or directory")
 	if _, err := os.Stat(cfg.InputFile); err != nil {
 		log.Fatal(err)
 	}
@@ -37,6 +36,4 @@ func main() {
 	if err := parser.SaveToJson(cfg.OutputFile, valutes); err != nil {
 		log.Fatal(err)
 	}
-
-	log.Println("Saved in " + cfg.OutputFile)
 }
