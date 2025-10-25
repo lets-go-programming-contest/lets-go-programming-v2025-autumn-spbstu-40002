@@ -10,11 +10,11 @@ import (
 )
 
 func main() {
-	cfgPath := flag.String("config", "", "Path to YAML")
+	cfgPath := flag.String("config", "", "Path to YAML config file")
 	flag.Parse()
 
 	if *cfgPath == "" {
-		log.Fatal("The path to the configuration file is not specified")
+		log.Fatal("the path to the configuration file is not specified")
 	}
 
 	cfg, err := config.LoadConfig(*cfgPath)
@@ -22,6 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Проверяем наличие входного XML файла — при ошибке выводим сам err (например, "no such file or directory")
 	if _, err := os.Stat(cfg.InputFile); err != nil {
 		log.Fatal(err)
 	}
