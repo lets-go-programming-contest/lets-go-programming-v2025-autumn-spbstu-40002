@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValCurs Date="02.03.2022" name="Foreign Currency Market">
+  <Valute ID="R01010">
+    <NumCode>036</NumCode>
+    <CharCode>AUD</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Австралийский доллар</Name>
+    <Value>16.0103</Value>
+  </Valute>
+  <Valute ID="R01035">
+    <NumCode>826</NumCode>
+    <CharCode>GBP</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Фунт стерлингов Соединенного королевства</Name>
+    <Value>63.8250</Value>
+  </Valute>
+  <Valute ID="R01090">
+    <NumCode>840</NumCode>
+    <CharCode>USD</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Доллар США</Name>
+    <Value>45.5000</Value>
+  </Valute>
+  <Valute ID="R01135">
+    <NumCode>978</NumCode>
+    <CharCode>EUR</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Евро</Name>
+    <Value>50.2500</Value>
+  </Valute>
+</ValCurs>
