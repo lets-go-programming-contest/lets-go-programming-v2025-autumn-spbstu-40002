@@ -32,5 +32,6 @@ func (ih *IntHeap) Pop() interface{} {
 
 	x := old[n-1]
 	*ih = old[:n-1]
+
 	return x
 }

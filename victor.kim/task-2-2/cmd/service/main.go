@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	errInvalidTotal = errors.New("invalid number of elements")
-	errInvalidValue = errors.New("invalid input value")
-	errInvalidK     = errors.New("invalid k value")
+	errInvalidTotal = errors.New("invalid total number of dishes")
+	errInvalidInput = errors.New("invalid input while reading dishes")
+	errInvalidKth   = errors.New("invalid k value")
 )
 
 func main() {
@@ -21,33 +21,33 @@ func main() {
 		return
 	}
 
-	arr := make([]int, total)
-	for i := range arr {
-		if _, err := fmt.Scan(&arr[i]); err != nil {
-			fmt.Println(errInvalidValue)
+	array := make([]int, total)
+	for i := range array {
+		if _, err := fmt.Scan(&array[i]); err != nil {
+			fmt.Println(errInvalidInput)
 			return
 		}
 	}
 
 	var kth int
 	if _, err := fmt.Scan(&kth); err != nil || kth <= 0 || kth > total {
-		fmt.Println(errInvalidK)
+		fmt.Println(errInvalidKth)
 		return
 	}
 
-	h := &heaputils.IntHeap{}
-	heap.Init(h)
+	minHeap := &heaputils.IntHeap{}
+	heap.Init(minHeap)
 
-	for i := range arr[:kth] {
-		heap.Push(h, arr[i])
+	for i := range array[:kth] {
+		heap.Push(minHeap, array[i])
 	}
 
-	for _, v := range arr[kth:] {
-		if v > (*h)[0] {
-			heap.Pop(h)
-			heap.Push(h, v)
+	for _, value := range array[kth:] {
+		if value > (*minHeap)[0] {
+			heap.Pop(minHeap)
+			heap.Push(minHeap, value)
 		}
 	}
 
-	fmt.Println((*h)[0])
+	fmt.Println((*minHeap)[0])
 }
