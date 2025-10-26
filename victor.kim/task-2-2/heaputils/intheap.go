@@ -26,8 +26,11 @@ func (ih *IntHeap) Push(x interface{}) {
 func (ih *IntHeap) Pop() interface{} {
 	old := *ih
 	n := len(old)
+	if n == 0 {
+		return nil
+	}
+
 	x := old[n-1]
 	*ih = old[:n-1]
-
 	return x
 }
