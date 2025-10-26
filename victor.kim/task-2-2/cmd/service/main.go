@@ -18,6 +18,7 @@ func main() {
 	var total int
 	if _, err := fmt.Scan(&total); err != nil || total <= 0 {
 		fmt.Println(errInvalidTotal)
+
 		return
 	}
 
@@ -25,6 +26,7 @@ func main() {
 	for i := range array {
 		if _, err := fmt.Scan(&array[i]); err != nil {
 			fmt.Println(errInvalidInput)
+
 			return
 		}
 	}
@@ -32,6 +34,7 @@ func main() {
 	var kth int
 	if _, err := fmt.Scan(&kth); err != nil || kth <= 0 || kth > total {
 		fmt.Println(errInvalidKth)
+
 		return
 	}
 

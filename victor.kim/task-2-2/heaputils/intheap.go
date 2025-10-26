@@ -25,13 +25,13 @@ func (ih *IntHeap) Push(x interface{}) {
 
 func (ih *IntHeap) Pop() interface{} {
 	old := *ih
-	n := len(old)
-	if n == 0 {
+	if len(old) == 0 {
 		return nil
 	}
 
-	x := old[n-1]
-	*ih = old[:n-1]
+	lastIndex := len(old) - 1
+	last := old[lastIndex]
+	*ih = old[:lastIndex]
 
-	return x
+	return last
 }
