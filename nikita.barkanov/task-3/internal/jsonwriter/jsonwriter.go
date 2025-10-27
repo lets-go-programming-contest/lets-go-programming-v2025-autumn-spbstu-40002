@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/ControlShiftEscape/task-3/internal/models"
@@ -34,6 +35,10 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 		}
 	}
 
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		return fmt.Errorf("failed to create directory for %s: %w", outputPath, err)
+	}
+
 	file, err := os.Create(outputPath)
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", outputPath, err)
@@ -47,9 +52,5 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(reduced); err != nil {
-		return fmt.Errorf("failed to encode JSON: %w", err)
-	}
-
-	return nil
+	return encoder.Encode(reduced)
 }
