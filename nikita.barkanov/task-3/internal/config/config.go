@@ -16,8 +16,8 @@ var (
 )
 
 type Config struct {
-	Input  string `yaml:"inputFile"`
-	Output string `yaml:"outputFile"`
+	Input  string `yaml:"input-file"`
+	Output string `yaml:"output-file"`
 }
 
 func ParseConfig(path string) (*Config, error) {
