@@ -28,7 +28,7 @@ func main() {
 
 	curs, err := xmlp.ParseXML(config.Input)
 	if err != nil {
-		log.Fatalf("Failed to parse XML file %s: %v", config.Input, err)
+		log.Printf("Input file:  %s", config.Input)
 	}
 
 	if err := jsonw.WriteSortedReducedJSON(curs, config.Output); err != nil {
