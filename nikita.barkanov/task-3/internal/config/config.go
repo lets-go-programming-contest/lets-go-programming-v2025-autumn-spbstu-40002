@@ -16,25 +16,30 @@ var (
 )
 
 type Config struct {
-	InputFile  string `yaml:"inputFile"`
-	OutputFile string `yaml:"outputFile"`
+	Input  string `yaml:"inputFile"`
+	Output string `yaml:"outputFile"`
 }
 
-func GetConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+func ParseConfig(path string) (*Config, error) {
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrConfigFileOpen, err)
+		return nil, fmt.Errorf("%w: %w", ErrConfigFileOpen, err)
 	}
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			fmt.Fprintf(os.Stderr, "error: failed to close file %v\n", closeErr)
+		}
+	}()
 
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("%s: %w", ErrYAMLParsing, err)
+	if err := yaml.NewDecoder(file).Decode(&cfg); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrYAMLParsing, err)
 	}
 
-	if cfg.InputFile == "" {
+	if cfg.Input == "" {
 		return nil, ErrInputFileMissing
 	}
-	if cfg.OutputFile == "" {
+	if cfg.Output == "" {
 		return nil, ErrOutputFileMissing
 	}
 
