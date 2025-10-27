@@ -1,0 +1,56 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
+
+	"path/filepath"
+
+	"github.com/Svyatoslav2324/task-3/internal/data"
+	"github.com/Svyatoslav2324/task-3/internal/marshaljson"
+	"github.com/Svyatoslav2324/task-3/internal/unmarshalxml"
+	"github.com/Svyatoslav2324/task-3/internal/unmarshalyaml"
+)
+
+func makeDir(outFile string) {
+	dir := filepath.Dir(outFile)
+	_, err := os.Stat(dir)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(dir, 0755)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func main() {
+	config := unmarshalyaml.GetPaths()
+
+	inputFile, err := os.Open(config.InputFile)
+	if err != nil {
+		panic(err)
+	}
+	defer inputFile.Close()
+
+	valutes := new(data.DataStruct)
+	err = unmarshalxml.UnMarshalXML(inputFile, valutes)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	sort.Slice(valutes.ValCurs, func(i, j int) bool {
+		valuei, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[i].Value, ",", ".", 1), 64)
+		valuej, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[j].Value, ",", ".", 1), 64)
+		return valuei > valuej
+	})
+
+	makeDir(config.OutputFile)
+
+	outputFile, _ := os.Create(config.OutputFile)
+	defer outputFile.Close()
+
+	marshaljson.MarshalJSON(outputFile, valutes)
+}
