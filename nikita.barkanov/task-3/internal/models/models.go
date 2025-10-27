@@ -1,6 +1,11 @@
 package models
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"sort"
+	"strconv"
+	"strings"
+)
 
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
@@ -17,4 +22,38 @@ type Valute struct {
 	Name      string `xml:"Name"`
 	Value     string `xml:"Value"`
 	VunitRate string `xml:"VunitRate"`
+}
+
+func (v *Valute) ValueFloat() (float64, error) {
+	cleaned := strings.ReplaceAll(v.Value, ",", ".")
+	return strconv.ParseFloat(cleaned, 64)
+}
+
+func SortByValueDesc(curs *ValCurs) error {
+	return sortValutes(curs, true)
+}
+
+func sortValutes(curs *ValCurs, desc bool) error {
+	if curs == nil || len(curs.Valutes) == 0 {
+		return nil
+	}
+
+	sort.Slice(curs.Valutes, func(i, j int) bool {
+		vi, errI := curs.Valutes[i].ValueFloat()
+		vj, errJ := curs.Valutes[j].ValueFloat()
+
+		if errI != nil {
+			return false
+		}
+		if errJ != nil {
+			return true
+		}
+
+		if desc {
+			return vi > vj
+		}
+		return vi < vj
+	})
+
+	return nil
 }
