@@ -6,6 +6,7 @@ import (
 	"os"
 
 	mdls "github.com/ControlShiftEscape/task-3/internal/models"
+	"golang.org/x/net/html/charset"
 )
 
 var (
@@ -25,6 +26,8 @@ func ParseXML(path string) (*mdls.ValCurs, error) {
 	}()
 
 	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
+
 	var curs mdls.ValCurs
 	if err := decoder.Decode(&curs); err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrXMLParsing, err)
