@@ -6,15 +6,16 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/ControlShiftEscape/task-3/internal/models"
 )
 
 type ReducedValute struct {
-	NumCode  string `json:"num_code"`
-	CharCode string `json:"char_code"`
-	Value    string `json:"value"`
+	NumCode  int     `json:"num_code"`
+	CharCode string  `json:"char_code"`
+	Value    float64 `json:"value"`
 }
 
 func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
@@ -28,10 +29,13 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 
 	reduced := make([]ReducedValute, len(curs.Valutes))
 	for i, v := range curs.Valutes {
+		num, _ := strconv.Atoi(v.NumCode)
+		val, _ := strconv.ParseFloat(strings.ReplaceAll(v.Value, ",", "."), 64)
+
 		reduced[i] = ReducedValute{
-			NumCode:  v.NumCode,
+			NumCode:  num,
 			CharCode: v.CharCode,
-			Value:    strings.ReplaceAll(v.Value, ",", "."),
+			Value:    val,
 		}
 	}
 
@@ -43,7 +47,6 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", outputPath, err)
 	}
-
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			log.Printf("Warning: failed to close file %s: %v", outputPath, closeErr)
