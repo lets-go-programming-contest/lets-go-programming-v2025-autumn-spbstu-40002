@@ -16,7 +16,7 @@ var (
 func ParseXML(path string) (*mdls.ValCurs, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrXMLFileOpen, err)
+		return nil, fmt.Errorf("%w: Input file %s: %w", ErrXMLFileOpen, path, err)
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
