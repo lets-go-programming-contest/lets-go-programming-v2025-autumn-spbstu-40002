@@ -36,12 +36,5 @@ func ParseConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("%w: %w", ErrYAMLParsing, err)
 	}
 
-	if cfg.Input == "" {
-		return nil, ErrInputFileMissing
-	}
-	if cfg.Output == "" {
-		return nil, ErrOutputFileMissing
-	}
-
 	return &cfg, nil
 }
