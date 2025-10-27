@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"flag"
-	"log"
 
 	cfg "github.com/ControlShiftEscape/task-3/internal/config"
 	jsonw "github.com/ControlShiftEscape/task-3/internal/jsonwriter"
@@ -28,11 +27,11 @@ func main() {
 
 	curs, err := xmlp.ParseXML(config.Input)
 	if err != nil {
-		log.Printf("Input file:  %s", config.Input)
+		//log.Printf("Input file:  %s", config.Input)
 	}
 
 	if err := jsonw.WriteSortedReducedJSON(curs, config.Output); err != nil {
-		log.Fatalf("Failed to write JSON to %s: %v", config.Output, err)
+		//log.Fatalf("Failed to write JSON to %s: %v", config.Output, err)
 	}
 
 }
