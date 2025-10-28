@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Svyatoslav2324/task-3/internal/data"
+	"github.com/Svyatoslav2324/task-3/internal/structures"
 )
 
-func MarshalJSON(outputFile *os.File, valutes *data.DataStruct) error {
+func MarshalJSON(outputFile *os.File, valutes *structures.JSONStruct) error {
 	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", " ")
 

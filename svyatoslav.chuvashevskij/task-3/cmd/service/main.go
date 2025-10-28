@@ -9,8 +9,8 @@ import (
 
 	"path/filepath"
 
-	"github.com/Svyatoslav2324/task-3/internal/data"
 	"github.com/Svyatoslav2324/task-3/internal/marshaljson"
+	"github.com/Svyatoslav2324/task-3/internal/structures"
 	"github.com/Svyatoslav2324/task-3/internal/unmarshalxml"
 	"github.com/Svyatoslav2324/task-3/internal/unmarshalyaml"
 )
@@ -44,7 +44,7 @@ func main() {
 	}
 	defer closeFile(inputFile)
 
-	valutes := new(data.DataStruct)
+	valutes := new(structures.XMLStruct)
 
 	err = unmarshalxml.UnMarshalXML(inputFile, valutes)
 	if err != nil {
@@ -65,7 +65,14 @@ func main() {
 	outputFile, _ := os.Create(config.OutputFile)
 	defer closeFile(outputFile)
 
-	err = marshaljson.MarshalJSON(outputFile, valutes)
+	jsonValutes, err := structures.ConvertXMLToJSON(*valutes)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
+	err = marshaljson.MarshalJSON(outputFile, &jsonValutes)
 	if err != nil {
 		fmt.Println(err)
 
