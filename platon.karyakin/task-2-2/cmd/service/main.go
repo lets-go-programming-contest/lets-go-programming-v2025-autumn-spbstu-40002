@@ -9,62 +9,76 @@ import (
 	"github.com/rekottt/task-2-2/ktherr"
 )
 
-func main() {
+func readItemCount() (int, error) {
 	var itemCount int
 	if _, err := fmt.Fscan(os.Stdin, &itemCount); err != nil {
-		fmt.Fprintln(os.Stderr, ktherr.ErrReadItemCount)
-		
-		return
+		return 0, ktherr.ErrReadItemCount
 	}
-
 	if itemCount < 1 || itemCount > 10000 {
-		fmt.Fprintln(os.Stderr, ktherr.ErrInvalidItemCount)
-
-		return
+		return 0, ktherr.ErrInvalidItemCount
 	}
+	
+	return itemCount, nil
+}
 
-	values := make([]int, itemCount)
-	for idx := range values {
-		if _, err := fmt.Fscan(os.Stdin, &values[idx]); err != nil {
-			fmt.Fprintln(os.Stderr, ktherr.ErrReadValue)
-			
-			return
+func readValues(count int) ([]int, error) {
+	values := make([]int, count)
+	for i := range values {
+		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
+			return nil, ktherr.ErrReadValue
 		}
-
-		if values[idx] < -10000 || values[idx] > 10000 {
-			fmt.Fprintln(os.Stderr, ktherr.ErrValueOutOfRange)
-			
-			return
+		if values[i] < -10000 || values[i] > 10000 {
+			return nil, ktherr.ErrValueOutOfRange
 		}
 	}
+	
+	return values, nil
+}
 
+func readPosition(itemCount int) (int, error) {
 	var position int
 	if _, err := fmt.Fscan(os.Stdin, &position); err != nil {
-		fmt.Fprintln(os.Stderr, ktherr.ErrReadPosition)
+		return 0, ktherr.ErrReadPosition
+	}
+	if position < 1 || position > itemCount {
+		return 0, ktherr.ErrPositionOutOfRange
+	}
+	
+	return position, nil
+}
+
+func main() {
+	itemCount, err := readItemCount()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		
 		return
 	}
 
-	if position < 1 || position > itemCount {
-		fmt.Fprintln(os.Stderr, ktherr.ErrPositionOutOfRange)
+	values, err := readValues(itemCount)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		
+		return
+	}
+
+	position, err := readPosition(itemCount)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		
 		return
 	}
 
 	result, err := kth.KthMostPreferred(values, position)
 	if err != nil {
-		if errors.Is(err, ktherr.ErrEmptyResult) {
+		switch {
+		case errors.Is(err, ktherr.ErrEmptyResult):
 			fmt.Fprintln(os.Stderr, ktherr.ErrEmptyResult)
-			
-			return
-		}
-		if errors.Is(err, ktherr.ErrPositionOutOfRange) {
+		case errors.Is(err, ktherr.ErrPositionOutOfRange):
 			fmt.Fprintln(os.Stderr, ktherr.ErrPositionOutOfRange)
-			
-			return
+		default:
+			fmt.Fprintln(os.Stderr, err)
 		}
-
-		fmt.Fprintln(os.Stderr, err)
 		
 		return
 	}
