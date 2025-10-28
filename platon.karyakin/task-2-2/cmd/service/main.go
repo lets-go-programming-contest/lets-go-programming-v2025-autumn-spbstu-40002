@@ -71,12 +71,15 @@ func main() {
 		switch {
 		case errors.Is(err, ktherr.ErrEmptyResult):
 			fmt.Fprintln(os.Stderr, ktherr.ErrEmptyResult)
+			return
 		case errors.Is(err, ktherr.ErrPositionOutOfRange):
 			fmt.Fprintln(os.Stderr, ktherr.ErrPositionOutOfRange)
+			return
 		default:
 			fmt.Fprintln(os.Stderr, err)
+			
+			return
 		}
-		return
 	}
 
 	fmt.Println(result)
