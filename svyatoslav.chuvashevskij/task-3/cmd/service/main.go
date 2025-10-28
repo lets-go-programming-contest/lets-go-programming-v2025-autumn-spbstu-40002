@@ -18,7 +18,7 @@ func makeDir(outFile string) {
 	dir := filepath.Dir(outFile)
 	_, err := os.Stat(dir)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(dir, 0755)
+		err = os.MkdirAll(dir, 0o755)
 		if err != nil {
 			panic(err)
 		}
