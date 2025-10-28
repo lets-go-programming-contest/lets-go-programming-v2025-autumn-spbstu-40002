@@ -10,5 +10,5 @@ import (
 func MarshalJSON(outputFile *os.File, valutes *data.DataStruct) {
 	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", " ")
-	encoder.Encode(*valutes)
+	encoder.Encode(valutes.ValCurs)
 }
