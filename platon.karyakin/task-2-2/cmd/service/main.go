@@ -14,6 +14,7 @@ func readItemCount() (int, error) {
 	if _, err := fmt.Fscan(os.Stdin, &itemCount); err != nil {
 		return 0, ktherr.ErrReadItemCount
 	}
+
 	if itemCount < 1 || itemCount > 10000 {
 		return 0, ktherr.ErrInvalidItemCount
 	}
@@ -27,6 +28,7 @@ func readValues(count int) ([]int, error) {
 		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
 			return nil, ktherr.ErrReadValue
 		}
+
 		if values[i] < -10000 || values[i] > 10000 {
 			return nil, ktherr.ErrValueOutOfRange
 		}
@@ -40,6 +42,7 @@ func readPosition(itemCount int) (int, error) {
 	if _, err := fmt.Fscan(os.Stdin, &position); err != nil {
 		return 0, ktherr.ErrReadPosition
 	}
+
 	if position < 1 || position > itemCount {
 		return 0, ktherr.ErrPositionOutOfRange
 	}
