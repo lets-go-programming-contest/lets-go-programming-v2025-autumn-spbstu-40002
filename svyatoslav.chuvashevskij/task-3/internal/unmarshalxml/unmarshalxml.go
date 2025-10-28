@@ -2,7 +2,7 @@ package unmarshalxml
 
 import (
 	"encoding/xml"
-	"fmt"
+	"errors"
 	"io"
 	"os"
 
@@ -10,8 +10,9 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-func UnMarshalXML(inputFile *os.File, valutes *data.DataStruct) error {
+var ErrUnsuppotedCharset error = errors.New("unsupported charset")
 
+func UnMarshalXML(inputFile *os.File, valutes *data.DataStruct) error {
 	decoder := xml.NewDecoder(inputFile)
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
@@ -19,7 +20,7 @@ func UnMarshalXML(inputFile *os.File, valutes *data.DataStruct) error {
 		case "windows-1251":
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		default:
-			return nil, fmt.Errorf("unsupported charset: %s", charset)
+			return nil, ErrUnsuppotedCharset
 		}
 	}
 

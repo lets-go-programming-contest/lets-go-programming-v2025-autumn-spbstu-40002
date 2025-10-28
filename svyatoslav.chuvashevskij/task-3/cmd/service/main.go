@@ -26,6 +26,14 @@ func makeDir(outFile string) {
 	}
 }
 
+func closeFile(file *os.File) {
+	err := file.Close()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func main() {
 	config := unmarshalyaml.GetPaths()
 
@@ -33,24 +41,30 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer inputFile.Close()
+	defer closeFile(inputFile)
 
 	valutes := new(data.DataStruct)
 	err = unmarshalxml.UnMarshalXML(inputFile, valutes)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	sort.Slice(valutes.ValCurs, func(i, j int) bool {
 		valuei, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[i].Value, ",", ".", 1), 64)
 		valuej, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[j].Value, ",", ".", 1), 64)
+
 		return valuei > valuej
 	})
 
 	makeDir(config.OutputFile)
 
 	outputFile, _ := os.Create(config.OutputFile)
-	defer outputFile.Close()
+	defer closeFile(outputFile)
 
-	marshaljson.MarshalJSON(outputFile, valutes)
+	err = marshaljson.MarshalJSON(outputFile, valutes)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
