@@ -13,7 +13,8 @@ func readItemCount() (int, error) {
 	var itemCount int
 	if _, err := fmt.Fscan(os.Stdin, &itemCount); err != nil {
 		return 0, ktherr.ErrReadItemCount
-	} else if itemCount < 1 || itemCount > 10000 {
+	}
+	if itemCount < 1 || itemCount > 10000 {
 		return 0, ktherr.ErrInvalidItemCount
 	}
 
@@ -25,7 +26,8 @@ func readValues(count int) ([]int, error) {
 	for i := range values {
 		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
 			return nil, ktherr.ErrReadValue
-		} else if values[i] < -10000 || values[i] > 10000 {
+		}
+		if values[i] < -10000 || values[i] > 10000 {
 			return nil, ktherr.ErrValueOutOfRange
 		}
 	}
@@ -37,7 +39,8 @@ func readPosition(itemCount int) (int, error) {
 	var position int
 	if _, err := fmt.Fscan(os.Stdin, &position); err != nil {
 		return 0, ktherr.ErrReadPosition
-	} else if position < 1 || position > itemCount {
+	}
+	if position < 1 || position > itemCount {
 		return 0, ktherr.ErrPositionOutOfRange
 	}
 
@@ -48,21 +51,21 @@ func main() {
 	itemCount, err := readItemCount()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		
+
 		return
 	}
 
 	values, err := readValues(itemCount)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		
+
 		return
 	}
 
 	position, err := readPosition(itemCount)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		
+
 		return
 	}
 
@@ -71,13 +74,15 @@ func main() {
 		switch {
 		case errors.Is(err, ktherr.ErrEmptyResult):
 			fmt.Fprintln(os.Stderr, ktherr.ErrEmptyResult)
+
 			return
 		case errors.Is(err, ktherr.ErrPositionOutOfRange):
 			fmt.Fprintln(os.Stderr, ktherr.ErrPositionOutOfRange)
+
 			return
 		default:
 			fmt.Fprintln(os.Stderr, err)
-			
+
 			return
 		}
 	}
