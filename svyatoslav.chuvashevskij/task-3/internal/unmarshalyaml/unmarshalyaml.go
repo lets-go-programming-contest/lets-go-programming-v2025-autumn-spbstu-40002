@@ -26,6 +26,7 @@ func GetPaths() Config {
 	}
 
 	var config Config
+
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		panic(err)

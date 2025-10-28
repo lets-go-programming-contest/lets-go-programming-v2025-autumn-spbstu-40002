@@ -3,6 +3,7 @@ package unmarshalxml
 import (
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -26,7 +27,7 @@ func UnMarshalXML(inputFile *os.File, valutes *data.DataStruct) error {
 
 	err := decoder.Decode(valutes)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to decode XML: %w", err)
 	}
 
 	return nil

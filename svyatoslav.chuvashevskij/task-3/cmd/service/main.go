@@ -17,6 +17,7 @@ import (
 
 func makeDir(outFile string) {
 	dir := filepath.Dir(outFile)
+
 	_, err := os.Stat(dir)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(dir, 0755)
@@ -44,9 +45,11 @@ func main() {
 	defer closeFile(inputFile)
 
 	valutes := new(data.DataStruct)
+
 	err = unmarshalxml.UnMarshalXML(inputFile, valutes)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
@@ -65,6 +68,7 @@ func main() {
 	err = marshaljson.MarshalJSON(outputFile, valutes)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 }
