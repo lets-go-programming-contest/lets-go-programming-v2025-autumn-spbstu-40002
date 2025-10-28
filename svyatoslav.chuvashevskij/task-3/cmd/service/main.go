@@ -16,7 +16,6 @@ import (
 
 func makeDir(outFile string) {
 	dir := filepath.Dir(outFile)
-
 	_, err := os.Stat(dir)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(dir, 0755)
@@ -28,7 +27,6 @@ func makeDir(outFile string) {
 
 func closeFile(file *os.File) {
 	err := file.Close()
-
 	if err != nil {
 		fmt.Println(err)
 	}
