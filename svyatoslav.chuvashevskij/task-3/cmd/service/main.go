@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-
-	"path/filepath"
 
 	"github.com/Svyatoslav2324/task-3/internal/marshaljson"
 	"github.com/Svyatoslav2324/task-3/internal/structures"

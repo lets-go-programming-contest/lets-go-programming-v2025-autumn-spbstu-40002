@@ -30,7 +30,7 @@ func ConvertXMLToJSON(xmlStruct XMLStruct) (JSONStruct, error) {
 	for _, valute := range xmlStruct.ValCurs {
 		floatValue, err := strconv.ParseFloat(strings.Replace(valute.Value, ",", ".", 1), 64)
 		if err != nil {
-			return JSONStruct{}, fmt.Errorf("Invalid value: %w", err)
+			return JSONStruct{}, fmt.Errorf("invalid value: %w", err)
 		}
 
 		jsonStruct.ValCurs = append(jsonStruct.ValCurs, JSONSValute{
