@@ -15,7 +15,7 @@ func (h *minHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 func (h *minHeap) Push(x any) {
 	v, ok := x.(int)
 	if !ok {
-		return
+		panic("kth: Push expected int value")
 	}
 
 	*h = append(*h, v)
@@ -26,7 +26,7 @@ func (h *minHeap) Pop() any {
 	oldLen := len(old)
 
 	if oldLen == 0 {
-		return nil
+		panic("kth: Pop called on empty heap")
 	}
 
 	x := old[oldLen-1]
