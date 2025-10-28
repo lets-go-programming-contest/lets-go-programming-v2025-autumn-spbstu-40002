@@ -7,13 +7,13 @@ import (
 	"io"
 	"os"
 
-	"github.com/Svyatoslav2324/task-3/internal/data"
+	"github.com/Svyatoslav2324/task-3/internal/structures"
 	"golang.org/x/text/encoding/charmap"
 )
 
 var ErrUnsuppotedCharset error = errors.New("unsupported charset")
 
-func UnMarshalXML(inputFile *os.File, valutes *data.DataStruct) error {
+func UnMarshalXML(inputFile *os.File, valutes *structures.XMLStruct) error {
 	decoder := xml.NewDecoder(inputFile)
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
