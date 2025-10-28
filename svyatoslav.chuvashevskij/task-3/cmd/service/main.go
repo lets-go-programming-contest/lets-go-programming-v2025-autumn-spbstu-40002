@@ -16,9 +16,11 @@ import (
 
 func makeDir(outFile string) {
 	dir := filepath.Dir(outFile)
+	dirPerm := 0o755
+
 	_, err := os.Stat(dir)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(dir, 0o755)
+		err = os.MkdirAll(dir, os.FileMode(dirPerm))
 		if err != nil {
 			panic(err)
 		}
