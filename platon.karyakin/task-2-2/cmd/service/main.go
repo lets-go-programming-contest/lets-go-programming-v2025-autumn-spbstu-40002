@@ -48,21 +48,18 @@ func main() {
 	itemCount, err := readItemCount()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		
 		return
 	}
 
 	values, err := readValues(itemCount)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		
 		return
 	}
 
 	position, err := readPosition(itemCount)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		
 		return
 	}
 
@@ -76,7 +73,6 @@ func main() {
 		default:
 			fmt.Fprintln(os.Stderr, err)
 		}
-		
 		return
 	}
 
