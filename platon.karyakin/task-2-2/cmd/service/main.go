@@ -24,14 +24,14 @@ func main() {
 	}
 
 	values := make([]int, itemCount)
-	for i := range values {
-		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
+	for idx := range values {
+		if _, err := fmt.Fscan(os.Stdin, &values[idx]); err != nil {
 			fmt.Fprintln(os.Stderr, ktherr.ErrReadValue)
 			
 			return
 		}
 
-		if values[i] < -10000 || values[i] > 10000 {
+		if values[idx] < -10000 || values[idx] > 10000 {
 			fmt.Fprintln(os.Stderr, ktherr.ErrValueOutOfRange)
 			
 			return
