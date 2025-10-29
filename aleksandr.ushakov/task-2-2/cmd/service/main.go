@@ -16,9 +16,9 @@ const (
 )
 
 var (
-	numOfDishesErrFormat = errors.New("invalid number of dishes")
-	markErrFormat        = errors.New("invalid mark")
-	pickedErrFormat      = errors.New("invalid picked dish")
+	errNumOfDishes = errors.New("invalid number of dishes")
+	errMark        = errors.New("invalid mark")
+	errPicked      = errors.New("invalid picked dish")
 )
 
 func checkLimits(value int, minLimit int, maxLimit int) bool {
@@ -35,7 +35,8 @@ func main() {
 	_, err := fmt.Scanln(&numberOfDishes)
 
 	if err != nil || !checkLimits(numberOfDishes, minNumOfDishes, maxNumOfDishes) {
-		fmt.Println(numOfDishesErrFormat)
+		fmt.Println(errNumOfDishes)
+
 		return
 	}
 
@@ -49,7 +50,8 @@ func main() {
 		_, err = fmt.Scan(&mark)
 
 		if err != nil || !checkLimits(mark, minMark, maxMark) {
-			fmt.Println(markErrFormat)
+			fmt.Println(errMark)
+
 			return
 		}
 
@@ -61,7 +63,8 @@ func main() {
 	_, err = fmt.Scanln(&picked)
 
 	if err != nil || !checkLimits(picked, 1, numberOfDishes) {
-		fmt.Println(pickedErrFormat)
+		fmt.Println(errPicked)
+
 		return
 	}
 
