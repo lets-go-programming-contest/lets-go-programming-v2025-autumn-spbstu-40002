@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/heap"
+	"errors"
 	"fmt"
 
 	"github.com/rachguta/task-2-2/myheap"
@@ -12,6 +13,12 @@ const (
 	maxNumOfDishes = 10000
 	minMark        = -10000
 	maxMark        = 10000
+)
+
+var (
+	numOfDishesErrFormat = errors.New("invalid number of dishes")
+	markErrFormat        = errors.New("invalid mark")
+	pickedErrFormat      = errors.New("invalid picked dish")
 )
 
 func checkLimits(value int, minLimit int, maxLimit int) bool {
@@ -28,6 +35,7 @@ func main() {
 	_, err := fmt.Scanln(&numberOfDishes)
 
 	if err != nil || !checkLimits(numberOfDishes, minNumOfDishes, maxNumOfDishes) {
+		fmt.Println(numOfDishesErrFormat)
 		return
 	}
 
@@ -41,6 +49,7 @@ func main() {
 		_, err = fmt.Scan(&mark)
 
 		if err != nil || !checkLimits(mark, minMark, maxMark) {
+			fmt.Println(markErrFormat)
 			return
 		}
 
@@ -52,6 +61,7 @@ func main() {
 	_, err = fmt.Scanln(&picked)
 
 	if err != nil || !checkLimits(picked, 1, numberOfDishes) {
+		fmt.Println(pickedErrFormat)
 		return
 	}
 
