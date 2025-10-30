@@ -13,6 +13,7 @@ func WriteCurrenciesToFile(currencies []currency.Currency, filePath string) {
 	dir := filepath.Dir(filePath)
 
 	const dirPerm = 0o755
+
 	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
 		panic(errors.ErrOutputDirCreate.Error() + ": " + err.Error())
