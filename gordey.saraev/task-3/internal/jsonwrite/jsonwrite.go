@@ -3,12 +3,19 @@ package jsonwrite
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/F0LY/task-3/internal/currency"
 	"github.com/F0LY/task-3/internal/errors"
 )
 
 func WriteCurrenciesToFile(currencies []currency.Currency, filePath string) {
+	dir := filepath.Dir(filePath)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		panic(errors.ErrOutputDirCreate.Error() + ": " + err.Error())
+	}
+
 	data, err := json.MarshalIndent(currencies, "", "    ")
 	if err != nil {
 		panic(errors.ErrJSONEncode.Error() + ": " + err.Error())
