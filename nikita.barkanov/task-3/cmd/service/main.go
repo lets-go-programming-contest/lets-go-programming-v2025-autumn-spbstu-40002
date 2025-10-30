@@ -12,7 +12,6 @@ import (
 var errInvalidConfigFile = errors.New("invalid config file")
 
 func main() {
-
 	configPath := flag.String("config", "config.yaml", "Config directory")
 	flag.Parse()
 
@@ -33,5 +32,4 @@ func main() {
 	if err := jsonw.WriteSortedReducedJSON(curs, config.Output); err != nil {
 		panic(err)
 	}
-
 }

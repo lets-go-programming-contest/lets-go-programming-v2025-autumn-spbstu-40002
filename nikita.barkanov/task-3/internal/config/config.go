@@ -25,6 +25,7 @@ func ParseConfig(path string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrConfigFileOpen, err)
 	}
+
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			fmt.Fprintf(os.Stderr, "error: failed to close file %v\n", closeErr)

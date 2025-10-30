@@ -39,8 +39,8 @@ func sortValutes(curs *ValCurs, desc bool) error {
 	}
 
 	sort.Slice(curs.Valutes, func(i, j int) bool {
-		vi, errI := curs.Valutes[i].ValueFloat()
-		vj, errJ := curs.Valutes[j].ValueFloat()
+		valute_i, errI := curs.Valutes[i].ValueFloat()
+		valute_j, errJ := curs.Valutes[j].ValueFloat()
 
 		if errI != nil {
 			return false
@@ -50,9 +50,9 @@ func sortValutes(curs *ValCurs, desc bool) error {
 		}
 
 		if desc {
-			return vi > vj
+			return valute_i > valute_j
 		}
-		return vi < vj
+		return valute_i < valute_j
 	})
 
 	return nil

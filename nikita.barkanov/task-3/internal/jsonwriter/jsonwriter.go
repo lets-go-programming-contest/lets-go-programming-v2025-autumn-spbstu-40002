@@ -28,18 +28,18 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	}
 
 	reduced := make([]ReducedValute, len(curs.Valutes))
-	for i, v := range curs.Valutes {
-		num, _ := strconv.Atoi(v.NumCode)
-		val, _ := strconv.ParseFloat(strings.ReplaceAll(v.Value, ",", "."), 64)
+	for i, valute := range curs.Valutes {
+		num, _ := strconv.Atoi(valute.NumCode)
+		val, _ := strconv.ParseFloat(strings.ReplaceAll(valute.Value, ",", "."), 64)
 
 		reduced[i] = ReducedValute{
 			NumCode:  num,
-			CharCode: v.CharCode,
+			CharCode: valute.CharCode,
 			Value:    val,
 		}
 	}
 
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
 		return fmt.Errorf("failed to create directory for %s: %w", outputPath, err)
 	}
 

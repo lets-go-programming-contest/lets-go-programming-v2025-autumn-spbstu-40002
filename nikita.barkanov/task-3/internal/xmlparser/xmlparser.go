@@ -2,6 +2,7 @@ package xmlparser
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,8 +11,9 @@ import (
 )
 
 var (
-	ErrXMLFileOpen = fmt.Errorf("failed to open XML file")
-	ErrXMLParsing  = fmt.Errorf("failed to parse XML")
+	ErrXMLFileOpen  = errors.New("failed to open XML file")
+	ErrXMLParsing   = errors.New("failed to parse XML")
+	ErrNoCurrencies = errors.New("no currencies found in XML")
 )
 
 func ParseXML(path string) (*mdls.ValCurs, error) {
@@ -34,7 +36,7 @@ func ParseXML(path string) (*mdls.ValCurs, error) {
 	}
 
 	if len(curs.Valutes) == 0 {
-		return nil, fmt.Errorf("no currencies found in XML")
+		return nil, ErrNoCurrencies
 	}
 
 	return &curs, nil
