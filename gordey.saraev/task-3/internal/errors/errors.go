@@ -7,7 +7,7 @@ var (
 	ErrConfigFileRead         = errors.New("error reading config file")
 	ErrConfigFieldsMissing    = errors.New("not all required fields specified in config file")
 	ErrOutputDirCreate        = errors.New("error creating output directory")
-	ErrInputFileNotExist      = errors.New("input file does not exist")
+	ErrInputFileNotExist      = errors.New("no such file or directory")
 	ErrXMLFileRead            = errors.New("error reading XML file")
 	ErrXMLDecode              = errors.New("error decoding XML")
 	ErrNoCurrenciesExtracted  = errors.New("failed to extract currency data from XML file")
