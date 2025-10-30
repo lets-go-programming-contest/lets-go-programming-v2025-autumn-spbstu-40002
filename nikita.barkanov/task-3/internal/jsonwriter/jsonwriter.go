@@ -63,6 +63,6 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	if err := encoder.Encode(reduced); err != nil {
 		return fmt.Errorf("failed to encode reduced currencies to JSON: %w", err)
 	}
-	return nil
 
+	return nil
 }

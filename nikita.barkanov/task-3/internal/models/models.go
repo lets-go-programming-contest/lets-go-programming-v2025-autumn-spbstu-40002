@@ -32,8 +32,8 @@ func (v *Valute) ValueFloat() (float64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse float from %q: %w", cleaned, err)
 	}
-	return value, nil
 
+	return value, nil
 }
 
 func SortByValueDesc(curs *ValCurs) error {
