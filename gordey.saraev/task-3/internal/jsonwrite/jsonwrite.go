@@ -9,17 +9,19 @@ import (
 )
 
 func WriteCurrenciesToFile(currencies []currency.Currency, filePath string) {
+	data, err := json.MarshalIndent(currencies, "", "    ")
+	if err != nil {
+		panic(errors.ErrJSONEncode.Error() + ": " + err.Error())
+	}
+
 	file, err := os.Create(filePath)
 	if err != nil {
 		panic(errors.ErrOutputFileCreate.Error() + ": " + err.Error())
 	}
 	defer file.Close()
 
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "    ")
-
-	err = encoder.Encode(currencies)
+	_, err = file.Write(data)
 	if err != nil {
-		panic(errors.ErrJSONEncode.Error() + ": " + err.Error())
+		panic(errors.ErrOutputFileCreate.Error() + ": " + err.Error())
 	}
 }
