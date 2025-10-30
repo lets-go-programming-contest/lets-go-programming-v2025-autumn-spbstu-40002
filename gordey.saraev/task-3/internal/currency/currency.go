@@ -28,6 +28,7 @@ func ValuteToCurrency(valute Valute) *Currency {
 	}
 
 	numCode, err := strconv.Atoi(valute.NumCode)
+
 	if err != nil {
 		numCode = 0
 	}

@@ -32,6 +32,7 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 
 	var valCurs ValCurs
 	err = decoder.Decode(&valCurs)
+
 	if err != nil {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())
 	}
