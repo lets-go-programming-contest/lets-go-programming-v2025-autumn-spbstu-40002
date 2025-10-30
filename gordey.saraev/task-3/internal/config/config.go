@@ -14,6 +14,7 @@ type Config struct {
 
 func LoadConfig(configPath string) *Config {
 	data, err := os.ReadFile(configPath)
+
 	if err != nil {
 		panic(errors.ErrConfigFileRead.Error() + ": " + err.Error())
 	}
@@ -22,6 +23,7 @@ func LoadConfig(configPath string) *Config {
 		InputFile:  "",
 		OutputFile: "",
 	}
+
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		panic(errors.ErrConfigFileRead.Error() + ": " + err.Error())

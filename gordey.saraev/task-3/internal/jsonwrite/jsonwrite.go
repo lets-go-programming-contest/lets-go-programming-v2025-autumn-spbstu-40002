@@ -11,7 +11,8 @@ import (
 
 func WriteCurrenciesToFile(currencies []currency.Currency, filePath string) {
 	dir := filepath.Dir(filePath)
-	err := os.MkdirAll(dir, 0o755)
+	const dirPerm = 0o755
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
 		panic(errors.ErrOutputDirCreate.Error() + ": " + err.Error())
 	}
@@ -25,6 +26,7 @@ func WriteCurrenciesToFile(currencies []currency.Currency, filePath string) {
 	if err != nil {
 		panic(errors.ErrOutputFileCreate.Error() + ": " + err.Error())
 	}
+
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			panic(errors.ErrOutputFileCreate.Error() + ": " + closeErr.Error())
