@@ -8,17 +8,19 @@ func main() {
 
 	fmt.Scan(&a, &b, &op)
 
-	switch {
-	case op == "+":
+	switch op {
+	case "+":
 		fmt.Println(a + b)
-	case op == "-":
+	case "-":
 		fmt.Println(a - b)
-	case op == "*":
+	case "*":
 		fmt.Println(a * b)
-	case op == "/" && b == 0:
-		fmt.Println("Division by zero")
-	case op == "/":
-		fmt.Println(a / b)
+	case "/":
+		if b == 0 {
+			fmt.Println("Division by zero")
+		} else {
+			fmt.Println(a / b)
+		}
 	default:
 		fmt.Println("Invalid operation")
 	}
