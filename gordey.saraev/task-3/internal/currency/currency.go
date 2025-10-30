@@ -14,33 +14,20 @@ type Valute struct {
 }
 
 type Currency struct {
-	NumCode  int     `json:"num_code"`
+	NumCode  string  `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
 
 func ValuteToCurrency(valute Valute) *Currency {
-	if valute.NumCode == "" || valute.CharCode == "" || valute.Value == "" {
-		return nil
-	}
-
-	cleanValue := strings.Replace(valute.Value, ",", ".", 1)
+	cleanValue := strings.Replace(valute.Value, ",", ".", -1)
 	value, err := strconv.ParseFloat(cleanValue, 64)
 	if err != nil {
 		return nil
 	}
 
-	numCode, err := strconv.Atoi(valute.NumCode)
-	if err != nil {
-		return nil
-	}
-
-	if value <= 0 {
-		return nil
-	}
-
 	return &Currency{
-		NumCode:  numCode,
+		NumCode:  valute.NumCode,
 		CharCode: valute.CharCode,
 		Value:    value,
 	}
