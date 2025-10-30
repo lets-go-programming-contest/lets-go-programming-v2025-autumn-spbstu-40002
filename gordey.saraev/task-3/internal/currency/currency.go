@@ -22,13 +22,11 @@ type Currency struct {
 func ValuteToCurrency(valute Valute) *Currency {
 	cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
 	value, err := strconv.ParseFloat(cleanValue, 64)
-
 	if err != nil {
 		value = 0
 	}
 
 	numCode, err := strconv.Atoi(valute.NumCode)
-
 	if err != nil {
 		numCode = 0
 	}
