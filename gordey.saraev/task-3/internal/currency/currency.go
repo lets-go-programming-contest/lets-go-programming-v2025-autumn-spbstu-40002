@@ -14,7 +14,7 @@ type Valute struct {
 }
 
 type Currency struct {
-	NumCode  string  `json:"num_code"`
+	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
@@ -26,8 +26,13 @@ func ValuteToCurrency(valute Valute) *Currency {
 		return nil
 	}
 
+	numCode, err := strconv.Atoi(valute.NumCode)
+	if err != nil {
+		return nil
+	}
+
 	return &Currency{
-		NumCode:  valute.NumCode,
+		NumCode:  numCode,
 		CharCode: valute.CharCode,
 		Value:    value,
 	}
