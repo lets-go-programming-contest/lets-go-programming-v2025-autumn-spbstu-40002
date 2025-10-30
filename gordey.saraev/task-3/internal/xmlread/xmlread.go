@@ -39,5 +39,9 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 		}
 	}
 
+	if len(currencies) == 0 {
+		panic(errors.ErrNoCurrenciesExtracted.Error())
+	}
+
 	return currencies
 }
