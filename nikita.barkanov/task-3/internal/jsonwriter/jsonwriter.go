@@ -30,6 +30,7 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	}
 
 	reduced := make([]ReducedValute, len(curs.Valutes))
+
 	for i, valute := range curs.Valutes {
 		num, _ := strconv.Atoi(valute.NumCode)
 		val, _ := strconv.ParseFloat(strings.ReplaceAll(valute.Value, ",", "."), 64)
@@ -59,5 +60,9 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 
-	return encoder.Encode(reduced)
+	if err := encoder.Encode(reduced); err != nil {
+		return fmt.Errorf("failed to encode reduced currencies to JSON: %w", err)
+	}
+	return nil
+
 }

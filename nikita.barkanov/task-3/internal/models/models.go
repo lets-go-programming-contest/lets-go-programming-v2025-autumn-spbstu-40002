@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/xml"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -27,7 +28,12 @@ type Valute struct {
 func (v *Valute) ValueFloat() (float64, error) {
 	cleaned := strings.ReplaceAll(v.Value, ",", ".")
 
-	return strconv.ParseFloat(cleaned, 64)
+	value, err := strconv.ParseFloat(cleaned, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse float from %q: %w", cleaned, err)
+	}
+	return value, nil
+
 }
 
 func SortByValueDesc(curs *ValCurs) error {
