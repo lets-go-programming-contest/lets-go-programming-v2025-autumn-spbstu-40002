@@ -18,7 +18,10 @@ func LoadConfig(configPath string) *Config {
 		panic(errors.ErrConfigFileRead.Error() + ": " + err.Error())
 	}
 
-	config := &Config{}
+	config := &Config{
+		InputFile:  "",
+		OutputFile: "",
+	}
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		panic(errors.ErrConfigFileRead.Error() + ": " + err.Error())

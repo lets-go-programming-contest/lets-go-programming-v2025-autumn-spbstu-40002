@@ -12,5 +12,6 @@ func CurrenciesByValue(currencies []currency.Currency) []currency.Currency {
 	sort.Slice(sorted, func(i, j int) bool {
 		return sorted[i].Value > sorted[j].Value
 	})
+
 	return sorted
 }

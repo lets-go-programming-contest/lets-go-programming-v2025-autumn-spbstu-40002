@@ -20,7 +20,7 @@ type Currency struct {
 }
 
 func ValuteToCurrency(valute Valute) *Currency {
-	cleanValue := strings.Replace(valute.Value, ",", ".", -1)
+	cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
 	value, err := strconv.ParseFloat(cleanValue, 64)
 	if err != nil {
 		value = 0
