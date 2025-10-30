@@ -26,6 +26,7 @@ type Valute struct {
 
 func (v *Valute) ValueFloat() (float64, error) {
 	cleaned := strings.ReplaceAll(v.Value, ",", ".")
+
 	return strconv.ParseFloat(cleaned, 64)
 }
 
@@ -39,20 +40,22 @@ func sortValutes(curs *ValCurs, desc bool) error {
 	}
 
 	sort.Slice(curs.Valutes, func(i, j int) bool {
-		valute_i, errI := curs.Valutes[i].ValueFloat()
-		valute_j, errJ := curs.Valutes[j].ValueFloat()
+		valuteI, errI := curs.Valutes[i].ValueFloat()
+		valuteJ, errJ := curs.Valutes[j].ValueFloat()
 
 		if errI != nil {
 			return false
 		}
+
 		if errJ != nil {
 			return true
 		}
 
 		if desc {
-			return valute_i > valute_j
+			return valuteI > valuteJ
 		}
-		return valute_i < valute_j
+
+		return valuteI < valuteJ
 	})
 
 	return nil

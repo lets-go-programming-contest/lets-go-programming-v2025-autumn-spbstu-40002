@@ -21,6 +21,7 @@ func ParseXML(path string) (*mdls.ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: Input file %s: %w", ErrXMLFileOpen, path, err)
 	}
+
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			fmt.Fprintf(os.Stderr, "warning: failed to close XML file: %v\n", closeErr)

@@ -12,6 +12,8 @@ import (
 	"github.com/ControlShiftEscape/task-3/internal/models"
 )
 
+const dirPerm = 0o755
+
 type ReducedValute struct {
 	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
@@ -24,7 +26,7 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	}
 
 	if err := models.SortByValueDesc(curs); err != nil {
-		return err
+		return fmt.Errorf("failed to sort currencies by value: %w", err)
 	}
 
 	reduced := make([]ReducedValute, len(curs.Valutes))
@@ -39,7 +41,7 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 		}
 	}
 
-	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outputPath), dirPerm); err != nil {
 		return fmt.Errorf("failed to create directory for %s: %w", outputPath, err)
 	}
 
@@ -47,6 +49,7 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", outputPath, err)
 	}
+
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			log.Printf("Warning: failed to close file %s: %v", outputPath, closeErr)
@@ -55,5 +58,6 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+
 	return encoder.Encode(reduced)
 }
