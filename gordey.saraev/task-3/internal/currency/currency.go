@@ -23,12 +23,12 @@ func ValuteToCurrency(valute Valute) *Currency {
 	cleanValue := strings.Replace(valute.Value, ",", ".", -1)
 	value, err := strconv.ParseFloat(cleanValue, 64)
 	if err != nil {
-		return nil
+		value = 0
 	}
 
 	numCode, err := strconv.Atoi(valute.NumCode)
 	if err != nil {
-		return nil
+		numCode = 0
 	}
 
 	return &Currency{

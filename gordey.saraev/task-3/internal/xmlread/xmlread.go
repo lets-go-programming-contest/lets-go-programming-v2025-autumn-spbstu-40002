@@ -34,9 +34,7 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 	var currencies []currency.Currency
 	for _, valute := range valCurs.Valutes {
 		currency := currency.ValuteToCurrency(valute)
-		if currency != nil {
-			currencies = append(currencies, *currency)
-		}
+		currencies = append(currencies, *currency)
 	}
 
 	if len(currencies) == 0 {
