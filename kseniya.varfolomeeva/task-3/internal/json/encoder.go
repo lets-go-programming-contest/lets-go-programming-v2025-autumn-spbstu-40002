@@ -42,3 +42,4 @@ func SaveCurrencies(data *xml.Currencies, path string) error {
 		return fmt.Errorf("encode: %w",err)
 	}
 	return nil
+}
