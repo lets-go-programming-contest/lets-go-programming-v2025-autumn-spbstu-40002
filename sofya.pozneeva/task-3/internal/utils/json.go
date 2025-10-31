@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 )
 
+const (
+	dirPerm = 0o755
+	filePerm = 0o600
+)
+
 type CurrencyOutput struct {
 	NumCode  string  `json:"num_code"`
 	CharCode string  `json:"char_code"`
@@ -36,11 +41,6 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 
 	return jsonData, nil
 }
-
-const (
-	dirPerm = 0o755
-	filePerm = 0o600
-)
 
 func JSONWrite(config *Config, jsonData []byte) {
 	outputDir := filepath.Dir(config.OutputFile)
