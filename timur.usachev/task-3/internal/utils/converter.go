@@ -11,6 +11,7 @@ func convertValutes(root valCurs) []OutputCurrency {
 
 	for _, valute := range root.Valutes {
 		valStr := strings.ReplaceAll(strings.TrimSpace(valute.Value), ",", ".")
+		
 		val, err := strconv.ParseFloat(valStr, 64)
 		if err != nil {
 			continue
