@@ -37,15 +37,20 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 	return jsonData, nil
 }
 
+const (
+	dirPerm  = 0755
+	filePerm = 0600
+)
+
 func JSONWrite(config *Config, jsonData []byte) {
 	outputDir := filepath.Dir(config.OutputFile)
 
-	err := os.MkdirAll(outputDir, 0755)
+	err := os.MkdirAll(outputDir, dirPerm)
 	if err != nil {
 		panic(err)
 	}
 
-	err = os.WriteFile(config.OutputFile, jsonData, 0600)
+	err = os.WriteFile(config.OutputFile, jsonData, filePerm)
 	if err != nil {
 		panic(err)
 	}
