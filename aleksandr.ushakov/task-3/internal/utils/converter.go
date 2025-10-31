@@ -26,9 +26,11 @@ func ParseValutesToJSON(valutes []currency.Valute) []currency.JSONValute {
 	result := make([]currency.JSONValute, 0, len(valutes))
 
 	for _, cur := range valutes {
-		result = append(result, currency.JSONValute{NumCode: cur.NumCode,
+		result = append(result, currency.JSONValute{
+			NumCode:  cur.NumCode,
 			CharCode: cur.CharCode,
-			Value:    ParseCurrencyValue(cur.Value)})
+			Value:    ParseCurrencyValue(cur.Value),
+		})
 	}
 
 	return result

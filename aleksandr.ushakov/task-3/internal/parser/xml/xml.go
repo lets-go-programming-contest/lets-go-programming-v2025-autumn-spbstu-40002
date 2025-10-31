@@ -23,17 +23,17 @@ func ParseXML(path string) *currency.ValCurs {
 		}
 	}()
 
-	var vc currency.ValCurs
+	var valCurs currency.ValCurs
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	err = decoder.Decode(&vc)
+	err = decoder.Decode(&valCurs)
 	if err != nil {
 		panic(myerrors.ErrXMLDecode)
 	}
 
-	utils.SortValutesByValue(vc.Valute)
+	utils.SortValutesByValue(valCurs.Valute)
 
-	return &vc
+	return &valCurs
 }
