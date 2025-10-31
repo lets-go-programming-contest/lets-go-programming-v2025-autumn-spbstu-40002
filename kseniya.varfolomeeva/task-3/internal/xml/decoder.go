@@ -18,7 +18,7 @@ type Currencies struct {
 
 func LoadCurrencies(filename string) (*Currencies, error) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		return nil, fmt.Errorf("input file not found: %s", filename)
+		return nil, fmt.Errorf("no such file or directory")
 	}
 
 	file, err := os.Open(filename)
