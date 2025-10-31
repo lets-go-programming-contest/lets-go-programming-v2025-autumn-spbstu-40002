@@ -23,8 +23,8 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 
 		var output = CurrencyOutput{
 			NumCode:  valute.NumCode,
-			CharCode:  valute.CharCode,
-			Value:  value}
+			CharCode: valute.CharCode,
+			Value:    value}
 		outputData = append(outputData, output)
 	}
 
