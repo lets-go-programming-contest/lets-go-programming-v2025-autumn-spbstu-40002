@@ -56,4 +56,4 @@ func SaveCurrencies(currencyData *xml.Currencies, outputPath string) error {
 
 	return nil
 }
-EOF
+

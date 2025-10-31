@@ -35,4 +35,4 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 
 	return &config, nil
 }
-EOF
+

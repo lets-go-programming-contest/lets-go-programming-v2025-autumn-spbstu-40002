@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"  // ← ДОБАВЬ ЭТУ СТРОКУ
 
 	"golang.org/x/net/html/charset"
 )
@@ -48,4 +49,4 @@ func LoadCurrencies(filename string) (*Currencies, error) {
 func (c *Currencies) SortByValue() {
 	sort.Sort(ByExchangeRate(c.Currencies))
 }
-EOF
+
