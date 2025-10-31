@@ -15,31 +15,30 @@ type CurrencyRecord struct {
 }
 
 func SaveCurrencies(data *xml.Currencies, path string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
-		return fmt.Errorf("create dir: %w", err)
+	dir:=filepath.Dir(path)
+	if err:=os.MkdirAll(dir,0750);err!=nil{
+		return fmt.Errorf("create dir: %w",err)
 	}
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("create file: %w", err)
+	file,err:=os.Create(path)
+	if err!=nil{
+		return fmt.Errorf("create file: %w",err)
 	}
-	defer func() { 
-		if err := file.Close(); err != nil {
-			fmt.Printf("close error: %v\n", err)
+	defer func(){ 
+		if err:=file.Close();err!=nil{
+			fmt.Printf("close error: %v\n",err)
 		}
 	}()
-	records := make([]CurrencyRecord, len(data.Currencies))
-	for i, c := range data.Currencies {
-		v, err := c.ToFloat()
-		if err != nil {
-			return fmt.Errorf("convert: %w", err)
+	records:=make([]CurrencyRecord,len(data.Currencies))
+	for i,c:=range data.Currencies{
+		v,err:=c.ToFloat()
+		if err!=nil{
+			return fmt.Errorf("convert: %w",err)
 		}
-		records[i] = CurrencyRecord{NumCode: c.NumCode, CharCode: c.CharCode, Value: v}
+		records[i]=CurrencyRecord{NumCode:c.NumCode,CharCode:c.CharCode,Value:v}
 	}
-	enc := json.NewEncoder(file)
-	enc.SetIndent("", "  ")
-	if err := enc.Encode(records); err != nil {
-		return fmt.Errorf("encode: %w", err)
+	enc:=json.NewEncoder(file)
+	enc.SetIndent("","  ")
+	if err:=enc.Encode(records);err!=nil{
+		return fmt.Errorf("encode: %w",err)
 	}
 	return nil
-}
-
