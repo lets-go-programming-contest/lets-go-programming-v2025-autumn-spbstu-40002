@@ -49,18 +49,18 @@ func (h *IntHeap) Peek() int {
 }
 
 func FindKthLargest(nums []int, kth int) int {
-	h := &IntHeap{
+	meanHeap := &IntHeap{
 		data: []int{},
 	}
-	heap.Init(h)
+	heap.Init(meanHeap)
 
 	for _, num := range nums {
-		heap.Push(h, num)
+		heap.Push(meanHeap, num)
 
-		if h.Len() > kth {
-			heap.Pop(h)
+		if meanHeap.Len() > kth {
+			heap.Pop(meanHeap)
 		}
 	}
 
-	return h.Peek()
+	return meanHeap.Peek()
 }
