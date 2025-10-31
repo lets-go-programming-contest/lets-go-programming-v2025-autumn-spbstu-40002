@@ -21,6 +21,10 @@ type Valute struct {
 }
 
 func ParseXML(filePath string) *ValCurs {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		panic(errors.ErrInputFileNotExist.Error() + ": " + filePath)
+	}
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		panic(errors.ErrXMLRead.Error() + ": " + err.Error())
