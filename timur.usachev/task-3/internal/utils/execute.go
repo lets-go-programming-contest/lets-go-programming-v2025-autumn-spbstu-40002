@@ -10,20 +10,22 @@ func Execute(configPath string) error {
 	if err != nil {
 		return err
 	}
+
 	data, err := os.ReadFile(cfg.InputFile)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrXMLRead, err)
+		return fmt.Errorf("%v: %w", ErrXMLRead, err)
 	}
+
 	root, err := parseXML(data)
 	if err != nil {
 		return err
 	}
-	out, err := convertValutes(root)
-	if err != nil {
+
+	out := convertValutes(root)
+
+	if err = writeJSON(out, cfg.OutputFile); err != nil {
 		return err
 	}
-	if err := writeJSON(out, cfg.OutputFile); err != nil {
-		return err
-	}
+
 	return nil
 }
