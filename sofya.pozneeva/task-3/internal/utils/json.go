@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	dirPerm = 0o755
+	dirPerm  = 0o755
 	filePerm = 0o600
 )
 
