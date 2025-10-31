@@ -1,4 +1,4 @@
-package intheap
+package interheap
 
 import "container/heap"
 

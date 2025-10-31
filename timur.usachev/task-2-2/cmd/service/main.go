@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/t1wt/task-2-2/internal/intheap"
+	"github.com/t1wt/task-2-2/internal/interheap"
 )
 
 var (
@@ -41,6 +41,6 @@ func readInput() ([]int, int) {
 func main() {
 	values, kth := readInput()
 
-	result := intheap.FindKthLargest(values, kth)
+	result := interheap.FindKthLargest(values, kth)
 	fmt.Println(result)
 }
