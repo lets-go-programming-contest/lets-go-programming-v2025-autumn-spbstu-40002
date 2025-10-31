@@ -13,7 +13,7 @@ import (
 func ParseXML(path string) *currency.ValCurs {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(myerrors.ErrXMLRead)
+		panic(myerrors.ErrFileNotFound)
 	}
 
 	defer func() {

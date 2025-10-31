@@ -7,13 +7,13 @@ import (
 )
 
 func main() {
-	//read config path
+	// read config path
 	configPath := config.ReadConfigPath()
 
-	//parse config file
+	// parse config file
 	cnf := *(config.ParseConfig(configPath))
 
-	//parse xml file
+	// parse xml file
 	vc := xml.ParseXML(cnf.InputFile)
 
 	//export to json
