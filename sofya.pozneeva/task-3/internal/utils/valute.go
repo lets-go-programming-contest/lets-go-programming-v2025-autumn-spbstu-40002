@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/xml"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -25,13 +26,14 @@ type Valute struct {
 }
 
 func (v *Valute) ConvertValue() (float64, error) {
-	strValue := strings.Replace(v.Value, ",", ".", -1)
+	strValue := strings.ReplaceAll(v.Value, ",", ".")
+
 	value, err := strconv.ParseFloat(strValue, 64)
 	if err != nil {
+
 		return 0, err
 	}
-	return value, nil
-
+	return value, fmt.Errorf("parse float value: %w", err)
 }
 
 type Valutes []Valute
