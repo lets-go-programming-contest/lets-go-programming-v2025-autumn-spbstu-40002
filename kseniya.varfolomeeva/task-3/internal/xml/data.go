@@ -19,6 +19,7 @@ func (c Currency) ToFloat() (float64, error) {
 	normalized := strings.ReplaceAll(c.Value, ",", ".")
 
 	var value float64
+
 	var err error
 
 	value, err = strconv.ParseFloat(normalized, 64)
@@ -41,7 +42,9 @@ func (b ByExchangeRate) Swap(i, j int) {
 
 func (b ByExchangeRate) Less(firstIndex, secondIndex int) bool {
 	var rateI float64
+
 	var rateJ float64
+
 	var err error
 
 	rateI, err = b[firstIndex].ToFloat()
