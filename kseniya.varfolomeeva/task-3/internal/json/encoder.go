@@ -5,55 +5,41 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
 	"github.com/xanaoxx/task-3/internal/xml"
 )
 
 type CurrencyRecord struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+	NumCode int `json:"num_code"`
+	CharCode string `json:"char_code"`
+	Value float64 `json:"value"`
 }
 
-func SaveCurrencies(currencyData *xml.Currencies, outputPath string) error {
-	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, 0750); err != nil {
-		return fmt.Errorf("cannot create directory: %w", err)
+func SaveCurrencies(data *xml.Currencies, path string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
+		return fmt.Errorf("create dir: %w", err)
 	}
-
-	file, err := os.Create(outputPath)
+	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("cannot create file: %w", err)
+		return fmt.Errorf("create file: %w", err)
 	}
-
-	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("warning: failed to close file: %v\n", closeErr)
+	defer func() { 
+		if err := file.Close(); err != nil {
+			fmt.Printf("close error: %v\n", err)
 		}
 	}()
-
-	records := make([]CurrencyRecord, len(currencyData.Currencies))
-
-	for i, currency := range currencyData.Currencies {
-		value, err := currency.ToFloat()
+	records := make([]CurrencyRecord, len(data.Currencies))
+	for i, c := range data.Currencies {
+		v, err := c.ToFloat()
 		if err != nil {
-			return fmt.Errorf("convert currency value: %w", err)
+			return fmt.Errorf("convert: %w", err)
 		}
-
-		records[i] = CurrencyRecord{
-			NumCode:  currency.NumCode,
-			CharCode: currency.CharCode,
-			Value:    value,
-		}
+		records[i] = CurrencyRecord{NumCode: c.NumCode, CharCode: c.CharCode, Value: v}
 	}
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-
-	if err := encoder.Encode(records); err != nil {
-		return fmt.Errorf("JSON encoding failed: %w", err)
+	enc := json.NewEncoder(file)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(records); err != nil {
+		return fmt.Errorf("encode: %w", err)
 	}
-
 	return nil
 }
 
