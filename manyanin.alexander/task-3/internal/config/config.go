@@ -18,13 +18,13 @@ func Load(configPath string) *Config {
 		panic(errors.ErrConfigPathEmpty)
 	}
 
-	configData, err := os.ReadFile(configPath)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		panic(errors.ErrConfigRead.Error() + ": " + configPath)
+		panic(errors.ErrConfigRead.Error() + ": " + err.Error())
 	}
 
-	var config Config
-	err = yaml.Unmarshal(configData, &config)
+	config := &Config{}
+	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		panic(errors.ErrConfigParse.Error() + ": " + err.Error())
 	}
@@ -33,5 +33,5 @@ func Load(configPath string) *Config {
 		panic(errors.ErrConfigInvalid)
 	}
 
-	return &config
+	return config
 }
