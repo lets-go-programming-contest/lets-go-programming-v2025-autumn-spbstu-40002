@@ -1,0 +1,7 @@
+package xml
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)

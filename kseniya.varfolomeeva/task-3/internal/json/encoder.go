@@ -9,7 +9,7 @@ import (
 	"github.com/xanaoxx/task-3/internal/xml"
 )
 
-const defaultDirPerm = 0750
+const defaultDirPerm = 0o750
 
 type CurrencyRecord struct {
 	NumCode  int     `json:"num_code"`
@@ -36,13 +36,13 @@ func SaveCurrencies(data *xml.Currencies, path string) error {
 
 	records := make([]CurrencyRecord, len(data.Currencies))
 
-	for i, currency := range data.Currencies {
+	for index, currency := range data.Currencies {
 		value, err := currency.ToFloat()
 		if err != nil {
 			return fmt.Errorf("convert: %w", err)
 		}
 
-		records[i] = CurrencyRecord{
+		records[index] = CurrencyRecord{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
 			Value:    value,
