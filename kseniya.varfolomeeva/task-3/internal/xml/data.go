@@ -16,6 +16,7 @@ type Currency struct {
 
 func (c Currency) ToFloat() (float64, error) {
 	normalized := strings.ReplaceAll(c.Value, ",", ".")
+	
 	return strconv.ParseFloat(normalized, 64)
 }
 
@@ -29,13 +30,13 @@ func (b ByExchangeRate) Swap(i, j int) {
 	b[i], b[j] = b[j], b[i]
 }
 
-func (b ByExchangeRate) Less(i, j int) bool {
-	rateI, err := b[i].ToFloat()
+func (b ByExchangeRate) Less(firstIndex, secondIndex int) bool {
+	rateI, err := b[firstIndex].ToFloat()
 	if err != nil {
 		return false
 	}
 
-	rateJ, err := b[j].ToFloat()
+	rateJ, err := b[secondIndex].ToFloat()
 	if err != nil {
 		return false
 	}

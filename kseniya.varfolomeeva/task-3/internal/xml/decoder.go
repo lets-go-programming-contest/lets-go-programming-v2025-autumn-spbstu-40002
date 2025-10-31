@@ -6,38 +6,45 @@ import (
 	"fmt"
 	"os"
 	"sort"
+
 	"golang.org/x/net/html/charset"
 )
 
 var ErrNotFound = errors.New("no such file or directory")
 
 type Currencies struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Date string `xml:"Date,attr"`
-	Name string `xml:"name,attr"`
+	XMLName    xml.Name   `xml:"ValCurs"`
+	Date       string     `xml:"Date,attr"`
+	Name       string     `xml:"name,attr"`
 	Currencies []Currency `xml:"Valute"`
 }
 
-func LoadCurrencies(file string) (*Currencies, error) {
-	if _, err := os.Stat(file); os.IsNotExist(err) {
+func LoadCurrencies(filename string) (*Currencies, error) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return nil, ErrNotFound
 	}
-	f, err := os.Open(file)
+
+	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("open: %w", err)
+		return nil, fmt.Errorf("open file: %w", err)
 	}
+
 	defer func() {
-		if err := f.Close(); err != nil {
-			fmt.Printf("close error: %v\n", err)
+		if closeErr := file.Close(); closeErr != nil {
+			fmt.Printf("warning: failed to close file: %v\n", closeErr)
 		}
 	}()
-	var data Currencies
-	dec := xml.NewDecoder(f)
-	dec.CharsetReader = charset.NewReaderLabel
-	if err := dec.Decode(&data); err != nil {
-		return nil, fmt.Errorf("decode: %w", err)
+
+	var currencies Currencies
+
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
+
+	if err := decoder.Decode(&currencies); err != nil {
+		return nil, fmt.Errorf("decode XML: %w", err)
 	}
-	return &data, nil
+
+	return &currencies, nil
 }
 
 func (c *Currencies) SortByValue() {
