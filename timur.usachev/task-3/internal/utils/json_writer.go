@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 )
 
 func writeJSON(out []OutputCurrency, path string) error {
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].Value > out[j].Value
-	})
 	dir := filepath.Dir(path)
 	if dir != "." && dir != "" {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {

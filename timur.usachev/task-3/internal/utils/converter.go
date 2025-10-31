@@ -10,8 +10,14 @@ func convertValutes(root valCurs) ([]OutputCurrency, error) {
 	out := make([]OutputCurrency, 0, len(root.Valutes))
 	for _, v := range root.Valutes {
 		nc := strings.TrimSpace(v.NumCode)
+		if nc == "" {
+			continue
+		}
 		cc := strings.TrimSpace(v.CharCode)
 		valStr := strings.TrimSpace(v.Value)
+		if valStr == "" {
+			continue
+		}
 		valStr = strings.ReplaceAll(valStr, ",", ".")
 		numCode, err := strconv.Atoi(nc)
 		if err != nil {
@@ -26,7 +32,7 @@ func convertValutes(root valCurs) ([]OutputCurrency, error) {
 			nominalStr = "1"
 		}
 		nominal, err := strconv.Atoi(nominalStr)
-		if err != nil {
+		if err != nil || nominal == 0 {
 			return nil, fmt.Errorf("%w: invalid nominal %q: %v", ErrXMLParse, nominalStr, err)
 		}
 		normalized := value / float64(nominal)
