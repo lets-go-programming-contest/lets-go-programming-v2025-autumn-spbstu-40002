@@ -18,7 +18,7 @@ func LoadConfig(configPath string) (*AppConfig, error) { // ← ИЗМЕНИ Н�
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("config file not found: %s", configPath)
+		return nil, fmt.Errorf("no such file or directory")
 	}
 
 	data, err := os.ReadFile(configPath)
@@ -28,7 +28,7 @@ func LoadConfig(configPath string) (*AppConfig, error) { // ← ИЗМЕНИ Н�
 
 	var config AppConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("invalid YAML: %w", err)
+		return nil, fmt.Errorf("did not find expected key: %w", err)
 	}
 
 	return &config, nil
