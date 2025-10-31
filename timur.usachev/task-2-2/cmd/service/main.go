@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/t1wt/task-2-2/internal/IntHeap"
+	"github.com/t1wt/task-2-2/internal/intheap"
 )
 
 var (
@@ -22,7 +22,7 @@ func readInput() ([]int, int) {
 	}
 
 	values := make([]int, count)
-	for i := 0; i < count; i++ {
+	for i := range values {
 		if _, err := fmt.Fscan(os.Stdin, &values[i]); err != nil {
 			fmt.Fprintln(os.Stderr, errFailedReadValues)
 			os.Exit(1)
@@ -41,6 +41,6 @@ func readInput() ([]int, int) {
 func main() {
 	values, kth := readInput()
 
-	result := IntHeap.FindKthLargest(values, kth)
+	result := intheap.FindKthLargest(values, kth)
 	fmt.Println(result)
 }

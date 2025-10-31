@@ -1,4 +1,4 @@
-package IntHeap
+package intheap
 
 import "container/heap"
 
@@ -19,13 +19,13 @@ func (h *IntHeap) Swap(i, j int) {
 }
 
 func (h *IntHeap) Push(x interface{}) {
-	v, ok := x.(int)
+	value, ok := x.(int)
 
 	if !ok {
 		panic("IntHeap.Push: value is not int")
 	}
 
-	h.data = append(h.data, v)
+	h.data = append(h.data, value)
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -44,17 +44,20 @@ func (h *IntHeap) Peek() int {
 	if len(h.data) == 0 {
 		panic("empty")
 	}
+
 	return h.data[0]
 }
 
-func FindKthLargest(nums []int, k int) int {
-	h := &IntHeap{}
+func FindKthLargest(nums []int, kth int) int {
+	h := &IntHeap{
+		data: []int{},
+	}
 	heap.Init(h)
 
 	for _, num := range nums {
 		heap.Push(h, num)
 
-		if h.Len() > k {
+		if h.Len() > kth {
 			heap.Pop(h)
 		}
 	}
