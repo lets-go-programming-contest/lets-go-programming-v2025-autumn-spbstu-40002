@@ -30,10 +30,10 @@ func (v *Valute) ConvertValue() (float64, error) {
 
 	value, err := strconv.ParseFloat(strValue, 64)
 	if err != nil {
-
-		return 0, err
+		return 0, fmt.Errorf("parse float value: %w", err)
 	}
-	return value, fmt.Errorf("parse float value: %w", err)
+
+	return value, nil
 }
 
 type Valutes []Valute

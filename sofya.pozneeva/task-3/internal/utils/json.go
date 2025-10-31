@@ -13,18 +13,18 @@ type CurrencyOutput struct {
 }
 
 func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
-	var outputData []CurrencyOutput
+	var outputData = make([]CurrencyOutput, 0)
 
 	for _, valute := range *valutes {
 		value, err := valute.ConvertValue()
 		if err != nil {
 			return nil, err
 		}
-		outputData = append(outputData, CurrencyOutput{
+		var output CurrencyOutput = CurrencyOutput{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
-			Value:    value,
-		})
+			Value:    value}
+		outputData = append(outputData, output)
 	}
 
 	jsonData, err := json.MarshalIndent(outputData, "", "    ")
