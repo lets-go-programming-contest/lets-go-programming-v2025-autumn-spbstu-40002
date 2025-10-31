@@ -13,7 +13,7 @@ func Execute(configPath string) error {
 
 	data, err := os.ReadFile(cfg.InputFile)
 	if err != nil {
-		return fmt.Errorf("%v: %w", ErrXMLRead, err)
+		return fmt.Errorf("%s: %w", ErrXMLRead.Error(), err)
 	}
 
 	root, err := parseXML(data)

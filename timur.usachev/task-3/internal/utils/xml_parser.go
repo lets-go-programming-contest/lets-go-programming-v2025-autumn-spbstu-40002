@@ -10,12 +10,14 @@ import (
 
 func parseXML(data []byte) (valCurs, error) {
 	var root valCurs
+
 	dec := xml.NewDecoder(bytes.NewReader(data))
-	
 	dec.CharsetReader = charset.NewReaderLabel
 
 	if err := dec.Decode(&root); err != nil {
+
 		return valCurs{}, fmt.Errorf("%w: %v", ErrXMLParse, err)
 	}
+
 	return root, nil
 }
