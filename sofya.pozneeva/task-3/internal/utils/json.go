@@ -38,7 +38,7 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 }
 
 const (
-	dirPerm  = 0755
+	dirPerm = 0755
 	filePerm = 0600
 )
 
