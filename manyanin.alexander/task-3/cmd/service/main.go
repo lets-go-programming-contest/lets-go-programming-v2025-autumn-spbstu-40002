@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/manyanin.alexander/task-3/internal/config"
 	converter "github.com/manyanin.alexander/task-3/internal/currency"
@@ -21,10 +20,6 @@ func main() {
 	}
 
 	cfg := config.Load(*configPath)
-
-	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		panic(errors.ErrInputFileNotExist.Error() + ": " + cfg.InputFile)
-	}
 
 	valCurs := parser.ParseXML(cfg.InputFile)
 	currencies := converter.Convert(valCurs)
