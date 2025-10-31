@@ -9,24 +9,14 @@ import (
 
 func writeJSON(out []OutputCurrency, path string) error {
 	dir := filepath.Dir(path)
-	if dir != "." && dir != "" {
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			if err := os.MkdirAll(dir, dirPerm); err != nil {
-				return fmt.Errorf("%w: %v", ErrDirCreate, err)
-			}
-		}
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
+		return fmt.Errorf("%w: %v", ErrDirCreate, err)
 	}
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, filePerm)
+	bytes, err := json.MarshalIndent(out, "", " ")
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrJSONWrite, err)
 	}
-	enc := json.NewEncoder(f)
-	enc.SetIndent("", "    ")
-	if err := enc.Encode(out); err != nil {
-		f.Close()
-		return fmt.Errorf("%w: %v", ErrJSONWrite, err)
-	}
-	if err := f.Close(); err != nil {
+	if err := os.WriteFile(path, bytes, filePerm); err != nil {
 		return fmt.Errorf("%w: %v", ErrJSONWrite, err)
 	}
 	return nil
