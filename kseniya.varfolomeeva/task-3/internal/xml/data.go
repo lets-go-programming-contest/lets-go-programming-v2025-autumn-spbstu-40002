@@ -18,11 +18,9 @@ type Currency struct {
 func (c Currency) ToFloat() (float64, error) {
 	normalized := strings.ReplaceAll(c.Value, ",", ".")
 	value, err := strconv.ParseFloat(normalized, 64)
-
 	if err != nil {
 		return 0, fmt.Errorf("parse float: %w", err)
 	}
-
 	return value, nil
 }
 
@@ -41,11 +39,9 @@ func (b ByExchangeRate) Less(firstIndex, secondIndex int) bool {
 	if err != nil {
 		return false
 	}
-
 	rateJ, err := b[secondIndex].ToFloat()
 	if err != nil {
 		return false
 	}
-
 	return rateI > rateJ
 }
