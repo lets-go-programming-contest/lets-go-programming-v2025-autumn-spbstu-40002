@@ -17,6 +17,7 @@ type Currency struct {
 
 func (c Currency) ToFloat() (float64, error) {
 	normalized := strings.ReplaceAll(c.Value, ",", ".")
+
 	var value float64
 	var err error
 
