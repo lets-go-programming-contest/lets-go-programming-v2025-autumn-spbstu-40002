@@ -18,8 +18,6 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("DEBUG: Input file: %s\n", appConfig.InputFile)
-
 	currencyRecords, err := xml.LoadCurrencies(appConfig.InputFile)
 	if err != nil {
 		panic(err)
@@ -27,7 +25,7 @@ func main() {
 
 	currencyRecords.SortByValue()
 
-	err = json.SavCurrencies(currencyRecords, appConfig.OutputFile)
+	err = json.SaveCurrencies(currencyRecords, appConfig.OutputFile)
 	if err != nil {
 		panic(err)
 	}
