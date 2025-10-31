@@ -1,7 +1,7 @@
 package main
 
 import (
-	"task-3/internal/utils"
+	"github.com/sonychello/task-3/internal/utils"
 )
 
 func main() {
