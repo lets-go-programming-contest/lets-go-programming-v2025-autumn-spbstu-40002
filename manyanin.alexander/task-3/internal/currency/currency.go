@@ -10,7 +10,7 @@ import (
 )
 
 type Currency struct {
-	NumCode  string  `json:"num_code"`
+	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
@@ -19,6 +19,11 @@ func Convert(valCurs *parser.ValCurs) []Currency {
 	var currencies []Currency
 
 	for _, valute := range valCurs.Valutes {
+		numCode, err := strconv.Atoi(valute.NumCode)
+		if err != nil {
+			continue
+		}
+
 		cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
 		value, err := strconv.ParseFloat(cleanValue, 64)
 		if err != nil {
@@ -26,7 +31,7 @@ func Convert(valCurs *parser.ValCurs) []Currency {
 		}
 
 		currencies = append(currencies, Currency{
-			NumCode:  valute.NumCode,
+			NumCode:  numCode,
 			CharCode: valute.CharCode,
 			Value:    value,
 		})

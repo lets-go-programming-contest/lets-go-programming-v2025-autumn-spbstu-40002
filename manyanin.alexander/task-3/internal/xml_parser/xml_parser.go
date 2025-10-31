@@ -21,20 +21,13 @@ type Valute struct {
 }
 
 func ParseXML(filePath string) *ValCurs {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		panic(errors.ErrInputFileNotExist.Error() + ": " + filePath)
-	}
-
-	xmlFile, err := os.Open(filePath)
+	file, err := os.Open(filePath)
 	if err != nil {
-		panic(errors.ErrXMLRead.Error() + ": " + filePath)
+		panic(errors.ErrXMLRead.Error() + ": " + err.Error())
 	}
-	defer func() {
-		if closeErr := xmlFile.Close(); closeErr != nil {
-		}
-	}()
+	defer file.Close()
 
-	decoder := xml.NewDecoder(xmlFile)
+	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
