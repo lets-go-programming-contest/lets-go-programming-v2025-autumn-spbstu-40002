@@ -20,13 +20,17 @@ func SaveToJSON(currencies []converter.Currency, outputPath string) {
 		panic(errors.ErrDirCreate.Error() + ": " + outputDir)
 	}
 
-	outputData, err := json.MarshalIndent(currencies, "", "    ")
+	file, err := os.Create(outputPath)
+	if err != nil {
+		panic(errors.ErrJSONWrite.Error() + ": " + err.Error())
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "    ")
+
+	err = encoder.Encode(currencies)
 	if err != nil {
 		panic(errors.ErrJSONMarshal.Error() + ": " + err.Error())
-	}
-
-	err = os.WriteFile(outputPath, outputData, 0644)
-	if err != nil {
-		panic(errors.ErrJSONWrite.Error() + ": " + outputPath)
 	}
 }

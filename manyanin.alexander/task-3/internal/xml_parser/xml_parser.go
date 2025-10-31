@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"os"
 
+	"golang.org/x/net/html/charset"
+
 	"github.com/manyanin.alexander/task-3/internal/errors"
 )
 
@@ -27,10 +29,15 @@ func ParseXML(filePath string) *ValCurs {
 	if err != nil {
 		panic(errors.ErrXMLRead.Error() + ": " + filePath)
 	}
-	defer xmlFile.Close()
+	defer func() {
+		if closeErr := xmlFile.Close(); closeErr != nil {
+		}
+	}()
+
+	decoder := xml.NewDecoder(xmlFile)
+	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-	decoder := xml.NewDecoder(xmlFile)
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())

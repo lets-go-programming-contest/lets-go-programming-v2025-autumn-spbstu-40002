@@ -10,35 +10,24 @@ import (
 )
 
 type Currency struct {
-	NumCode  int     `json:"num_code"`
+	NumCode  string  `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
 
-type ByValueDesc []Currency
-
-func (a ByValueDesc) Len() int           { return len(a) }
-func (a ByValueDesc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByValueDesc) Less(i, j int) bool { return a[i].Value > a[j].Value }
-
 func Convert(valCurs *parser.ValCurs) []Currency {
 	var currencies []Currency
 
-	for _, v := range valCurs.Valutes {
-		numCode, err := strconv.Atoi(v.NumCode)
-		if err != nil {
-			continue
-		}
-
-		valueStr := strings.Replace(v.Value, ",", ".", -1)
-		value, err := strconv.ParseFloat(valueStr, 64)
+	for _, valute := range valCurs.Valutes {
+		cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
+		value, err := strconv.ParseFloat(cleanValue, 64)
 		if err != nil {
 			continue
 		}
 
 		currencies = append(currencies, Currency{
-			NumCode:  numCode,
-			CharCode: v.CharCode,
+			NumCode:  valute.NumCode,
+			CharCode: valute.CharCode,
 			Value:    value,
 		})
 	}
@@ -47,7 +36,9 @@ func Convert(valCurs *parser.ValCurs) []Currency {
 		panic(errors.ErrNoCurrenciesExtracted)
 	}
 
-	sort.Sort(ByValueDesc(currencies))
+	sort.Slice(currencies, func(i, j int) bool {
+		return currencies[i].Value > currencies[j].Value
+	})
 
 	return currencies
 }
