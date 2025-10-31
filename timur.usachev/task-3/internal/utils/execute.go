@@ -13,7 +13,7 @@ func Execute(configPath string) error {
 
 	data, err := os.ReadFile(cfg.InputFile)
 	if err != nil {
-		return fmt.Errorf("%w", ErrXMLRead)
+		return fmt.Errorf("%v: %w", ErrXMLRead, err)
 	}
 
 	root, err := parseXML(data)
@@ -23,8 +23,7 @@ func Execute(configPath string) error {
 
 	out := convertValutes(root)
 
-	err = writeJSON(out, cfg.OutputFile)
-	if err != nil {
+	if err = writeJSON(out, cfg.OutputFile); err != nil {
 		return err
 	}
 

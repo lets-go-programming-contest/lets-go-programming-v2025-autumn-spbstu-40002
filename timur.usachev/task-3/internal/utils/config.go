@@ -12,16 +12,15 @@ func loadConfig(path string) (Config, error) {
 		path = defaultConfigPath
 	}
 
-	fileData, err := os.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
-		return Config{}, fmt.Errorf("%w", ErrConfigRead)
+		return Config{}, fmt.Errorf("%v: %w", ErrConfigRead, err)
 	}
 
 	var cfg Config
 
-	err = yaml.Unmarshal(fileData, &cfg)
-	if err != nil {
-		return Config{}, fmt.Errorf("%w", ErrConfigParse)
+	if err = yaml.Unmarshal(b, &cfg); err != nil {
+		return Config{}, fmt.Errorf("%v: %w", ErrConfigParse, err)
 	}
 
 	return cfg, nil
