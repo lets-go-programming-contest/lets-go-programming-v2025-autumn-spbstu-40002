@@ -12,14 +12,14 @@ func main() {
 	configPath := flag.String("config", "", "path to config file")
 	flag.Parse()
 
-	appConfig, err := config.LoadConfig(*configPath) // ← ДОБАВЬ * здесь!
+	appConfig, err := config.LoadConfig(*configPath)
 	if err != nil {
-		panic(err)
+		panic("no such file or directory")
 	}
 
 	currencyRecords, err := xml.LoadCurrencies(appConfig.InputFile)
 	if err != nil {
-		panic(err)
+		panic("no such file or directory")
 	}
 
 	currencyRecords.SortByValue()
