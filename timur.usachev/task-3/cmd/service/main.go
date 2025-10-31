@@ -9,7 +9,9 @@ import (
 func main() {
 	cfg := flag.String("config", "config.yaml", "")
 	flag.Parse()
-	if err := utils.Execute(*cfg); err != nil {
+
+	err := utils.Execute(*cfg)
+	if err != nil {
 		panic(err)
 	}
 }
