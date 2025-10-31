@@ -21,7 +21,7 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 			return nil, err
 		}
 
-		var output CurrencyOutput = CurrencyOutput{
+		var output = CurrencyOutput{
 			NumCode:  valute.NumCode,
 			CharCode:  valute.CharCode,
 			Value:  value}
