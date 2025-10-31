@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-
 	config, err := utils.GetConfig()
 	if err != nil {
 		panic(err)
@@ -18,7 +17,10 @@ func main() {
 
 	valCurs.SortByValue()
 
-	valutesForJson, err := utils.GetValutesForJson((*utils.Valutes)(&valCurs.Valutes))
+	valutesForJson, err := utils.GetValutesForJSON((*utils.Valutes)(&valCurs.Valutes))
+	if err != nil {
+		panic(err)
+	}
 
-	utils.JsonWrite(config, valutesForJson)
+	utils.JSONWrite(config, valutesForJson)
 }

@@ -12,7 +12,7 @@ type CurrencyOutput struct {
 	Value    float64 `json:"value"`
 }
 
-func GetValutesForJson(valutes *Valutes) ([]byte, error) {
+func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 	var outputData []CurrencyOutput
 
 	for _, valute := range *valutes {
@@ -31,10 +31,11 @@ func GetValutesForJson(valutes *Valutes) ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
+
 	return jsonData, nil
 }
 
-func JsonWrite(config *Config, jsonData []byte) {
+func JSONWrite(config *Config, jsonData []byte) {
 	outputDir := filepath.Dir(config.OutputFile)
 
 	err := os.MkdirAll(outputDir, 0755)
@@ -42,7 +43,7 @@ func JsonWrite(config *Config, jsonData []byte) {
 		panic(err)
 	}
 
-	err = os.WriteFile(config.OutputFile, jsonData, 0644)
+	err = os.WriteFile(config.OutputFile, jsonData, 0600)
 	if err != nil {
 		panic(err)
 	}
