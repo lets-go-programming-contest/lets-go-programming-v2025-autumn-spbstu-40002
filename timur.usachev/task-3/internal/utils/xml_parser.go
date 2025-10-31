@@ -15,8 +15,7 @@ func parseXML(data []byte) (valCurs, error) {
 	dec.CharsetReader = charset.NewReaderLabel
 
 	if err := dec.Decode(&root); err != nil {
-
-		return valCurs{}, fmt.Errorf("%w: %v", ErrXMLParse, err)
+		return valCurs{}, fmt.Errorf("%s: %w", ErrXMLParse.Error(), err)
 	}
 
 	return root, nil
