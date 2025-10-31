@@ -7,27 +7,27 @@ import (
 )
 
 func convertValutes(root valCurs) []OutputCurrency {
-	out := make([]OutputCurrency, 0, len(root.Valutes))
+	result := make([]OutputCurrency, 0, len(root.Valutes))
 
-	for _, vt := range root.Valutes {
-		valStr := strings.ReplaceAll(strings.TrimSpace(vt.Value), ",", ".")
-		val, err := strconv.ParseFloat(valStr, 64)
+	for _, valute := range root.Valutes {
+		valueFloatStr := strings.ReplaceAll(strings.TrimSpace(valute.Value), ",", ".")
+		valueFloat, err := strconv.ParseFloat(valueFloatStr, 64)
 		if err != nil {
 			continue
 		}
 
-		num, _ := strconv.Atoi(strings.TrimSpace(vt.NumCode))
+		numCode, _ := strconv.Atoi(strings.TrimSpace(valute.NumCode))
 
-		out = append(out, OutputCurrency{
-			NumCode:  num,
-			CharCode: strings.TrimSpace(vt.CharCode),
-			Value:    val,
+		result = append(result, OutputCurrency{
+			NumCode:  numCode,
+			CharCode: strings.TrimSpace(valute.CharCode),
+			Value:    valueFloat,
 		})
 	}
 
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].Value > out[j].Value
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Value > result[j].Value
 	})
 
-	return out
+	return result
 }
