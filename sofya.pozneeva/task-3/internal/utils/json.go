@@ -38,8 +38,8 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 }
 
 const (
-	dirPerm = 0755
-	filePerm = 0600
+	dirPerm = 0o755
+	filePerm = 0o600
 )
 
 func JSONWrite(config *Config, jsonData []byte) {
