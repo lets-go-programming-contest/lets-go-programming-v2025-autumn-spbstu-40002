@@ -2,12 +2,14 @@ package xml
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
-	"sort"
 
 	"golang.org/x/net/html/charset"
 )
+
+var ErrFileNotFound = errors.New("no such file or directory")
 
 type Currencies struct {
 	XMLName    xml.Name   `xml:"ValCurs"`
@@ -18,17 +20,17 @@ type Currencies struct {
 
 func LoadCurrencies(filename string) (*Currencies, error) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		return nil, fmt.Errorf("no such file or directory")
+		return nil, ErrFileNotFound
 	}
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, fmt.Errorf("open file: %w", err)
 	}
 
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			panic(closeErr)
+			fmt.Printf("warning: failed to close file: %v\n", closeErr)
 		}
 	}()
 
@@ -37,7 +39,7 @@ func LoadCurrencies(filename string) (*Currencies, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err := decoder.Decode(&currencies); err != nil {
-		return nil, fmt.Errorf("failed to decode XML: %w", err)
+		return nil, fmt.Errorf("decode XML: %w", err)
 	}
 
 	return &currencies, nil
@@ -46,3 +48,4 @@ func LoadCurrencies(filename string) (*Currencies, error) {
 func (c *Currencies) SortByValue() {
 	sort.Sort(ByExchangeRate(c.Currencies))
 }
+EOF

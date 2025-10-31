@@ -1,10 +1,16 @@
 package config
 
 import (
-	"fmt"
+	"errors"
 	"os"
 
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	ErrConfigPathRequired = errors.New("config path is required")
+	ErrFileNotFound       = errors.New("no such file or directory")
+	ErrInvalidYAML        = errors.New("did not find expected key")
 )
 
 type AppConfig struct {
@@ -14,18 +20,19 @@ type AppConfig struct {
 
 func LoadConfig(configPath string) (*AppConfig, error) {
 	if configPath == "" {
-		return nil, fmt.Errorf("config path is required")
+		return nil, ErrConfigPathRequired
 	}
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("no such file or directory")
+		return nil, ErrFileNotFound
 	}
 
 	var config AppConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("did not find expected key")
+		return nil, ErrInvalidYAML
 	}
 
 	return &config, nil
 }
+EOF
