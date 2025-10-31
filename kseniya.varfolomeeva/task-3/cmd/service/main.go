@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/xanaoxx/task-3/internal/config"
 	"github.com/xanaoxx/task-3/internal/json"
