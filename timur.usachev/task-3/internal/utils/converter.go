@@ -9,18 +9,19 @@ import (
 func convertValutes(root valCurs) []OutputCurrency {
 	out := make([]OutputCurrency, 0, len(root.Valutes))
 
-	for _, vt := range root.Valutes {
-		valStr := strings.ReplaceAll(strings.TrimSpace(vt.Value), ",", ".")
+	for _, valute := range root.Valutes {
+		valStr := strings.ReplaceAll(strings.TrimSpace(valute.Value), ",", ".")
 		val, err := strconv.ParseFloat(valStr, 64)
+
 		if err != nil {
 			continue
 		}
 
-		num, _ := strconv.Atoi(strings.TrimSpace(vt.NumCode))
+		num, _ := strconv.Atoi(strings.TrimSpace(valute.NumCode))
 
 		out = append(out, OutputCurrency{
 			NumCode:  num,
-			CharCode: strings.TrimSpace(vt.CharCode),
+			CharCode: strings.TrimSpace(valute.CharCode),
 			Value:    val,
 		})
 	}
