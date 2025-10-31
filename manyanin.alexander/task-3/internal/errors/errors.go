@@ -5,32 +5,17 @@ import (
 )
 
 var (
-	// config
-	ErrConfigPathEmpty = errors.New("config path is empty")
-	ErrConfigRead      = errors.New("failed to read config")
-	ErrConfigParse     = errors.New("failed to parse config")
-	ErrConfigInvalid   = errors.New("invalid config")
-
-	// files
-	ErrFileRead          = errors.New("failed to read file")
-	ErrFileWrite         = errors.New("failed to write file")
-	ErrFileNotFound      = errors.New("file not found")
-	ErrDirCreate         = errors.New("failed to create directory")
-	ErrInputFileNotExist = errors.New("input file does not exist")
-
-	// XML
-	ErrXMLRead   = errors.New("failed to read xml")
-	ErrXMLParse  = errors.New("failed to parse xml")
-	ErrXMLDecode = errors.New("failed to decode xml")
-	ErrXMLEmpty  = errors.New("xml file is empty")
-
-	// JSON
-	ErrJSONWrite   = errors.New("failed to write json")
-	ErrJSONMarshal = errors.New("failed to marshal json")
-
-	// data
-	ErrDataConvert           = errors.New("failed to convert data")
-	ErrDataInvalid           = errors.New("invalid data")
-	ErrDataEmpty             = errors.New("no data found")
+	ErrConfigPathEmpty       = errors.New("config path is empty")
+	ErrConfigRead            = errors.New("failed to read config")
+	ErrConfigParse           = errors.New("failed to parse config")
+	ErrConfigInvalid         = errors.New("invalid config")
+	ErrInputFileNotExist     = errors.New("input file does not exist")
+	ErrXMLRead               = errors.New("failed to read xml")
+	ErrXMLDecode             = errors.New("failed to decode xml")
 	ErrNoCurrenciesExtracted = errors.New("no currencies extracted from xml")
+	ErrJSONWrite             = errors.New("failed to write json")
+	ErrJSONMarshal           = errors.New("failed to marshal json")
+	ErrDirCreate             = errors.New("failed to create directory")
+	ErrDataEmpty             = errors.New("no data found")
+	ErrXMLEmpty              = errors.New("xml file is empty")
 )
