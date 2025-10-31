@@ -13,7 +13,7 @@ type CurrencyOutput struct {
 }
 
 func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
-	var outputData = make([]CurrencyOutput, 0)
+	outputData := make([]CurrencyOutput, 0)
 
 	for _, valute := range *valutes {
 		value, err := valute.ConvertValue()
@@ -21,7 +21,7 @@ func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
 			return nil, err
 		}
 
-		var output = CurrencyOutput{
+		output := CurrencyOutput{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
 			Value:    value}
