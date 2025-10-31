@@ -14,25 +14,27 @@ type Config struct {
 }
 
 func ReadConfigPath() *string {
-	configPath := flag.String("config", "", "config file path")
+	configPath := flag.String("config", "", "Path to configuration file")
 	flag.Parse()
+
 	if *configPath == "" {
 		panic(myerrors.ErrConfigPath)
 	}
+
 	return configPath
 }
 
 func ParseConfig(configPath *string) *Config {
-	//read config
+	// read config
 	data, err := os.ReadFile(*configPath)
 	if err != nil {
 		panic(myerrors.ErrConfigRead)
 	}
-	//parse config
+	// parse config
 	var cnf Config
 
 	err = yaml.Unmarshal(data, &cnf)
-	if err != nil {
+	if err != nil || cnf.InputFile == "" || cnf.OutputFile == "" {
 		panic(myerrors.ErrConfigParse)
 	}
 

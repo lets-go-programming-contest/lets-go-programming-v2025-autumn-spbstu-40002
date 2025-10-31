@@ -14,7 +14,7 @@ type Valute struct {
 }
 
 type JSONValute struct {
-	NumCode  string  `json:"num-code"`
-	CharCode string  `json:"char-code"`
+	NumCode  string  `json:"num_code"`
+	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
