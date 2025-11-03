@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -14,7 +13,7 @@ type Config struct {
 }
 
 func LoadConfig(configPath string) (*Config, error) {
-	configData, err := ioutil.ReadFile(configPath)
+	configData, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}

@@ -1,2 +1,2 @@
-input-file: "resource/input_02_03_2022.xml"
-output-file: "result/output_02_03_2022.json"
+input-file: "data/input.xml"
+output-file: "output/currencies.json"

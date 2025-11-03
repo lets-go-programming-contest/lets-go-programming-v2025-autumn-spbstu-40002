@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"lets-go-programming-v2025-autumn-spbstu-40002/internal/cbr"
-	"lets-go-programming-v2025-autumn-spbstu-40002/internal/config"
-	"lets-go-programming-v2025-autumn-spbstu-40002/internal/convert"
-	"lets-go-programming-v2025-autumn-spbstu-40002/internal/output"
+	"github.com/Nazkaaa/task-3/internal/cbr"
+	"github.com/Nazkaaa/task-3/internal/config"
+	"github.com/Nazkaaa/task-3/internal/convert"
+	"github.com/Nazkaaa/task-3/internal/output"
 )
 
 func main() {

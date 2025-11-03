@@ -2,7 +2,7 @@ package output
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 func SaveToJSON(currencies []interface{}, filePath string) error {
@@ -11,7 +11,7 @@ func SaveToJSON(currencies []interface{}, filePath string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(filePath, outputJSON, 0644)
+	err = os.WriteFile(filePath, outputJSON, 0644)
 	if err != nil {
 		return err
 	}

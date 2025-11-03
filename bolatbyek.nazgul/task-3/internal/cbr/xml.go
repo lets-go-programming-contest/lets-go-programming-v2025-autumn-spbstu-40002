@@ -2,7 +2,7 @@ package cbr
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"os"
 )
 
 type ValCurs struct {
@@ -18,7 +18,7 @@ type Valute struct {
 }
 
 func ParseXML(filePath string) (*ValCurs, error) {
-	xmlData, err := ioutil.ReadFile(filePath)
+	xmlData, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
