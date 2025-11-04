@@ -5,61 +5,94 @@ import (
 	"fmt"
 )
 
-type MaxHeap []int
+type PriorityQueue []int
 
-func (h MaxHeap) Len() int            { return len(h) }
-func (h MaxHeap) Less(i, j int) bool  { return h[i] > h[j] }
-func (h MaxHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
-func (h *MaxHeap) Push(x interface{}) { *h = append(*h, x.(int)) }
-func (h *MaxHeap) Pop() interface{} {
-	old := *h
+func (pq PriorityQueue) Len() int { return len(pq) }
+
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i] > pq[j]
+}
+
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+}
+
+func (pq *PriorityQueue) Push(x interface{}) {
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+
+	*pq = append(*pq, value)
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
 	n := len(old)
-	x := old[n-1]
-	*h = old[0 : n-1]
-	return x
+	item := old[n-1]
+	*pq = old[0 : n-1]
+
+	return item
 }
 
 const (
-	maxDishes = 10000
-	minDishes = 1
-	minScore  = -10000
-	maxScore  = 10000
+	maxDishesCount = 10000
+	minDishesCount = 1
+	minValue       = -10000
+	maxValue       = 10000
 )
 
 func main() {
-	maxHeap := &MaxHeap{}
-	heap.Init(maxHeap)
+	pq := &PriorityQueue{}
+	heap.Init(pq)
 
-	var dishCount int
+	var totalDishes int
 
-	_, err := fmt.Scan(&dishCount)
-	if err != nil || dishCount < minDishes || dishCount > maxDishes {
-		fmt.Println("invalid dish count")
+	_, err := fmt.Scan(&totalDishes)
+	if err != nil {
+		fmt.Println("invalid input")
+
 		return
 	}
 
-	for range dishCount {
-		var score int
-		_, err = fmt.Scan(&score)
-		if err != nil || score < minScore || score > maxScore {
-			fmt.Println("invalid score value")
+	if totalDishes < minDishesCount || totalDishes > maxDishesCount {
+		fmt.Println("invalid dish count")
+
+		return
+	}
+
+	for i := 0; i < totalDishes; i++ {
+		var currentValue int
+
+		_, err = fmt.Scan(&currentValue)
+		if err != nil {
+			fmt.Println("invalid input")
+
 			return
 		}
 
-		heap.Push(maxHeap, score)
+		if currentValue < minValue || currentValue > maxValue {
+			fmt.Println("invalid value")
+
+			return
+		}
+
+		heap.Push(pq, currentValue)
 	}
 
-	var position int
-	_, err = fmt.Scan(&position)
+	var targetPosition int
+
+	_, err = fmt.Scan(&targetPosition)
 	if err != nil {
-		fmt.Println("invalid position")
+		fmt.Println("invalid input")
+
 		return
 	}
 
-	for range dishCount - position {
-		heap.Pop(maxHeap)
+	for i := 0; i < targetPosition-1; i++ {
+		heap.Pop(pq)
 	}
 
-	result := heap.Pop(maxHeap)
+	result := heap.Pop(pq)
 	fmt.Println(result)
 }
