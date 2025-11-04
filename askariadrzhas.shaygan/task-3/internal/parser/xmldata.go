@@ -26,9 +26,10 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 	if err != nil {
 		panic("cannot open source file: " + err.Error())
 	}
+
 	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			panic("cannot close file: " + cerr.Error())
+		if closeErr := file.Close(); closeErr != nil {
+			panic("cannot close file: " + closeErr.Error())
 		}
 	}()
 
@@ -36,13 +37,15 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 	xmlDecoder.CharsetReader = charset.NewReaderLabel
 
 	var rawData ExchangeData
-	if err = xmlDecoder.Decode(&rawData); err != nil {
+	if err := xmlDecoder.Decode(&rawData); err != nil {
 		panic("invalid XML format: " + err.Error())
 	}
 
 	var processed []types.ProcessedCurrency
+
 	for _, item := range rawData.Items {
-		if converted := convertCurrencyItem(item); converted != nil {
+		converted := convertCurrencyItem(item)
+		if converted != nil {
 			processed = append(processed, *converted)
 		}
 	}
@@ -56,6 +59,7 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 
 func convertCurrencyItem(item CurrencyItem) *types.ProcessedCurrency {
 	cleanedRate := strings.Replace(item.Rate, ",", ".", 1)
+
 	rateValue, err := strconv.ParseFloat(cleanedRate, 64)
 	if err != nil {
 		return nil

@@ -18,6 +18,8 @@ func (cs *CurrencySorter) SortByRateDescending() {
 
 func OrganizeByRate(currencies []types.ProcessedCurrency) []types.ProcessedCurrency {
 	sorter := CurrencySorter{Items: currencies}
+
 	sorter.SortByRateDescending()
+
 	return sorter.Items
 }
