@@ -13,14 +13,15 @@ func main() {
 	cfgPath := config.ReadConfigPath()
 	cfg := config.ParseConfig(cfgPath)
 
-	currencies, err := parser.ParseXML(cfg.InputFile)
+	data, err := parser.ParseXML(cfg.InputFile)
 	if err != nil {
-		log.Fatalf("failed to parse xml: %v", err)
+		log.Fatalf("failed to parse XML: %v", err)
 	}
 
-	sorted := processor.OrganizeByRate(currencies)
+	sorted := processor.OrganizeByRate(data)
 
-	if err := writer.WriteJSON(cfg.OutputFile, sorted); err != nil {
-		log.Fatalf("failed to write json: %v", err)
+	err = writer.WriteJSON(cfg.OutputFile, sorted)
+	if err != nil {
+		log.Fatalf("failed to write JSON: %v", err)
 	}
 }

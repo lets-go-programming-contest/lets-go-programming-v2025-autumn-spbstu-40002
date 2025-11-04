@@ -26,13 +26,13 @@ func ReadConfigPath() *string {
 func ParseConfig(configPath *string) *Config {
 	data, err := os.ReadFile(*configPath)
 	if err != nil {
-		panic("failed to read config file")
+		panic(err)
 	}
 
 	var cfg Config
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		panic("failed to parse config file")
+		panic(err)
 	}
 
 	if cfg.InputFile == "" || cfg.OutputFile == "" {

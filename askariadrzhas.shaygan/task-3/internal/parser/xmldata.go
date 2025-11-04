@@ -2,13 +2,12 @@ package parser
 
 import (
 	"encoding/xml"
-	"fmt"
 	"os"
 )
 
 type CurrencyItem struct {
-	Name string  `xml:"Name" json:"name"`
-	Rate float64 `xml:"Rate" json:"rate"`
+	Name string  `xml:"Name"`
+	Rate float64 `xml:"Rate"`
 }
 
 type CurrencyList struct {
@@ -16,19 +15,16 @@ type CurrencyList struct {
 }
 
 func ParseXML(path string) ([]CurrencyItem, error) {
-	file, err := os.Open(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open xml file: %w", err)
+		return nil, err
 	}
 
-	defer func() {
-		_ = file.Close()
-	}()
-
-	var raw CurrencyList
-	if err := xml.NewDecoder(file).Decode(&raw); err != nil {
-		return nil, fmt.Errorf("failed to decode xml: %w", err)
+	var list CurrencyList
+	err = xml.Unmarshal(data, &list)
+	if err != nil {
+		return nil, err
 	}
 
-	return raw.Items, nil
+	return list.Items, nil
 }
