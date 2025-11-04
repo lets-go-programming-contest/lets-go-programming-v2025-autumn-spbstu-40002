@@ -6,9 +6,12 @@ import (
 	"path/filepath"
 )
 
+const defaultDirPerm = 0o755
+
 func SaveAsJSON(data interface{}, outputPath string) {
 	dir := filepath.Dir(outputPath)
-	err := os.MkdirAll(dir, 0o755)
+	err := os.MkdirAll(dir, defaultDirPerm)
+
 	if err != nil {
 		panic("cannot create output directory: " + err.Error())
 	}

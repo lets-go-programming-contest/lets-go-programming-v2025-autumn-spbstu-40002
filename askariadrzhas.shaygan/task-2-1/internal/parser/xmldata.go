@@ -1,4 +1,3 @@
-// internal/parser/xmldata.go
 package parser
 
 import (
@@ -39,11 +38,13 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 
 	var rawData ExchangeData
 	err = xmlDecoder.Decode(&rawData)
+
 	if err != nil {
 		panic("invalid XML format: " + err.Error())
 	}
 
 	var processed []types.ProcessedCurrency
+
 	for _, item := range rawData.Items {
 		converted := convertCurrencyItem(item)
 		if converted != nil {
@@ -61,6 +62,7 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 func convertCurrencyItem(item CurrencyItem) *types.ProcessedCurrency {
 	cleanedRate := strings.Replace(item.Rate, ",", ".", 1)
 	rateValue, err := strconv.ParseFloat(cleanedRate, 64)
+
 	if err != nil {
 		return nil
 	}
