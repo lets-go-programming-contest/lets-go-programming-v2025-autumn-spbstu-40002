@@ -10,19 +10,17 @@ import (
 )
 
 func main() {
-	settings, err := config.LoadSettings()
-	if err != nil {
-		log.Fatalf("failed to load settings: %v", err)
-	}
+	cfgPath := config.ReadConfigPath()
+	cfg := config.ParseConfig(cfgPath)
 
-	data, err := parser.ParseXML(settings.InputPath)
+	currencies, err := parser.ParseXML(cfg.InputFile)
 	if err != nil {
 		log.Fatalf("failed to parse xml: %v", err)
 	}
 
-	sorted := processor.OrganizeByRate(data)
+	sorted := processor.OrganizeByRate(currencies)
 
-	if err := writer.WriteJSON(settings.OutputPath, sorted); err != nil {
+	if err := writer.WriteJSON(cfg.OutputFile, sorted); err != nil {
 		log.Fatalf("failed to write json: %v", err)
 	}
 }
