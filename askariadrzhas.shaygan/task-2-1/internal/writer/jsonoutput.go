@@ -8,7 +8,8 @@ import (
 
 func SaveAsJSON(data interface{}, outputPath string) {
 	dir := filepath.Dir(outputPath)
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0o755)
+
 	if err != nil {
 		panic("cannot create output directory: " + err.Error())
 	}
@@ -17,7 +18,12 @@ func SaveAsJSON(data interface{}, outputPath string) {
 	if err != nil {
 		panic("cannot create output file: " + err.Error())
 	}
-	defer outputFile.Close()
+
+	defer func() {
+		if closeErr := outputFile.Close(); closeErr != nil {
+			panic("cannot close file: " + closeErr.Error())
+		}
+	}()
 
 	jsonEncoder := json.NewEncoder(outputFile)
 	jsonEncoder.SetIndent("", "    ")

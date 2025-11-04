@@ -21,12 +21,14 @@ func LoadSettings() *AppSettings {
 	}
 
 	fileData, err := os.ReadFile(*configPath)
+
 	if err != nil {
 		panic("cannot read config file: " + err.Error())
 	}
 
 	var settings AppSettings
 	err = yaml.Unmarshal(fileData, &settings)
+
 	if err != nil {
 		panic("invalid config format: " + err.Error())
 	}

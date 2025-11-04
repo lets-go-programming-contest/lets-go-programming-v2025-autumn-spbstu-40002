@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/XShaygaND/task-3/internal/types"
 	"golang.org/x/net/html/charset"
+
+	"github.com/XShaygaND/task-3/internal/types"
 )
 
 type ExchangeData struct {
@@ -25,18 +26,25 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 	if err != nil {
 		panic("cannot open source file: " + err.Error())
 	}
-	defer file.Close()
+
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			panic("cannot close file: " + closeErr.Error())
+		}
+	}()
 
 	xmlDecoder := xml.NewDecoder(file)
 	xmlDecoder.CharsetReader = charset.NewReaderLabel
 
 	var rawData ExchangeData
 	err = xmlDecoder.Decode(&rawData)
+
 	if err != nil {
 		panic("invalid XML format: " + err.Error())
 	}
 
 	var processed []types.ProcessedCurrency
+
 	for _, item := range rawData.Items {
 		converted := convertCurrencyItem(item)
 		if converted != nil {
@@ -54,6 +62,7 @@ func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 func convertCurrencyItem(item CurrencyItem) *types.ProcessedCurrency {
 	cleanedRate := strings.Replace(item.Rate, ",", ".", 1)
 	rateValue, err := strconv.ParseFloat(cleanedRate, 64)
+
 	if err != nil {
 		return nil
 	}
