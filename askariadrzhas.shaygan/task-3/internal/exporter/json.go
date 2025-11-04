@@ -15,7 +15,8 @@ const dirPerm = 0o755
 func WriteToJSON(valutes []currency.Valute, path string) {
 	jsonValutes := utils.ParseValutesToJSON(valutes)
 
-	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
+	err := os.MkdirAll(filepath.Dir(path), dirPerm)
+	if err != nil {
 		panic(myerrors.ErrDirCreate)
 	}
 
@@ -23,12 +24,19 @@ func WriteToJSON(valutes []currency.Valute, path string) {
 	if err != nil {
 		panic(myerrors.ErrOutOpen)
 	}
-	defer file.Close()
 
-	enc := json.NewEncoder(file)
-	enc.SetIndent("", "  ")
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(myerrors.ErrCloseFile)
+		}
+	}()
 
-	if err := enc.Encode(jsonValutes); err != nil {
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+
+	err = encoder.Encode(jsonValutes)
+	if err != nil {
 		panic(myerrors.ErrOutEncode)
 	}
 }

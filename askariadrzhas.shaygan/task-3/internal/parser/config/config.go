@@ -29,8 +29,8 @@ func ParseConfig(configPath *string) *Config {
 	if err != nil {
 		panic(myerrors.ErrConfigRead)
 	}
-
 	var cnf Config
+
 	err = yaml.Unmarshal(data, &cnf)
 	if err != nil || cnf.InputFile == "" || cnf.OutputFile == "" {
 		panic(myerrors.ErrConfigParse)

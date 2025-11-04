@@ -3,15 +3,15 @@ package main
 import (
 	"github.com/XShaygaND/task-3/internal/exporter"
 	"github.com/XShaygaND/task-3/internal/parser/config"
-	"github.com/XShaygaND/task-3/internal/parser/xmlparser"
+	"github.com/XShaygaND/task-3/internal/parser/xml"
 )
 
 func main() {
-	confPath := config.ReadConfigPath()
+	configPath := config.ReadConfigPath()
 
-	conf := config.ParseConfig(confPath)
+	cnf := *(config.ParseConfig(configPath))
 
-	xmlData := xmlparser.ParseXML(conf.InputFile)
+	vc := xml.ParseXML(cnf.InputFile)
 
-	exporter.WriteToJSON(xmlData.Valute, conf.OutputFile)
+	exporter.WriteToJSON(vc.Valute, cnf.OutputFile)
 }
