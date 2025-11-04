@@ -13,30 +13,31 @@ type Config struct {
 }
 
 func ReadConfigPath() *string {
-	cfgPath := flag.String("config", "", "Path to configuration file")
+	configPath := flag.String("config", "", "Path to configuration file")
 	flag.Parse()
 
-	if *cfgPath == "" {
-		panic("missing --config flag")
+	if *configPath == "" {
+		panic("no config path provided")
 	}
 
-	return cfgPath
+	return configPath
 }
 
-func ParseConfig(cfgPath *string) *Config {
-	data, err := os.ReadFile(*cfgPath)
+func ParseConfig(configPath *string) *Config {
+	data, err := os.ReadFile(*configPath)
 	if err != nil {
 		panic("failed to read config file")
 	}
 
-	var cnf Config
-	if err := yaml.Unmarshal(data, &cnf); err != nil {
+	var cfg Config
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
 		panic("failed to parse config file")
 	}
 
-	if cnf.InputFile == "" || cnf.OutputFile == "" {
+	if cfg.InputFile == "" || cfg.OutputFile == "" {
 		panic("invalid config: missing input/output fields")
 	}
 
-	return &cnf
+	return &cfg
 }

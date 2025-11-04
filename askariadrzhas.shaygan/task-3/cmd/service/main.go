@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/XShaygaND/task-3/internal/config"
 	"github.com/XShaygaND/task-3/internal/parser"
+	"github.com/XShaygaND/task-3/internal/parser/config"
 	"github.com/XShaygaND/task-3/internal/processor"
 	"github.com/XShaygaND/task-3/internal/writer"
 )
