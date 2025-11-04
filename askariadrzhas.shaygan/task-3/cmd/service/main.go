@@ -10,18 +10,17 @@ import (
 )
 
 func main() {
-	cfgPath := config.ReadConfigPath()
-	cfg := config.ParseConfig(cfgPath)
+	configPath := config.ReadConfigPath()
+	cfg := config.ParseConfig(configPath)
 
-	data, err := parser.ParseXML(cfg.InputFile)
+	items, err := parser.ParseXML(cfg.InputFile)
 	if err != nil {
 		log.Fatalf("failed to parse XML: %v", err)
 	}
 
-	sorted := processor.OrganizeByRate(data)
+	sortedItems := processor.SortData(items)
 
-	err = writer.WriteJSON(cfg.OutputFile, sorted)
-	if err != nil {
+	if err := writer.WriteJSON(cfg.OutputFile, sortedItems); err != nil {
 		log.Fatalf("failed to write JSON: %v", err)
 	}
 }

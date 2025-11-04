@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/XShaygaND/task-3/internal/parser/myerrors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,7 +18,7 @@ func ReadConfigPath() *string {
 	flag.Parse()
 
 	if *configPath == "" {
-		panic("no config path provided")
+		panic(myerrors.ErrConfigPath)
 	}
 
 	return configPath
@@ -26,18 +27,14 @@ func ReadConfigPath() *string {
 func ParseConfig(configPath *string) *Config {
 	data, err := os.ReadFile(*configPath)
 	if err != nil {
-		panic(err)
+		panic(myerrors.ErrConfigRead)
 	}
 
-	var cfg Config
-	err = yaml.Unmarshal(data, &cfg)
-	if err != nil {
-		panic(err)
+	var cnf Config
+	err = yaml.Unmarshal(data, &cnf)
+	if err != nil || cnf.InputFile == "" || cnf.OutputFile == "" {
+		panic(myerrors.ErrConfigParse)
 	}
 
-	if cfg.InputFile == "" || cfg.OutputFile == "" {
-		panic("invalid config: missing input/output fields")
-	}
-
-	return &cfg
+	return &cnf
 }
