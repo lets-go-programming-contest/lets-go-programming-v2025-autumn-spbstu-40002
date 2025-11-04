@@ -9,7 +9,6 @@ import (
 func SaveAsJSON(data interface{}, outputPath string) {
 	dir := filepath.Dir(outputPath)
 	err := os.MkdirAll(dir, 0o755)
-
 	if err != nil {
 		panic("cannot create output directory: " + err.Error())
 	}
