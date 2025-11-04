@@ -15,16 +15,24 @@ func ParseXML(path string) *currency.ValCurs {
 	if err != nil {
 		panic(myerrors.ErrFileNotFound)
 	}
-	defer file.Close()
 
-	var valCurs currency.ValCurs
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(myerrors.ErrCloseFile)
+		}
+	}()
+
+	var vc currency.ValCurs
+
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	if err := decoder.Decode(&valCurs); err != nil {
+	err = decoder.Decode(&vc)
+	if err != nil {
 		panic(myerrors.ErrXMLDecode)
 	}
 
-	utils.SortValutesByValue(valCurs.Valute)
-	return &valCurs
+	utils.SortValutesByValue(vc.Valute)
+
+	return &vc
 }
