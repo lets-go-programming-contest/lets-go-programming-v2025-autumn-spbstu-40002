@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"golang.org/x/net/html/charset"
-
-	"github.com/XShaygaND/task-3/internal/types"
 )
 
 type ExchangeData struct {
@@ -21,53 +19,56 @@ type CurrencyItem struct {
 	Rate       string `xml:"Value"`
 }
 
-func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
+type ProcessedCurrency struct {
+	Code   string  `json:"numCode"`
+	Symbol string  `json:"charCode"`
+	Rate   float64 `json:"value"`
+}
+
+func ExtractCurrencyData(filePath string) []ProcessedCurrency {
 	file, err := os.Open(filePath)
 	if err != nil {
 		panic("cannot open source file: " + err.Error())
 	}
-
 	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
-			panic("cannot close file: " + closeErr.Error())
+		if cerr := file.Close(); cerr != nil {
+			panic("cannot close file: " + cerr.Error())
 		}
 	}()
 
-	xmlDecoder := xml.NewDecoder(file)
-	xmlDecoder.CharsetReader = charset.NewReaderLabel
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
 
-	var rawData ExchangeData
-	if err := xmlDecoder.Decode(&rawData); err != nil {
+	var raw ExchangeData
+	if err = decoder.Decode(&raw); err != nil {
 		panic("invalid XML format: " + err.Error())
 	}
 
-	var processed []types.ProcessedCurrency
-
-	for _, item := range rawData.Items {
-		converted := convertCurrencyItem(item)
-		if converted != nil {
-			processed = append(processed, *converted)
+	var out []ProcessedCurrency
+	for _, item := range raw.Items {
+		if p := convertCurrencyItem(item); p != nil {
+			out = append(out, *p)
 		}
 	}
 
-	if len(processed) == 0 {
+	if len(out) == 0 {
 		panic("no valid currency data found")
 	}
 
-	return processed
+	return out
 }
 
-func convertCurrencyItem(item CurrencyItem) *types.ProcessedCurrency {
-	cleanedRate := strings.Replace(item.Rate, ",", ".", 1)
+func convertCurrencyItem(item CurrencyItem) *ProcessedCurrency {
+	clean := strings.Replace(item.Rate, ",", ".", 1)
 
-	rateValue, err := strconv.ParseFloat(cleanedRate, 64)
+	val, err := strconv.ParseFloat(clean, 64)
 	if err != nil {
 		return nil
 	}
 
-	return &types.ProcessedCurrency{
+	return &ProcessedCurrency{
 		Code:   item.NumberCode,
 		Symbol: item.Symbol,
-		Rate:   rateValue,
+		Rate:   val,
 	}
 }

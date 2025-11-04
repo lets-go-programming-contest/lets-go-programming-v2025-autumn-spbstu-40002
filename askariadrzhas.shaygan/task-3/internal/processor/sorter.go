@@ -3,11 +3,11 @@ package processor
 import (
 	"sort"
 
-	"github.com/XShaygaND/task-3/internal/types"
+	"github.com/XShaygaND/task-3/internal/parser"
 )
 
 type CurrencySorter struct {
-	Items []types.ProcessedCurrency
+	Items []parser.ProcessedCurrency
 }
 
 func (cs *CurrencySorter) SortByRateDescending() {
@@ -16,9 +16,8 @@ func (cs *CurrencySorter) SortByRateDescending() {
 	})
 }
 
-func OrganizeByRate(currencies []types.ProcessedCurrency) []types.ProcessedCurrency {
+func OrganizeByRate(currencies []parser.ProcessedCurrency) []parser.ProcessedCurrency {
 	sorter := CurrencySorter{Items: currencies}
-
 	sorter.SortByRateDescending()
 
 	return sorter.Items

@@ -2,12 +2,12 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
+// AppSettings holds YAML configuration.
 type AppSettings struct {
 	SourcePath string `yaml:"inputFile"`
 	TargetPath string `yaml:"outputFile"`
@@ -23,19 +23,15 @@ func LoadSettings() *AppSettings {
 
 	fileData, err := os.ReadFile(*configPath)
 	if err != nil {
-		panic(fmt.Sprintf("cannot read config file: %v", err))
+		panic("cannot read config file: " + err.Error())
 	}
 
 	var settings AppSettings
-	if err := yaml.Unmarshal(fileData, &settings); err != nil {
-		panic(fmt.Sprintf("invalid config format: %v", err))
+	if err = yaml.Unmarshal(fileData, &settings); err != nil {
+		panic("invalid config format: " + err.Error())
 	}
 
 	if settings.SourcePath == "" || settings.TargetPath == "" {
-		if _, err := os.Stat(settings.SourcePath); os.IsNotExist(err) {
-			panic(fmt.Sprintf("cannot read source file: %v", err))
-		}
-
 		panic("missing required paths in configuration")
 	}
 

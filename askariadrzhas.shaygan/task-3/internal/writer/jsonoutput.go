@@ -6,29 +6,28 @@ import (
 	"path/filepath"
 )
 
-const defaultDirPerm = 0o755
+const dirPerm = 0o755
 
 func SaveAsJSON(data interface{}, outputPath string) {
 	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, defaultDirPerm); err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		panic("cannot create output directory: " + err.Error())
 	}
 
-	outputFile, err := os.Create(outputPath)
+	f, err := os.Create(outputPath)
 	if err != nil {
 		panic("cannot create output file: " + err.Error())
 	}
-
 	defer func() {
-		if closeErr := outputFile.Close(); closeErr != nil {
-			panic("cannot close file: " + closeErr.Error())
+		if cerr := f.Close(); cerr != nil {
+			panic("cannot close file: " + cerr.Error())
 		}
 	}()
 
-	jsonEncoder := json.NewEncoder(outputFile)
-	jsonEncoder.SetIndent("", "    ")
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "    ")
 
-	if err := jsonEncoder.Encode(data); err != nil {
+	if err := enc.Encode(data); err != nil {
 		panic("cannot write JSON data: " + err.Error())
 	}
 }
