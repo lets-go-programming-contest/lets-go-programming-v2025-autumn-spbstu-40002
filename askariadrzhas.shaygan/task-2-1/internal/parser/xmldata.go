@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/XShaygaND/task-3/internal/types"
 	"golang.org/x/net/html/charset"
 )
 
@@ -19,13 +20,7 @@ type CurrencyItem struct {
 	Rate       string `xml:"Value"`
 }
 
-type ProcessedCurrency struct {
-	Code   string  `json:"num_code"`
-	Symbol string  `json:"char_code"`
-	Rate   float64 `json:"value"`
-}
-
-func ExtractCurrencyData(filePath string) []ProcessedCurrency {
+func ExtractCurrencyData(filePath string) []types.ProcessedCurrency {
 	file, err := os.Open(filePath)
 	if err != nil {
 		panic("cannot open source file: " + err.Error())
@@ -41,7 +36,7 @@ func ExtractCurrencyData(filePath string) []ProcessedCurrency {
 		panic("invalid XML format: " + err.Error())
 	}
 
-	var processed []ProcessedCurrency
+	var processed []types.ProcessedCurrency
 	for _, item := range rawData.Items {
 		converted := convertCurrencyItem(item)
 		if converted != nil {
@@ -56,14 +51,14 @@ func ExtractCurrencyData(filePath string) []ProcessedCurrency {
 	return processed
 }
 
-func convertCurrencyItem(item CurrencyItem) *ProcessedCurrency {
+func convertCurrencyItem(item CurrencyItem) *types.ProcessedCurrency {
 	cleanedRate := strings.Replace(item.Rate, ",", ".", 1)
 	rateValue, err := strconv.ParseFloat(cleanedRate, 64)
 	if err != nil {
 		return nil
 	}
 
-	return &ProcessedCurrency{
+	return &types.ProcessedCurrency{
 		Code:   item.NumberCode,
 		Symbol: item.Symbol,
 		Rate:   rateValue,

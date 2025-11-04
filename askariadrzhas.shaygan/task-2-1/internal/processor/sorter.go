@@ -1,9 +1,13 @@
 package processor
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/XShaygaND/task-3/internal/types"
+)
 
 type CurrencySorter struct {
-	Items []ProcessedCurrency
+	Items []types.ProcessedCurrency
 }
 
 func (cs *CurrencySorter) SortByRateDescending() {
@@ -12,7 +16,7 @@ func (cs *CurrencySorter) SortByRateDescending() {
 	})
 }
 
-func OrganizeByRate(currencies []ProcessedCurrency) []ProcessedCurrency {
+func OrganizeByRate(currencies []types.ProcessedCurrency) []types.ProcessedCurrency {
 	sorter := CurrencySorter{Items: currencies}
 	sorter.SortByRateDescending()
 	return sorter.Items
