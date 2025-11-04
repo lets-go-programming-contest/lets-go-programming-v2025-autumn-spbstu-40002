@@ -11,11 +11,8 @@ import (
 
 func main() {
 	settings := config.LoadSettings()
-
 	currencyData := parser.ExtractCurrencyData(settings.SourcePath)
-
 	sortedData := processor.OrganizeByRate(currencyData)
-
 	writer.SaveAsJSON(sortedData, settings.TargetPath)
 
 	fmt.Printf("Processed %d currency records\n", len(sortedData))

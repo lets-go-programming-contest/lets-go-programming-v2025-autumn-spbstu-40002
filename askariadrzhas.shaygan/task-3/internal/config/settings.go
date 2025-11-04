@@ -8,12 +8,12 @@ import (
 )
 
 type AppSettings struct {
-	SourcePath string `yaml:"input-file"`
-	TargetPath string `yaml:"output-file"`
+	SourcePath string `yaml:"inputFile"`
+	TargetPath string `yaml:"outputFile"`
 }
 
 func LoadSettings() *AppSettings {
-	configPath := flag.String("config", "", "Configuration file path")
+	configPath := flag.String("config", "", "Path to configuration file")
 	flag.Parse()
 
 	if *configPath == "" {
@@ -21,15 +21,12 @@ func LoadSettings() *AppSettings {
 	}
 
 	fileData, err := os.ReadFile(*configPath)
-
 	if err != nil {
 		panic("cannot read config file: " + err.Error())
 	}
 
 	var settings AppSettings
-	err = yaml.Unmarshal(fileData, &settings)
-
-	if err != nil {
+	if err = yaml.Unmarshal(fileData, &settings); err != nil {
 		panic("invalid config format: " + err.Error())
 	}
 
