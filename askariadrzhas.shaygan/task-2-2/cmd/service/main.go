@@ -7,14 +7,14 @@ import (
 
 type PriorityQueue []int
 
-func (pq PriorityQueue) Len() int { return len(pq) }
+func (pq *PriorityQueue) Len() int { return len(*pq) }
 
-func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i] > pq[j]
+func (pq *PriorityQueue) Less(i, j int) bool {
+	return (*pq)[i] > (*pq)[j]
 }
 
-func (pq PriorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
+func (pq *PriorityQueue) Swap(i, j int) {
+	(*pq)[i], (*pq)[j] = (*pq)[j], (*pq)[i]
 }
 
 func (pq *PriorityQueue) Push(x interface{}) {
@@ -43,8 +43,8 @@ const (
 )
 
 func main() {
-	pq := &PriorityQueue{}
-	heap.Init(pq)
+	priorityQueue := &PriorityQueue{}
+	heap.Init(priorityQueue)
 
 	var totalDishes int
 
@@ -61,7 +61,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < totalDishes; i++ {
+	for range totalDishes {
 		var currentValue int
 
 		_, err = fmt.Scan(&currentValue)
@@ -77,7 +77,7 @@ func main() {
 			return
 		}
 
-		heap.Push(pq, currentValue)
+		heap.Push(priorityQueue, currentValue)
 	}
 
 	var targetPosition int
@@ -89,10 +89,10 @@ func main() {
 		return
 	}
 
-	for i := 0; i < targetPosition-1; i++ {
-		heap.Pop(pq)
+	for range targetPosition - 1 {
+		heap.Pop(priorityQueue)
 	}
 
-	result := heap.Pop(pq)
+	result := heap.Pop(priorityQueue)
 	fmt.Println(result)
 }
