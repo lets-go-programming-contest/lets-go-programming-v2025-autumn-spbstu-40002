@@ -14,17 +14,16 @@ func SaveAsJSON(data interface{}, outputPath string) {
 		panic("cannot create output directory: " + err.Error())
 	}
 
-	f, err := os.Create(outputPath)
+	file, err := os.Create(outputPath)
 	if err != nil {
-		panic("cannot create output file: " + err.Error())
+		return
 	}
+
 	defer func() {
-		if cerr := f.Close(); cerr != nil {
-			panic("cannot close file: " + cerr.Error())
-		}
+		_ = file.Close()
 	}()
 
-	enc := json.NewEncoder(f)
+	enc := json.NewEncoder(file)
 	enc.SetIndent("", "    ")
 
 	if err := enc.Encode(data); err != nil {

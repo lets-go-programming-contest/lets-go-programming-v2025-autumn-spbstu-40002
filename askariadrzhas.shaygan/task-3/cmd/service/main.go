@@ -10,14 +10,14 @@ import (
 )
 
 func main() {
-	settings := config.LoadSettings()
+	settings, err := config.LoadSettings()
+	if err != nil {
+		return
+	}
 
-	currencyData := parser.ExtractCurrencyData(settings.SourcePath)
+	data := parser.ExtractCurrencyData(settings.SourcePath)
+	sorted := processor.OrganizeByRate(data)
+	writer.SaveAsJSON(sorted, settings.TargetPath)
 
-	sortedData := processor.OrganizeByRate(currencyData)
-
-	writer.SaveAsJSON(sortedData, settings.TargetPath)
-
-	fmt.Printf("Processed %d currency records\n", len(sortedData))
-	fmt.Printf("Output saved to: %s\n", settings.TargetPath)
+	fmt.Printf("Processed %d records\n", len(sorted))
 }
