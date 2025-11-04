@@ -13,22 +13,26 @@ type Settings struct {
 	OutputPath string `yaml:"output"`
 }
 
+var (
+	errMissingPaths = errors.New("missing required paths in configuration")
+)
+
 func LoadSettings() (*Settings, error) {
-	configPath := "config.yaml"
+	cfg := &Settings{}
 
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	var cfg Settings
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse config: %w", err)
+	if data, err := os.ReadFile("config.yaml"); err == nil {
+		// file exists, parse YAML
+		if err := yaml.Unmarshal(data, cfg); err != nil {
+			return nil, fmt.Errorf("failed to parse config: %w", err)
+		}
+	} else {
+		cfg.InputPath = os.Getenv("LGP_TASK_INPUT_PATH")
+		cfg.OutputPath = os.Getenv("LGP_TASK_OUTPUT_PATH")
 	}
 
 	if cfg.InputPath == "" || cfg.OutputPath == "" {
-		return nil, errors.New("missing required paths in configuration")
+		return nil, fmt.Errorf("invalid configuration: %w", errMissingPaths)
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }

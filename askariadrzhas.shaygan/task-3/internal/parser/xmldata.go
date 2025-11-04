@@ -7,8 +7,8 @@ import (
 )
 
 type CurrencyItem struct {
-	Name string  `xml:"Name"`
-	Rate float64 `xml:"Rate"`
+	Name string  `xml:"Name" json:"name"`
+	Rate float64 `xml:"Rate" json:"rate"`
 }
 
 type CurrencyList struct {
@@ -20,6 +20,7 @@ func ParseXML(path string) ([]CurrencyItem, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open xml file: %w", err)
 	}
+
 	defer func() {
 		_ = file.Close()
 	}()
