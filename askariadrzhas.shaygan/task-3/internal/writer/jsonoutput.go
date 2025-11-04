@@ -2,31 +2,32 @@ package writer
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/XShaygaND/task-3/internal/parser"
 )
 
-const dirPerm = 0o755
-
-func SaveAsJSON(data interface{}, outputPath string) {
-	dir := filepath.Dir(outputPath)
-	if err := os.MkdirAll(dir, dirPerm); err != nil {
-		panic("cannot create output directory: " + err.Error())
+func WriteJSON(outputPath string, data []parser.CurrencyItem) error {
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		return fmt.Errorf("failed to create output directories: %w", err)
 	}
 
 	file, err := os.Create(outputPath)
 	if err != nil {
-		return
+		return fmt.Errorf("failed to create json file: %w", err)
 	}
-
 	defer func() {
 		_ = file.Close()
 	}()
 
-	enc := json.NewEncoder(file)
-	enc.SetIndent("", "    ")
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
 
-	if err := enc.Encode(data); err != nil {
-		panic("cannot write JSON data: " + err.Error())
+	if err := encoder.Encode(data); err != nil {
+		return fmt.Errorf("failed to encode json: %w", err)
 	}
+
+	return nil
 }

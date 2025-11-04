@@ -2,36 +2,31 @@ package config
 
 import (
 	"errors"
-	"flag"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
-type AppSettings struct {
-	SourcePath string `yaml:"inputFile"`
-	TargetPath string `yaml:"outputFile"`
+type Settings struct {
+	InputPath  string `yaml:"input"`
+	OutputPath string `yaml:"output"`
 }
 
-func LoadSettings() (*AppSettings, error) {
-	configPath := flag.String("config", "", "Configuration file path")
-	flag.Parse()
+func LoadSettings() (*Settings, error) {
+	configPath := "config.yaml"
 
-	if *configPath == "" {
-		return nil, errors.New("no config path provided")
-	}
-
-	data, err := os.ReadFile(*configPath)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	var cfg AppSettings
+	var cfg Settings
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
-	if cfg.SourcePath == "" || cfg.TargetPath == "" {
+	if cfg.InputPath == "" || cfg.OutputPath == "" {
 		return nil, errors.New("missing required paths in configuration")
 	}
 

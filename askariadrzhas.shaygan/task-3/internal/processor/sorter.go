@@ -6,19 +6,13 @@ import (
 	"github.com/XShaygaND/task-3/internal/parser"
 )
 
-type CurrencySorter struct {
-	Items []parser.ProcessedCurrency
-}
+func OrganizeByRate(currencies []parser.CurrencyItem) []parser.CurrencyItem {
+	sorted := make([]parser.CurrencyItem, len(currencies))
+	copy(sorted, currencies)
 
-func (cs *CurrencySorter) SortByRateDescending() {
-	sort.Slice(cs.Items, func(i, j int) bool {
-		return cs.Items[i].Rate > cs.Items[j].Rate
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Rate > sorted[j].Rate
 	})
-}
 
-func OrganizeByRate(currencies []parser.ProcessedCurrency) []parser.ProcessedCurrency {
-	sorter := CurrencySorter{Items: currencies}
-	sorter.SortByRateDescending()
-
-	return sorter.Items
+	return sorted
 }
