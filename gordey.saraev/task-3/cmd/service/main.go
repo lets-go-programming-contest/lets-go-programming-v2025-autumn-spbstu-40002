@@ -17,19 +17,22 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		panic(errors.ErrConfigPathNotSpecified.Error())
+		fmt.Println(errors.ErrConfigPathNotSpecified.Error())
+		return
 	}
 
 	cfg := config.LoadConfig(*configPath)
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		panic(errors.ErrInputFileNotExist.Error() + ": " + cfg.InputFile)
+		fmt.Println(errors.ErrInputFileNotExist.Error() + ": " + cfg.InputFile)
+		return
 	}
 
 	currencies := xmlread.ReadCurrenciesFromXML(cfg.InputFile)
 
 	if len(currencies) == 0 {
-		panic(errors.ErrNoCurrenciesExtracted.Error())
+		fmt.Println(errors.ErrNoCurrenciesExtracted.Error())
+		return
 	}
 
 	sortedCurrencies := sort.CurrenciesByValue(currencies)
