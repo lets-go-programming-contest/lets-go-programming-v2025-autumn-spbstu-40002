@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		fmt.Println(errors.ErrConfigPathNotSpecified.Error())
+		fmt.Fprintln(os.Stderr, errors.ErrConfigPathNotSpecified.Error())
 
 		return
 	}
@@ -25,7 +25,7 @@ func main() {
 	cfg := config.LoadConfig(*configPath)
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		fmt.Println(errors.ErrInputFileNotExist.Error() + ": " + cfg.InputFile)
+		fmt.Fprintln(os.Stderr, errors.ErrInputFileNotExist.Error()+": "+cfg.InputFile)
 
 		return
 	}
@@ -33,7 +33,7 @@ func main() {
 	currencies := xmlread.ReadCurrenciesFromXML(cfg.InputFile)
 
 	if len(currencies) == 0 {
-		fmt.Println(errors.ErrNoCurrenciesExtracted.Error())
+		fmt.Fprintln(os.Stderr, errors.ErrNoCurrenciesExtracted.Error())
 
 		return
 	}
