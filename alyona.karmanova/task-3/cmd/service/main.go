@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -13,9 +14,11 @@ import (
 )
 
 var (
-	errIncorrectPath   = errors.New("config path is required")
-	errIncorrectFormat = errors.New("unsupported output format")
-	errMismatchedTypes = errors.New("mismatched types")
+	errIncorrectPath     = errors.New("config path is required")
+	errIncorrectFormat   = errors.New("unsupported output format")
+	errMismatchedTypes   = errors.New("mismatched types")
+	errParsingXML        = errors.New("xml parsing failed")
+	errWritingOutputFile = errors.New("output file writing failed")
 )
 
 const (
@@ -52,13 +55,13 @@ func main() {
 
 	doc, err := xmlfileparse.GetValCursStruct(cfg.InputFile)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("%w: %w", errParsingXML, err))
 	}
 
 	xmlsorter.SortValCursByValue(&doc)
 
 	err = jsonFile.WriteToFile(cfg.OutputFile, doc, *outputFormat)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("%w: %w", errWritingOutputFile, err))
 	}
 }

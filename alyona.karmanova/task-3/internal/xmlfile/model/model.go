@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -19,6 +20,11 @@ type Valute struct {
 	Value    float64 `json:"value"     xml:"value"     yaml:"value"`
 }
 
+var (
+	errDecodingElem = errors.New("error with decode XML element")
+	errParsingValue = errors.New("error with parse Value")
+)
+
 func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error {
 	var aux struct {
 		NumCode  int    `xml:"NumCode"`
@@ -27,14 +33,14 @@ func (v *Valute) UnmarshalXML(decod *xml.Decoder, start xml.StartElement) error 
 	}
 
 	if err := decod.DecodeElement(&aux, &start); err != nil {
-		return fmt.Errorf("couldn't decode elem: %w", err)
+		return fmt.Errorf("%w: %w", errDecodingElem, err)
 	}
 
 	valStr := strings.ReplaceAll(strings.TrimSpace(aux.Value), ",", ".")
 
 	val, err := strconv.ParseFloat(valStr, 64)
 	if err != nil {
-		return fmt.Errorf("couldn't parse Value: %w", err)
+		return fmt.Errorf("%w: %w", errParsingValue, err)
 	}
 
 	v.NumCode = aux.NumCode

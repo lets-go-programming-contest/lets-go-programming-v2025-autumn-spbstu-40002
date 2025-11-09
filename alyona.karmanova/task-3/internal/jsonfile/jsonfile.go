@@ -3,6 +3,7 @@ package jsonfile
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 
@@ -13,9 +14,15 @@ import (
 
 const filePerm = 0o600
 
+var (
+	errEnsuringDir  = errors.New("error with ensure output directory")
+	errEncodingData = errors.New("error with encode data")
+	errWritingFile  = errors.New("error with write file")
+)
+
 func WriteToFile(filePath string, doc xmlmodel.ValCurs, format string) error {
 	if err := outputfile.EnsureOutputDir(filePath); err != nil {
-		return fmt.Errorf("trouble with JSON: %w", err)
+		return fmt.Errorf("%w: %w", errEnsuringDir, err)
 	}
 
 	var (
@@ -33,11 +40,11 @@ func WriteToFile(filePath string, doc xmlmodel.ValCurs, format string) error {
 	}
 
 	if err != nil {
-		return fmt.Errorf("couldn't encode in %s: %w", format, err)
+		return fmt.Errorf("%w %s: %w", errEncodingData, format, err)
 	}
 
 	if err := os.WriteFile(filePath, data, filePerm); err != nil {
-		return fmt.Errorf("couldn't write to a file: %w", err)
+		return fmt.Errorf("%w: %w", errWritingFile, err)
 	}
 
 	return nil

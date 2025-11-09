@@ -9,17 +9,28 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-func GetValCursStruct(inputPath string) (model.ValCurs, error) {
+var (
+	errOpeningFile = fmt.Errorf("error with open XML file")
+	errXMLParsing  = fmt.Errorf("error with XML parsing")
+	errClosingFile = fmt.Errorf("error with closing XML file")
+)
+
+func GetValCursStruct(inputPath string) (_ model.ValCurs, returnError error) {
 	var doc model.ValCurs
 
 	file, err := os.Open(inputPath)
 	if err != nil {
-		return doc, fmt.Errorf("couldn't open XML file: %w", err)
+		return doc, fmt.Errorf("%w: %w", errOpeningFile, err)
 	}
 
 	defer func() {
-		if err := file.Close(); err != nil {
-			fmt.Printf("error closing file: %v", err)
+		err := file.Close()
+		if err != nil {
+			if returnError != nil {
+				returnError = fmt.Errorf("%w: %w; %w", returnError, err, errClosingFile)
+			} else {
+				returnError = fmt.Errorf("%w: %w", errClosingFile, err)
+			}
 		}
 	}()
 
@@ -27,7 +38,7 @@ func GetValCursStruct(inputPath string) (model.ValCurs, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err := decoder.Decode(&doc); err != nil {
-		return doc, fmt.Errorf("xml parsing error: %w", err)
+		return doc, fmt.Errorf("%w: %w", errXMLParsing, err)
 	}
 
 	return doc, nil

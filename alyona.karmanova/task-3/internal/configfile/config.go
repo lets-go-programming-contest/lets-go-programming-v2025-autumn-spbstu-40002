@@ -12,17 +12,22 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
+var (
+	errConfigRead    = fmt.Errorf("error with read the config file")
+	errConfigParsing = fmt.Errorf("error with config yaml file parsing")
+)
+
 func GetConfigStruct(path string) (Config, error) {
 	var cfg Config
 
 	dataConf, err := os.ReadFile(path)
 	if err != nil {
-		return cfg, fmt.Errorf("couldn't read the file: %w", err)
+		return cfg, fmt.Errorf("%w: %w", errConfigRead, err)
 	}
 
 	err = yaml.Unmarshal(dataConf, &cfg)
 	if err != nil {
-		return cfg, fmt.Errorf("yaml parsing error: %w", err)
+		return cfg, fmt.Errorf("%w: %w", errConfigParsing, err)
 	}
 
 	return cfg, nil
