@@ -101,8 +101,10 @@ func main() {
 
 		empIndex := 0
 		for empIndex < employeeCount {
-			var operation string
-			var value int
+			var (
+				operation string
+				value     int
+			)
 
 			_, err = fmt.Scanln(&operation, &value)
 			if err != nil {
