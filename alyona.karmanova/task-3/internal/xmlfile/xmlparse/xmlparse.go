@@ -2,6 +2,7 @@ package xmlparse
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,9 +11,9 @@ import (
 )
 
 var (
-	errOpeningFile = fmt.Errorf("error with open XML file")
-	errXMLParsing  = fmt.Errorf("error with XML parsing")
-	errClosingFile = fmt.Errorf("error with closing XML file")
+	errOpeningFile = errors.New("error with open XML file")
+	errXMLParsing  = errors.New("error with XML parsing")
+	errClosingFile = errors.New("error with closing XML file")
 )
 
 func GetValCursStruct(inputPath string) (_ model.ValCurs, returnError error) {

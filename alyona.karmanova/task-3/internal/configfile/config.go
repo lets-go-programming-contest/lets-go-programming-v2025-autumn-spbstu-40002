@@ -1,6 +1,7 @@
 package configfile
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -13,8 +14,8 @@ type Config struct {
 }
 
 var (
-	errConfigRead    = fmt.Errorf("error with read the config file")
-	errConfigParsing = fmt.Errorf("error with config yaml file parsing")
+	errConfigRead    = errors.New("error with read the config file")
+	errConfigParsing = errors.New("error with config yaml file parsing")
 )
 
 func GetConfigStruct(path string) (Config, error) {
