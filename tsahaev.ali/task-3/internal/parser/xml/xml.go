@@ -1,4 +1,4 @@
-package xmlparser
+package xml
 
 import (
 	"encoding/xml"
@@ -15,16 +15,25 @@ func ParseXML(path string) *currency.ValCurs {
 	if err != nil {
 		panic(myerrors.ErrFileNotFound)
 	}
-	defer file.Close()
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(myerrors.ErrCloseFile)
+		}
+	}()
 
 	var valCurs currency.ValCurs
+
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	if err := decoder.Decode(&valCurs); err != nil {
+	err = decoder.Decode(&valCurs)
+	if err != nil {
 		panic(myerrors.ErrXMLDecode)
 	}
 
 	utils.SortValutesByValue(valCurs.Valute)
+
 	return &valCurs
 }
