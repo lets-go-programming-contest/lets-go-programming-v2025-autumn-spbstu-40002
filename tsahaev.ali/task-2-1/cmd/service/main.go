@@ -82,6 +82,7 @@ func main() {
 	_, err := fmt.Scanln(&deptCount)
 	if err != nil || deptCount > maxDeptNum || deptCount < minDeptNum {
 		fmt.Println(ErrInvalidDeptCount)
+
 		return
 	}
 
@@ -92,6 +93,7 @@ func main() {
 		_, err = fmt.Scanln(&employeeCount)
 		if err != nil || employeeCount > maxEmployees || employeeCount < minEmployees {
 			fmt.Println(ErrInvalidEmployeeCount)
+
 			return
 		}
 
@@ -105,11 +107,13 @@ func main() {
 			_, err = fmt.Scanln(&operation, &value)
 			if err != nil {
 				fmt.Println(ErrInvalidInput)
+
 				return
 			}
 
 			if err := controller.adjustTemp(operation, value); err != nil {
 				fmt.Println("Error:", err)
+
 				return
 			}
 
