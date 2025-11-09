@@ -9,23 +9,23 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 
 	"gopkg.in/yaml.v3"
 )
 
-// Config структура для конфигурационного файла YAML
 type Config struct {
 	InputFile  string `yaml:"input-file"`
 	OutputFile string `yaml:"output-file"`
 }
 
-// ValCurs структура для XML данных с сайта ЦБ РФ
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []Valute `xml:"Valute"`
 }
 
-// Valute структура для валюты
 type Valute struct {
 	XMLName  xml.Name `xml:"Valute"`
 	NumCode  string   `xml:"NumCode"`
@@ -33,7 +33,6 @@ type Valute struct {
 	Value    string   `xml:"Value"`
 }
 
-// CurrencyResult структура для результата в JSON
 type CurrencyResult struct {
 	NumCode  string  `json:"num_code"`
 	CharCode string  `json:"char_code"`
@@ -41,7 +40,6 @@ type CurrencyResult struct {
 }
 
 func main() {
-	// Шаг 1: Чтение конфигурации
 	configPath := flag.String("config", "", "Path to configuration file")
 	flag.Parse()
 
@@ -54,16 +52,16 @@ func main() {
 		panic(fmt.Sprintf("Error loading config: %v", err))
 	}
 
-	// Шаг 2: Чтение и декодирование XML
 	valCurs, err := parseXML(config.InputFile)
 	if err != nil {
 		panic(fmt.Sprintf("Error parsing XML: %v", err))
 	}
 
-	// Шаг 3: Преобразование и сортировка данных
-	currencies := convertAndSortCurrencies(valCurs)
+	currencies, err := convertAndSortCurrencies(valCurs)
+	if err != nil {
+		panic(fmt.Sprintf("Error converting currencies: %v", err))
+	}
 
-	// Шаг 4: Сохранение результатов в JSON
 	err = saveResults(config.OutputFile, currencies)
 	if err != nil {
 		panic(fmt.Sprintf("Error saving results: %v", err))
@@ -72,7 +70,6 @@ func main() {
 	fmt.Println("Successfully processed currencies")
 }
 
-// loadConfig загружает конфигурацию из YAML файла
 func loadConfig(configPath string) (*Config, error) {
 	file, err := os.Open(configPath)
 	if err != nil {
@@ -94,7 +91,6 @@ func loadConfig(configPath string) (*Config, error) {
 	return &config, nil
 }
 
-// parseXML парсит XML файл с данными о валютах
 func parseXML(filePath string) (*ValCurs, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -107,8 +103,16 @@ func parseXML(filePath string) (*ValCurs, error) {
 		return nil, err
 	}
 
+	decoder := xml.NewDecoder(strings.NewReader(string(data)))
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		if charset == "windows-1251" {
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		}
+		return input, nil
+	}
+
 	var valCurs ValCurs
-	err = xml.Unmarshal(data, &valCurs)
+	err = decoder.Decode(&valCurs)
 	if err != nil {
 		return nil, err
 	}
@@ -116,16 +120,14 @@ func parseXML(filePath string) (*ValCurs, error) {
 	return &valCurs, nil
 }
 
-// convertAndSortCurrencies конвертирует и сортирует валюты по убыванию значения
-func convertAndSortCurrencies(valCurs *ValCurs) []CurrencyResult {
+func convertAndSortCurrencies(valCurs *ValCurs) ([]CurrencyResult, error) {
 	var currencies []CurrencyResult
 
 	for _, valute := range valCurs.Valutes {
-		// Преобразуем значение из строки в float64
+		cleanedValue := strings.Replace(valute.Value, ",", ".", -1)
 		var value float64
-		_, err := fmt.Sscanf(valute.Value, "%f", &value)
+		_, err := fmt.Sscanf(cleanedValue, "%f", &value)
 		if err != nil {
-			// Пропускаем валюты с некорректными значениями
 			continue
 		}
 
@@ -136,17 +138,14 @@ func convertAndSortCurrencies(valCurs *ValCurs) []CurrencyResult {
 		})
 	}
 
-	// Сортируем по убыванию значения
 	sort.Slice(currencies, func(i, j int) bool {
 		return currencies[i].Value > currencies[j].Value
 	})
 
-	return currencies
+	return currencies, nil
 }
 
-// saveResults сохраняет результаты в JSON файл
 func saveResults(outputPath string, currencies []CurrencyResult) error {
-	// Создаем директорию если она не существует
 	dir := filepath.Dir(outputPath)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
