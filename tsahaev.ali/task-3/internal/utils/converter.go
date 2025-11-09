@@ -9,24 +9,29 @@ import (
 
 func ParseCurrencyValue(val string) float64 {
 	if val == "" {
-		return 0
+		return 0.0
 	}
+
 	val = strings.Replace(val, ",", ".", 1)
-	res, err := strconv.ParseFloat(val, 64)
+
+	floatVal, err := strconv.ParseFloat(val, 64)
 	if err != nil {
-		return 0
+		return 0.0
 	}
-	return res
+
+	return floatVal
 }
 
 func ParseValutesToJSON(valutes []currency.Valute) []currency.JSONValute {
-	out := make([]currency.JSONValute, 0, len(valutes))
-	for _, v := range valutes {
-		out = append(out, currency.JSONValute{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    ParseCurrencyValue(v.Value),
+	result := make([]currency.JSONValute, 0, len(valutes))
+
+	for _, cur := range valutes {
+		result = append(result, currency.JSONValute{
+			NumCode:  cur.NumCode,
+			CharCode: cur.CharCode,
+			Value:    ParseCurrencyValue(cur.Value),
 		})
 	}
-	return out
+
+	return result
 }
