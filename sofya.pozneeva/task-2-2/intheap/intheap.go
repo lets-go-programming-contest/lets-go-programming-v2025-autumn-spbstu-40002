@@ -27,7 +27,7 @@ func (h *IntHeap) Push(x any) {
 }
 
 func (h *IntHeap) Pop() any {
-	if Len(*h) != 0 {
+	if len(*h) != 0 {
 		old := *h
 		n := len(old)
 		x := old[n-1]
