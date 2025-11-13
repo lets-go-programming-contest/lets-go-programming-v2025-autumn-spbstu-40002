@@ -40,6 +40,7 @@ func findBestTemp(tr TempRange, operator string, temp int) TempRange {
 			tr.Max = temp
 		}
 	}
+
 	return tr
 }
 
@@ -49,16 +50,18 @@ func main() {
 	_, err := fmt.Scan(&otdels)
 	if err != nil {
 		fmt.Println(ErrReadingDepartments)
+
 		return
 	}
 
 	if !isValid(otdels) {
 		fmt.Println(ErrDepartmentsOutOfRange)
+
 		return
 	}
 
 	for range otdels {
-		tr := TempRange{Min: MinTemp, Max: MaxTemp}
+		temperature := TempRange{Min: MinTemp, Max: MaxTemp}
 
 		var workers int
 
@@ -67,6 +70,7 @@ func main() {
 			fmt.Println(ErrReadingEmployees)
 			return
 		}
+
 		if !isValid(workers) {
 			fmt.Println(ErrEmployeesOutOfRange)
 			return
@@ -74,8 +78,9 @@ func main() {
 
 		results := make([]int, workers)
 
-		for i := range workers {
+		for index := range workers {
 			var operator string
+
 			var temp int
 
 			_, err = fmt.Scan(&operator)
@@ -90,12 +95,12 @@ func main() {
 				return
 			}
 
-			tr = findBestTemp(tr, operator, temp)
+			temperature = findBestTemp(temperature, operator, temp)
 
-			if tr.Min <= tr.Max {
-				results[i] = tr.Min
+			if temperature.Min <= temperature.Max {
+				results[index] = temperature.Min
 			} else {
-				results[i] = -1
+				results[index] = -1
 			}
 		}
 
