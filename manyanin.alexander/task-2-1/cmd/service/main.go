@@ -29,22 +29,22 @@ func isValid(data int) bool {
 	return data >= MinData && data <= MaxData
 }
 
-func findBestTemp(tr TempRange, operator string, temp int) TempRange {
+func findBestTemp(tmpRng TempRange, operator string, temp int) TempRange {
 	switch operator {
 	case ">=":
-		if temp > tr.Min {
-			tr.Min = temp
+		if temp > tmpRng.Min {
+			tmpRng.Min = temp
 		}
 	case "<=":
-		if temp < tr.Max {
-			tr.Max = temp
+		if temp < tmpRng.Max {
+			tmpRng.Max = temp
 		}
 	}
 
-	return tr
+	return tmpRng
 }
 
-func main() {
+func runProgram() {
 	var otdels int
 
 	_, err := fmt.Scan(&otdels)
@@ -68,11 +68,13 @@ func main() {
 		_, err := fmt.Scan(&workers)
 		if err != nil {
 			fmt.Println(ErrReadingEmployees)
+
 			return
 		}
 
 		if !isValid(workers) {
 			fmt.Println(ErrEmployeesOutOfRange)
+
 			return
 		}
 
@@ -86,12 +88,14 @@ func main() {
 			_, err = fmt.Scan(&operator)
 			if err != nil {
 				fmt.Println(ErrReadingInput)
+
 				return
 			}
 
 			_, err = fmt.Scan(&temp)
 			if err != nil {
 				fmt.Println(ErrReadingInput)
+
 				return
 			}
 
@@ -108,4 +112,8 @@ func main() {
 			fmt.Println(result)
 		}
 	}
+}
+
+func main() {
+	runProgram()
 }
