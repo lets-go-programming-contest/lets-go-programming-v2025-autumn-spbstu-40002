@@ -15,7 +15,7 @@ func main() {
 
 	_, err := fmt.Scan(&nDish)
 	if err != nil {
-		fmt.Println(invalidArgument)
+		fmt.Println(errInvalidArgument)
 
 		return
 	}
@@ -31,7 +31,7 @@ func main() {
 
 		_, err = fmt.Scan(&estimation)
 		if err != nil {
-			fmt.Println(invalidArgument)
+			fmt.Println(errInvalidArgument)
 
 			return
 		}
@@ -43,7 +43,7 @@ func main() {
 
 	_, err = fmt.Scan(&numberOfDish)
 	if err != nil {
-		fmt.Println(invalidArgument)
+		fmt.Println(errInvalidArgument)
 
 		return
 	}
