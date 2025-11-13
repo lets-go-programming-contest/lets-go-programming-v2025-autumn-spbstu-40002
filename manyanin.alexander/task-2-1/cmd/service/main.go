@@ -44,7 +44,7 @@ func findBestTemp(tmpRng TempRange, operator string, temp int) TempRange {
 	return tmpRng
 }
 
-func runProgram() {
+func Dprmnts() {
 	var otdels int
 
 	_, err := fmt.Scan(&otdels)
@@ -61,59 +61,63 @@ func runProgram() {
 	}
 
 	for range otdels {
-		temperature := TempRange{Min: MinTemp, Max: MaxTemp}
+		Dprtmnt()
+	}
+}
 
-		var workers int
+func Dprtmnt() {
+	temperature := TempRange{Min: MinTemp, Max: MaxTemp}
 
-		_, err := fmt.Scan(&workers)
+	var workers int
+
+	_, err := fmt.Scan(&workers)
+	if err != nil {
+		fmt.Println(ErrReadingEmployees)
+
+		return
+	}
+
+	if !isValid(workers) {
+		fmt.Println(ErrEmployeesOutOfRange)
+
+		return
+	}
+
+	results := make([]int, workers)
+
+	for index := range workers {
+		var operator string
+
+		var temp int
+
+		_, err = fmt.Scan(&operator)
 		if err != nil {
-			fmt.Println(ErrReadingEmployees)
+			fmt.Println(ErrReadingInput)
 
 			return
 		}
 
-		if !isValid(workers) {
-			fmt.Println(ErrEmployeesOutOfRange)
+		_, err = fmt.Scan(&temp)
+		if err != nil {
+			fmt.Println(ErrReadingInput)
 
 			return
 		}
 
-		results := make([]int, workers)
+		temperature = findBestTemp(temperature, operator, temp)
 
-		for index := range workers {
-			var operator string
-
-			var temp int
-
-			_, err = fmt.Scan(&operator)
-			if err != nil {
-				fmt.Println(ErrReadingInput)
-
-				return
-			}
-
-			_, err = fmt.Scan(&temp)
-			if err != nil {
-				fmt.Println(ErrReadingInput)
-
-				return
-			}
-
-			temperature = findBestTemp(temperature, operator, temp)
-
-			if temperature.Min <= temperature.Max {
-				results[index] = temperature.Min
-			} else {
-				results[index] = -1
-			}
+		if temperature.Min <= temperature.Max {
+			results[index] = temperature.Min
+		} else {
+			results[index] = -1
 		}
+	}
 
-		for _, result := range results {
-			fmt.Println(result)
-		}
+	for _, result := range results {
+		fmt.Println(result)
 	}
 }
 
 func main() {
-	runProgram()
+	Dprmnts()
 }
