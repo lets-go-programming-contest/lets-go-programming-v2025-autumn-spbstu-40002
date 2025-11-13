@@ -4,11 +4,11 @@ import (
 	"container/heap"
 	"errors"
 	"fmt"
-
+	
 	"task-2-2/intheap"
 )
 
-var invalidArgument = errors.New("invalid argument")
+var errInvalidArgument = errors.New("invalid argument")
 
 func main() {
 	var nDish uint16
