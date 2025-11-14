@@ -1,4 +1,4 @@
-package storage
+package jsonwrite
 
 import (
 	"encoding/json"
@@ -15,6 +15,7 @@ func SaveToJSON(currencies []converter.Currency, outputPath string) {
 	}
 
 	outputDir := filepath.Dir(outputPath)
+
 	err := os.MkdirAll(outputDir, 0755)
 	if err != nil {
 		panic(errors.ErrDirCreate.Error() + ": " + outputDir)
