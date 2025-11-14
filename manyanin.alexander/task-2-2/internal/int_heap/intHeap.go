@@ -39,6 +39,7 @@ func (heap *IntHeap) Pop() interface{} {
 	}
 
 	value := oldHeap[heapLength-1]
+
 	*heap = oldHeap[0 : heapLength-1]
 
 	return value
