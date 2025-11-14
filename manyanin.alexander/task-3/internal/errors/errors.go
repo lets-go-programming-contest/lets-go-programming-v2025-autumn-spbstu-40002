@@ -9,7 +9,7 @@ var (
 	ErrConfigRead            = errors.New("failed to read config")
 	ErrConfigParse           = errors.New("failed to parse config")
 	ErrConfigInvalid         = errors.New("invalid config")
-	ErrInputFileNotExist     = errors.New("input file does not exist")
+	ErrInputFileNotExist     = errors.New("no such file or directory")
 	ErrXMLRead               = errors.New("failed to read xml")
 	ErrXMLDecode             = errors.New("failed to decode xml")
 	ErrNoCurrenciesExtracted = errors.New("no currencies extracted from xml")
