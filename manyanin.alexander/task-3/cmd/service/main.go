@@ -17,14 +17,14 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		fmt.Printf("Error: %v\n", errors.ErrConfigPathEmpty)
+		fmt.Fprintln(os.Stderr, errors.ErrConfigPathEmpty.Error())
 		return
 	}
 
 	cfg := config.Load(*configPath)
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		fmt.Printf("Error: %v: %s\n", errors.ErrInputFileNotExist, cfg.InputFile)
+		fmt.Fprintln(os.Stderr, errors.ErrInputFileNotExist.Error()+": "+cfg.InputFile)
 		return
 	}
 
