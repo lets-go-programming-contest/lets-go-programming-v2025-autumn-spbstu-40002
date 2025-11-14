@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -49,8 +50,20 @@ output-file: "` + outputPathNormalized + `"
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
 
+	// Suppress stdout during test
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
 	// Run the function
 	err = run(configPath)
+
+	// Restore stdout
+	w.Close()
+	os.Stdout = oldStdout
+	io.Copy(io.Discard, r)
+	r.Close()
+
 	if err != nil {
 		t.Fatalf("run() failed: %v", err)
 	}
