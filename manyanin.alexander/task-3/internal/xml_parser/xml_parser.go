@@ -4,10 +4,9 @@ import (
 	"encoding/xml"
 	"os"
 
-	"golang.org/x/net/html/charset"
-
 	"github.com/manyanin.alexander/task-3/internal/currency"
 	"github.com/manyanin.alexander/task-3/internal/errors"
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {

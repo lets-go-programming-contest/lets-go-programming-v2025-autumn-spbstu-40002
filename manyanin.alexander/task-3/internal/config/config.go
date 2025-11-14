@@ -3,9 +3,8 @@ package config
 import (
 	"os"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/manyanin.alexander/task-3/internal/errors"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
