@@ -1,13 +1,18 @@
-package converter
+package currency
 
 import (
+	"encoding/xml"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/manyanin.alexander/task-3/internal/errors"
-	parser "github.com/manyanin.alexander/task-3/internal/xml_parser"
 )
+
+type Valute struct {
+	XMLName  xml.Name `xml:"Valute"`
+	NumCode  string   `xml:"NumCode"`
+	CharCode string   `xml:"CharCode"`
+	Value    string   `xml:"Value"`
+}
 
 type Currency struct {
 	NumCode  int     `json:"num_code"`
@@ -15,35 +20,33 @@ type Currency struct {
 	Value    float64 `json:"value"`
 }
 
-func Convert(valCurs *parser.ValCurs) []Currency {
-	var currencies []Currency
+func ValuteToCurr(valute Valute) *Currency {
+	cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
 
-	for _, valute := range valCurs.Valutes {
-		numCode, err := strconv.Atoi(valute.NumCode)
-		if err != nil {
-			continue
-		}
-
-		cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
-		value, err := strconv.ParseFloat(cleanValue, 64)
-		if err != nil {
-			continue
-		}
-
-		currencies = append(currencies, Currency{
-			NumCode:  numCode,
-			CharCode: valute.CharCode,
-			Value:    value,
-		})
+	value, err := strconv.ParseFloat(cleanValue, 64)
+	if err != nil {
+		value = 0
 	}
 
-	if len(currencies) == 0 {
-		panic(errors.ErrNoCurrenciesExtracted)
+	numCode, err := strconv.Atoi(valute.NumCode)
+	if err != nil {
+		numCode = 0
 	}
 
-	sort.Slice(currencies, func(i, j int) bool {
-		return currencies[i].Value > currencies[j].Value
+	return &Currency{
+		NumCode:  numCode,
+		CharCode: valute.CharCode,
+		Value:    value,
+	}
+}
+
+func SortByValue(currencies []Currency) []Currency {
+	sorted := make([]Currency, len(currencies))
+	copy(sorted, currencies)
+
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Value > sorted[j].Value
 	})
 
-	return currencies
+	return sorted
 }

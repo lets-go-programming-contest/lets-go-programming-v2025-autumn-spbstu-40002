@@ -24,6 +24,7 @@ func Load(configPath string) *Config {
 	}
 
 	config := &Config{}
+
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		panic(errors.ErrConfigParse.Error() + ": " + err.Error())

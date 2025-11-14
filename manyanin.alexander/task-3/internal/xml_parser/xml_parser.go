@@ -1,4 +1,4 @@
-package parser
+package xmlread
 
 import (
 	"encoding/xml"
@@ -6,43 +6,39 @@ import (
 
 	"golang.org/x/net/html/charset"
 
+	"github.com/manyanin.alexander/task-3/internal/currency"
 	"github.com/manyanin.alexander/task-3/internal/errors"
 )
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Valutes []Valute `xml:"Valute"`
+	XMLName xml.Name          `xml:"ValCurs"`
+	Valutes []currency.Valute `xml:"Valute"`
 }
 
-type Valute struct {
-	NumCode  string `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
-}
-
-func ParseXML(filePath string) *ValCurs {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		panic(errors.ErrInputFileNotExist.Error() + ": " + filePath)
-	}
-
+func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 	file, err := os.Open(filePath)
 	if err != nil {
 		panic(errors.ErrXMLRead.Error() + ": " + err.Error())
 	}
+
 	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
+
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())
 	}
 
-	if len(valCurs.Valutes) == 0 {
-		panic(errors.ErrXMLEmpty)
+	var currencies []currency.Currency
+
+	for _, valute := range valCurs.Valutes {
+		curr := currency.ValuteToCurr(valute)
+		currencies = append(currencies, *curr)
 	}
 
-	return &valCurs
+	return currencies
 }
