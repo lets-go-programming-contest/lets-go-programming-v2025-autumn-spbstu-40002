@@ -18,6 +18,7 @@ func main() {
 
 	if *configPath == "" {
 		fmt.Fprintln(os.Stderr, errors.ErrConfigPathEmpty.Error())
+
 		return
 	}
 
@@ -25,6 +26,7 @@ func main() {
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
 		fmt.Fprintln(os.Stderr, errors.ErrInputFileNotExist.Error()+": "+cfg.InputFile)
+
 		return
 	}
 
@@ -32,6 +34,7 @@ func main() {
 
 	if len(currencies) == 0 {
 		fmt.Printf("Error: %v\n", errors.ErrNoCurrenciesExtracted)
+
 		return
 	}
 
