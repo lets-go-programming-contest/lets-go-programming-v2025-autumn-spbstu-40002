@@ -4,102 +4,75 @@ import (
 	"container/heap"
 	"errors"
 	"fmt"
+
+	"github.com/manyanin.alexander/task-2-2/internal/int_heap"
 )
 
-type IntHeap []int
-
-func (h *IntHeap) Len() int {
-	return len(*h)
-}
-
-func (h *IntHeap) Less(i, j int) bool {
-	return (*h)[i] > (*h)[j] // max-heap получается; если < - min-heap
-}
-
-func (h *IntHeap) Swap(i, j int) {
-	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
-}
-
-func (h *IntHeap) Push(x interface{}) {
-	value, ok := x.(int)
-	if !ok {
-		return
-	}
-
-	*h = append(*h, value)
-}
-
-func (h *IntHeap) Pop() interface{} {
-	old := *h
-	n := len(old)
-	x := old[n-1]
-	*h = old[0 : n-1]
-
-	return x
-}
-
 const (
-	MinDishNum    = 1
-	MaxDishNum    = 10000
+	MinDishNumber = 1
+	MaxDishNumber = 10000
 	MinDishRating = -10000
 	MaxDishRating = 10000
 )
 
 var (
-	ErrIncorrectDishNum  = errors.New("incorrect dish number")
-	ErrIncorrectDishRate = errors.New("incorrect dish rating")
-	ErrIncorrectK        = errors.New("incorrect k-value")
+	ErrIncorrectDishNumber = errors.New("incorrect dish number")
+	ErrIncorrectDishRating = errors.New("incorrect dish rating")
+	ErrIncorrectKValue     = errors.New("incorrect k-value")
+	ErrReadingInput        = errors.New("error reading input")
+	ErrUnexpectedType      = errors.New("unexpected type")
 )
 
-func readDishNumber() (int, error) {
-	var dishNum int
+func readDishNumber() int {
+	var dishNumber int
 
-	_, err := fmt.Scan(&dishNum)
+	_, err := fmt.Scan(&dishNumber)
 	if err != nil {
-		return 0, fmt.Errorf("error reading input: %w", err)
+		panic(ErrReadingInput)
 	}
 
-	if dishNum > MaxDishNum || dishNum < MinDishNum {
-		return 0, ErrIncorrectDishNum
+	if dishNumber > MaxDishNumber || dishNumber < MinDishNumber {
+		panic(ErrIncorrectDishNumber)
 	}
 
-	return dishNum, nil
+	return dishNumber
 }
 
-func readDishes(dishNum int) ([]int, error) {
-	dishes := make([]int, dishNum)
+func readDishes(dishNumber int) []int {
+	dishes := make([]int, dishNumber)
 
-	for dish := range dishNum {
-		_, err := fmt.Scan(&dishes[dish])
+	for dishIndex := 0; dishIndex < dishNumber; dishIndex++ {
+		_, err := fmt.Scan(&dishes[dishIndex])
 		if err != nil {
-			return nil, fmt.Errorf("error reading input: %w", err)
+			panic(ErrReadingInput)
 		}
 
-		if dishes[dish] > MaxDishRating || dishes[dish] < MinDishRating {
-			return nil, ErrIncorrectDishRate
+		if dishes[dishIndex] > MaxDishRating || dishes[dishIndex] < MinDishRating {
+			panic(ErrIncorrectDishRating)
 		}
 	}
 
-	return dishes, nil
+	return dishes
 }
 
-func readKValue(dishNum int) (int, error) {
+func readKValue(dishNumber int) int {
 	var kValue int
 
 	_, err := fmt.Scan(&kValue)
 	if err != nil {
-		return 0, fmt.Errorf("error reading input: %w", err)
+		panic(ErrReadingInput)
 	}
 
-	if kValue > dishNum || kValue < 1 {
-		return 0, ErrIncorrectK
+	if kValue > dishNumber || kValue < 1 {
+		panic(ErrIncorrectKValue)
 	}
 
-	return kValue, nil
+	return kValue
 }
 
 func findKLargest(dishes []int, kValue int) int {
-	intHeap := &IntHeap{}
+	intHeap := &int_heap.IntHeap{}
+
 	heap.Init(intHeap)
 
 	for _, dish := range dishes {
@@ -108,12 +81,13 @@ func findKLargest(dishes []int, kValue int) int {
 
 	var result int
 
-	for range kValue {
+	for index := 0; index < kValue; index++ {
 		poppedValue := heap.Pop(intHeap)
-		value, ok := poppedValue.(int)
 
-		if !ok {
-			continue
+		value, correctType := poppedValue.(int)
+
+		if !correctType {
+			panic(ErrUnexpectedType)
 		}
 
 		result = value
@@ -123,27 +97,13 @@ func findKLargest(dishes []int, kValue int) int {
 }
 
 func main() {
-	dishNum, err := readDishNumber()
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+	dishNumber := readDishNumber()
 
-		return
-	}
+	dishes := readDishes(dishNumber)
 
-	dishes, err := readDishes(dishNum)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-
-		return
-	}
-
-	kValue, err := readKValue(dishNum)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-
-		return
-	}
+	kValue := readKValue(dishNumber)
 
 	result := findKLargest(dishes, kValue)
+
 	fmt.Println(result)
 }
