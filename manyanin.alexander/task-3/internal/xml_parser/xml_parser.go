@@ -21,7 +21,11 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 		panic(errors.ErrXMLRead.Error() + ": " + err.Error())
 	}
 
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			panic(errors.ErrXMLFileRead.Error() + ": " + closeErr.Error())
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
@@ -33,7 +37,7 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())
 	}
 
-	var currencies []currency.Currency
+	currencies := make([]currency.Currency, 0, len(valCurs.Valutes))
 
 	for _, valute := range valCurs.Valutes {
 		curr := currency.ValuteToCurr(valute)

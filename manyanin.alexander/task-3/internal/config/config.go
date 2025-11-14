@@ -14,16 +14,15 @@ type Config struct {
 }
 
 func Load(configPath string) *Config {
-	if configPath == "" {
-		panic(errors.ErrConfigPathEmpty)
-	}
-
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		panic(errors.ErrConfigRead.Error() + ": " + err.Error())
 	}
 
-	config := &Config{}
+	config := &Config{
+		InputFile:  "",
+		OutputFile: "",
+	}
 
 	err = yaml.Unmarshal(data, config)
 	if err != nil {

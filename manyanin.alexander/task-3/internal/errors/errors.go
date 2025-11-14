@@ -18,4 +18,6 @@ var (
 	ErrDirCreate             = errors.New("failed to create directory")
 	ErrDataEmpty             = errors.New("no data found")
 	ErrXMLEmpty              = errors.New("xml file is empty")
+	ErrXMLFileRead           = errors.New("error reading XML file")
+	ErrOutputFileCreate      = errors.New("error creating output file")
 )
