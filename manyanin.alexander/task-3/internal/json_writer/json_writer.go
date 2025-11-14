@@ -16,7 +16,9 @@ func SaveToJSON(currencies []converter.Currency, outputPath string) {
 
 	outputDir := filepath.Dir(outputPath)
 
-	err := os.MkdirAll(outputDir, 0755)
+	const dirPerm = 0o755
+
+	err := os.MkdirAll(outputDir, dirPerm)
 	if err != nil {
 		panic(errors.ErrDirCreate.Error() + ": " + outputDir)
 	}
