@@ -80,7 +80,7 @@ func findKLargest(dishes []int, kValue int) int {
 
 	var result int
 
-	for index := 0; index < kValue; index++ {
+	for range kValue {
 		poppedValue := heap.Pop(intHeap)
 		value, correctType := poppedValue.(int)
 
