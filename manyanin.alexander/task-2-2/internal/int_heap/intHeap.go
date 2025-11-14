@@ -1,4 +1,4 @@
-package int_heap
+package intheap
 
 import "errors"
 
@@ -9,16 +9,16 @@ var (
 
 type IntHeap []int
 
-func (heap IntHeap) Len() int {
-	return len(heap)
+func (heap *IntHeap) Len() int {
+	return len(*heap)
 }
 
-func (heap IntHeap) Less(firstIndex, secondIndex int) bool {
-	return heap[firstIndex] > heap[secondIndex] // max-heap получается; если < - min-heap
+func (heap *IntHeap) Less(firstIndex, secondIndex int) bool {
+	return (*heap)[firstIndex] > (*heap)[secondIndex] // max-heap получается; если < - min-heap
 }
 
-func (heap IntHeap) Swap(firstIndex, secondIndex int) {
-	heap[firstIndex], heap[secondIndex] = heap[secondIndex], heap[firstIndex]
+func (heap *IntHeap) Swap(firstIndex, secondIndex int) {
+	(*heap)[firstIndex], (*heap)[secondIndex] = (*heap)[secondIndex], (*heap)[firstIndex]
 }
 
 func (heap *IntHeap) Push(value interface{}) {
@@ -39,7 +39,6 @@ func (heap *IntHeap) Pop() interface{} {
 	}
 
 	value := oldHeap[heapLength-1]
-
 	*heap = oldHeap[0 : heapLength-1]
 
 	return value

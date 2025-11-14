@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/manyanin.alexander/task-2-2/internal/int_heap"
+	intheap "github.com/manyanin.alexander/task-2-2/internal/int_heap"
 )
 
 const (
@@ -41,7 +41,7 @@ func readDishNumber() int {
 func readDishes(dishNumber int) []int {
 	dishes := make([]int, dishNumber)
 
-	for dishIndex := 0; dishIndex < dishNumber; dishIndex++ {
+	for dishIndex := range dishNumber {
 		_, err := fmt.Scan(&dishes[dishIndex])
 		if err != nil {
 			panic(ErrReadingInput)
@@ -71,8 +71,7 @@ func readKValue(dishNumber int) int {
 }
 
 func findKLargest(dishes []int, kValue int) int {
-	intHeap := &int_heap.IntHeap{}
-
+	intHeap := &intheap.IntHeap{}
 	heap.Init(intHeap)
 
 	for _, dish := range dishes {
@@ -83,7 +82,6 @@ func findKLargest(dishes []int, kValue int) int {
 
 	for index := 0; index < kValue; index++ {
 		poppedValue := heap.Pop(intHeap)
-
 		value, correctType := poppedValue.(int)
 
 		if !correctType {
@@ -98,11 +96,8 @@ func findKLargest(dishes []int, kValue int) int {
 
 func main() {
 	dishNumber := readDishNumber()
-
 	dishes := readDishes(dishNumber)
-
 	kValue := readKValue(dishNumber)
-
 	result := findKLargest(dishes, kValue)
 
 	fmt.Println(result)
