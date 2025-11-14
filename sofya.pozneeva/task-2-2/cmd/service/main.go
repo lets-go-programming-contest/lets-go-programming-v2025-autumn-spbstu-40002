@@ -4,7 +4,8 @@ import (
 	"container/heap"
 	"errors"
 	"fmt"
-	"task-2-2/intheap"
+
+	"github.com/sonychello/task-2-2/intheap"
 )
 
 var errInvalidArgument = errors.New("invalid argument")
