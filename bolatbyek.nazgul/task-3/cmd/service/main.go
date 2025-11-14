@@ -10,23 +10,20 @@ import (
 	"github.com/Nazkaaa/task-3/internal/output"
 )
 
-func main() {
-	configPath := flag.String("config", "config.yaml", "Path to the YAML configuration file")
-	flag.Parse()
-
-	cfg, err := config.LoadConfig(*configPath)
+func run(configPath string) error {
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
-		panic("Error loading config: " + err.Error())
+		return fmt.Errorf("error loading config: %w", err)
 	}
 
 	err = config.EnsureOutputDir(cfg.OutputFile)
 	if err != nil {
-		panic("Error creating output directory: " + err.Error())
+		return fmt.Errorf("error creating output directory: %w", err)
 	}
 
 	valCurs, err := cbr.ParseXML(cfg.InputFile)
 	if err != nil {
-		panic("Error parsing XML: " + err.Error())
+		return fmt.Errorf("error parsing XML: %w", err)
 	}
 
 	currencies := convert.ConvertAndSort(valCurs)
@@ -38,8 +35,18 @@ func main() {
 
 	err = output.SaveToJSON(outputCurrencies, cfg.OutputFile)
 	if err != nil {
-		panic("Error saving to JSON: " + err.Error())
+		return fmt.Errorf("error saving to JSON: %w", err)
 	}
 
 	fmt.Printf("Successfully processed %d currencies and saved to %s\n", len(currencies), cfg.OutputFile)
+	return nil
+}
+
+func main() {
+	configPath := flag.String("config", "config.yaml", "Path to the YAML configuration file")
+	flag.Parse()
+
+	if err := run(*configPath); err != nil {
+		panic(err.Error())
+	}
 }
