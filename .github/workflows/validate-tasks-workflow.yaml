@@ -62,7 +62,7 @@ jobs:
         run: |
           echo "BUILD_BIN=${GITHUB_WORKSPACE}/bin" >> $GITHUB_ENV
           echo "SOURCE_DIR=${GITHUB_WORKSPACE}/${{ needs.sanity.outputs.student }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
-          echo "STATIC_DIR=${{ env.COMMON_DIR }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
+          echo "STATIC_DIR=${GITHUB_WORKSPACE}/${{ env.COMMON_DIR }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
       - name: Build go services
         run: |
           lgp-validator module build \
@@ -92,7 +92,7 @@ jobs:
         run: |
           echo "BUILD_BIN=${GITHUB_WORKSPACE}/bin" >> $GITHUB_ENV
           echo "SOURCE_DIR=${GITHUB_WORKSPACE}/${{ needs.sanity.outputs.student }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
-          echo "STATIC_DIR=${{ env.COMMON_DIR }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
+          echo "STATIC_DIR=${GITHUB_WORKSPACE}/${{ env.COMMON_DIR }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
       - name: Lint go code
         run: |
           lgp-validator module lint \
@@ -113,17 +113,20 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare
       - name: Download artifacts from build job
+        # if artifacts not exist - continue.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: bin
       - name: Make bin executable
-        run: chmod +x bin/*
+        # if artifacts not exist - continue.
+        run: chmod +x bin/* || true
       - name: Export env variables
         run: |
           echo "BUILD_BIN=${GITHUB_WORKSPACE}/bin" >> $GITHUB_ENV
           echo "SOURCE_DIR=${GITHUB_WORKSPACE}/${{ needs.sanity.outputs.student }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
-          echo "STATIC_DIR=${{ env.COMMON_DIR }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
+          echo "STATIC_DIR=${GITHUB_WORKSPACE}/${{ env.COMMON_DIR }}/${{ needs.sanity.outputs.task }}" >> $GITHUB_ENV
       - name: Export env variables
         run: |
           echo $BUILD_BIN
