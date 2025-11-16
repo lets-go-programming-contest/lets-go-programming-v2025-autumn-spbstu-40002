@@ -55,7 +55,7 @@ func main() {
 
 	newContent := strings.ReplaceAll(string(content), ",", ".")
 
-	_, err = outputFile.Write([]byte(newContent))
+	_, err = outputFile.WriteString(newContent)
 	if err != nil {
 		panic(err)
 	}
