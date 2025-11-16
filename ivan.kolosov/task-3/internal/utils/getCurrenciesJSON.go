@@ -1,17 +1,16 @@
 package utils
 
 import (
-	curxml "github.com/InsomniaDemon/task-3/internal/readingCurrencies"
-	curjson "github.com/InsomniaDemon/task-3/internal/writingCurrencies"
+	cur "github.com/InsomniaDemon/task-3/internal/currenciesTypes"
 )
 
-func GetCurrenciesJSON(curIn curxml.CurrenciesXML) curjson.CurrenciesJSON {
-	var curOut curjson.CurrenciesJSON
-	for _, currency := range curIn.Currencies {
-		curOut = append(curOut, curjson.CurrencyJSON{
+func GetCurrenciesJSON(curIn cur.Currencies) cur.Currencies {
+	var curOut cur.Currencies
+	for _, currency := range curIn.CurrencyArray {
+		curOut.CurrencyArray = append(curOut.CurrencyArray, cur.Currency{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
-			Value:    currency.ValueFloat,
+			Value:    currency.Value,
 		})
 	}
 
