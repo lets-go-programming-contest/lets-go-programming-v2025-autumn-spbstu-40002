@@ -12,16 +12,18 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func ReadConfig(path string, config *Config) {
+func ReadConfig(path string, config *Config) error {
 	// Read data from file.
 	data, err := os.ReadFile(path)
 	if err != nil {
-		panic(merr.ErrNoConfigFileFound)
+		return merr.ErrNoConfigFileFound
 	}
 
 	// Deserialize data from config file
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
-		panic(merr.ErrFailedToDeserializeConfig)
+		return merr.ErrFailedToDeserializeConfig
 	}
+
+	return nil
 }

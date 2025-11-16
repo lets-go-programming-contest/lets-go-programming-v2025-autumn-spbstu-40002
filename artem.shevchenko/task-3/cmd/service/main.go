@@ -25,7 +25,10 @@ func main() {
 	}
 
 	// Read config from YAML.
-	config.ReadConfig(configPath, &cfg)
+	err := config.ReadConfig(configPath, &cfg)
+	if err != nil {
+		panic(err)
+	}
 
 	// Read Valute data from XML.
 	valData := new(parsers.ValStruct)
