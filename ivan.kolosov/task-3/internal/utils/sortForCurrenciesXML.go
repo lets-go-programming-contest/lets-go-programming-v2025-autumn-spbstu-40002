@@ -3,11 +3,11 @@ package utils
 import (
 	"sort"
 
-	xmlcur "github.com/InsomniaDemon/task-3/internal/readingCurrencies"
+	cur "github.com/InsomniaDemon/task-3/internal/currenciesTypes"
 )
 
-func SortCurrenciesXML(cur *xmlcur.CurrenciesXML) {
-	sort.Slice(cur.Currencies, func(i, j int) bool {
-		return cur.Currencies[i].ValueFloat > cur.Currencies[j].ValueFloat
+func SortCurrenciesXML(cur *cur.Currencies) {
+	sort.Slice(cur.CurrencyArray, func(i, j int) bool {
+		return cur.CurrencyArray[i].Value > cur.CurrencyArray[j].Value
 	})
 }
