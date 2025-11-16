@@ -1,30 +1,24 @@
 package structures
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-)
-
-type XMLStruct struct {
+type ValuteStruct struct {
 	ValCurs []struct {
-		NumCode  int    `xml:"NumCode"`
-		CharCode string `xml:"CharCode"`
-		Value    string `xml:"Value"`
-	} `xml:"Valute"`
+		NumCode  int     `xml:"NumCode" json:"num_code"`
+		CharCode string  `xml:"CharCode" json:"char_code"`
+		Value    float64 `xml:"Value" json:"value"`
+	} `xml:"Valute" json:"valute"`
 }
 
-type JSONSValute struct {
+/*type ValuteStruct struct {
 	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
-}
+}*/
 
-type JSONStruct struct {
-	ValCurs []JSONSValute `json:"valute"`
-}
+/*type JSONStruct struct {
+	ValCurs []ValuteStruct `json:"valute"`
+}*/
 
-func ConvertXMLToJSON(xmlStruct XMLStruct) (JSONStruct, error) {
+/*func ConvertXMLToJSON(xmlStruct ValuteStruct) (JSONStruct, error) {
 	jsonStruct := new(JSONStruct)
 
 	for _, valute := range xmlStruct.ValCurs {
@@ -33,7 +27,7 @@ func ConvertXMLToJSON(xmlStruct XMLStruct) (JSONStruct, error) {
 			return JSONStruct{}, fmt.Errorf("invalid value: %w", err)
 		}
 
-		jsonStruct.ValCurs = append(jsonStruct.ValCurs, JSONSValute{
+		jsonStruct.ValCurs = append(jsonStruct.ValCurs, ValuteStruct{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
 			Value:    floatValue,
@@ -41,4 +35,4 @@ func ConvertXMLToJSON(xmlStruct XMLStruct) (JSONStruct, error) {
 	}
 
 	return *jsonStruct, nil
-}
+}*/
