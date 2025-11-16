@@ -6,17 +6,13 @@ import (
 	"strings"
 )
 
-type CurrencyXML struct {
-	ID        string `xml:"ID,attr"`
-	NumCode   int    `xml:"NumCode"`
-	CharCode  string `xml:"CharCode"`
-	Nominal   int    `xml:"Nominal"`
-	Name      string `xml:"Name"`
-	Value     string `xml:"Value"`
-	VunitRate string `xml:"VunitRate"`
+type Currency struct {
+	NumCode   int     `json:"num_code"  xml:"NumCode"`
+	CharCode  string  `json:"char_code" xml:"CharCode"`
+	Value     string `json:"value"     xml:"Value"`
 }
 
-func (currency CurrencyXML) GetFloat() (float64, error) {
+func (currency Currency) GetFloat() (float64, error) {
 	commaReplacement := strings.ReplaceAll(currency.Value, ",", ".")
 
 	value, err := strconv.ParseFloat(commaReplacement, 64)
@@ -27,17 +23,17 @@ func (currency CurrencyXML) GetFloat() (float64, error) {
 	return value, nil
 }
 
-type Currencies []CurrencyXML
+type ByValue []Currency
 
-func (currency Currencies) Len() int {
+func (currency ByValue) Len() int {
 	return len(currency)
 }
 
-func (currency Currencies) Swap(i, j int) {
+func (currency ByValue) Swap(i, j int) {
 	currency[i], currency[j] = currency[j], currency[i]
 }
 
-func (currency Currencies) Less(iCurr, jCurr int) bool {
+func (currency ByValue) Less(iCurr, jCurr int) bool {
 	currencyI, err := currency[iCurr].GetFloat()
 	if err != nil {
 		panic(err)
