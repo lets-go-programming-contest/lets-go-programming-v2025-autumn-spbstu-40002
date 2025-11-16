@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/Svyatoslav2324/task-3/internal/marshaljson"
@@ -37,41 +37,51 @@ func closeFile(file *os.File) {
 func main() {
 	config := unmarshalyaml.GetPaths()
 
+	makeDir(config.OutputFile)
+
+	outputFile, _ := os.Create(config.OutputFile)
+	defer closeFile(outputFile)
+
 	inputFile, err := os.Open(config.InputFile)
 	if err != nil {
 		panic(err)
 	}
 	defer closeFile(inputFile)
 
-	valutes := new(structures.XMLStruct)
-
-	err = unmarshalxml.UnMarshalXML(inputFile, valutes)
+	content, err := io.ReadAll(inputFile)
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		panic(err)
 	}
+
+	newContent := strings.ReplaceAll(string(content), ",", ".")
+
+	outputFile.Write([]byte(newContent))
+	outputFile.Seek(0, 0)
+
+	valutes := new(structures.ValuteStruct)
+
+	err = unmarshalxml.UnMarshalXML(outputFile, valutes)
+	if err != nil {
+		panic(err)
+	}
+
+	outputFile.Seek(0, 0)
+	outputFile.Truncate(0)
 
 	sort.Slice(valutes.ValCurs, func(i, j int) bool {
-		valuei, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[i].Value, ",", ".", 1), 64)
-		valuej, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[j].Value, ",", ".", 1), 64)
-
-		return valuei > valuej
+		//valuei, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[i].Value, ",", ".", 1), 64)
+		//valuej, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[j].Value, ",", ".", 1), 64)
+		return valutes.ValCurs[i].Value > valutes.ValCurs[j].Value
 	})
 
-	makeDir(config.OutputFile)
-
-	outputFile, _ := os.Create(config.OutputFile)
-	defer closeFile(outputFile)
-
-	jsonValutes, err := structures.ConvertXMLToJSON(*valutes)
+	/*jsonValutes, err := structures.ConvertXMLToJSON(*valutes)
 	if err != nil {
 		fmt.Println(err)
 
 		return
-	}
+	}*/
 
-	err = marshaljson.MarshalJSON(outputFile, &jsonValutes)
+	err = marshaljson.MarshalJSON(outputFile, valutes)
 	if err != nil {
 		fmt.Println(err)
 

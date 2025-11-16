@@ -8,7 +8,7 @@ import (
 	"github.com/Svyatoslav2324/task-3/internal/structures"
 )
 
-func MarshalJSON(outputFile *os.File, valutes *structures.JSONStruct) error {
+func MarshalJSON(outputFile *os.File, valutes *structures.ValuteStruct) error {
 	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", " ")
 

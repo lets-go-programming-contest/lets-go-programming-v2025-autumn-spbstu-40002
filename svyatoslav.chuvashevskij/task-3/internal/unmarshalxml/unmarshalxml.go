@@ -13,7 +13,8 @@ import (
 
 var ErrUnsuppotedCharset error = errors.New("unsupported charset")
 
-func UnMarshalXML(inputFile *os.File, valutes *structures.XMLStruct) error {
+func UnMarshalXML(inputFile *os.File, valutes *structures.ValuteStruct) error {
+
 	decoder := xml.NewDecoder(inputFile)
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
