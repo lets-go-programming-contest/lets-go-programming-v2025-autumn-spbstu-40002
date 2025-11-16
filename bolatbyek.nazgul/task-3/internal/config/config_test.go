@@ -85,4 +85,3 @@ func TestEnsureOutputDir_ExistingDir(t *testing.T) {
 		t.Fatalf("EnsureOutputDir failed for existing directory: %v", err)
 	}
 }
-
