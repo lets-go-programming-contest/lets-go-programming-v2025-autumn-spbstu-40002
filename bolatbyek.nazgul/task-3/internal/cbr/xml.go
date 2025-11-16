@@ -1,8 +1,11 @@
 package cbr
 
 import (
+	"bytes"
 	"encoding/xml"
 	"os"
+
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
@@ -23,9 +26,11 @@ func ParseXML(filePath string) (*ValCurs, error) {
 		return nil, err
 	}
 
+	decoder := xml.NewDecoder(bytes.NewReader(xmlData))
+	decoder.CharsetReader = charset.NewReaderLabel
+
 	var valCurs ValCurs
-	err = xml.Unmarshal(xmlData, &valCurs)
-	if err != nil {
+	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, err
 	}
 
