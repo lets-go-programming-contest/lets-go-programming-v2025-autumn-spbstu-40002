@@ -46,7 +46,7 @@ func WriteCurrencies(data cur.Currencies, path string) (returnError error) {
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", " ")
 
-	err = enc.Encode(data)
+	err = enc.Encode(data.CurrencyArray)
 	if err != nil {
 		return fmt.Errorf("%w: %w", errEncodingJSON, err)
 	}
