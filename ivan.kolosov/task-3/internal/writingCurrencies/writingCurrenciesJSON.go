@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	
+	cur "github.com/InsomniaDemon/task-3/internal/currenciesTypes"
 )
 
 var (
@@ -17,7 +20,7 @@ var (
 
 const dirPerm = 0o755
 
-func WriteCurrencies(data CurrenciesJSON, path string) (returnError error) {
+func WriteCurrencies(data cur.Currencies, path string) (returnError error) {
 	dir := filepath.Dir(path)
 
 	err := os.MkdirAll(dir, dirPerm)
