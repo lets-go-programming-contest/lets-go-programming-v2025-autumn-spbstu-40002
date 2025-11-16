@@ -11,13 +11,13 @@ import (
 
 const dirPermission = 0o755
 
-type CurrencySimple struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
+func EncodeJSON(currencies *xml.Currencies, outputFile string) error {
+	type tempCurrency struct {
+		NumCode  int     `json:"num_code"`
+		CharCode string  `json:"char_code"`
+		Value    float64 `json:"value"`
+	}
 
-func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 	dir := filepath.Dir(outputFile)
 	if err := os.MkdirAll(dir, dirPermission); err != nil {
 		return fmt.Errorf("unable to create directory: %w", err)
@@ -35,7 +35,7 @@ func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 		}
 	}()
 
-	simpleCurrencies := make([]CurrencySimple, 0, len(currencies.Currencies))
+	var result []tempCurrency
 
 	for _, currency := range currencies.Currencies {
 		value, err := currency.GetFloat()
@@ -43,7 +43,7 @@ func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 			return fmt.Errorf("invalid format float: %w", err)
 		}
 
-		simpleCurrencies = append(simpleCurrencies, CurrencySimple{
+		result = append(result, tempCurrency{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
 			Value:    value,
@@ -51,10 +51,9 @@ func EncodeJSON(currencies *xml.CurrenciesXML, outputFile string) error {
 	}
 
 	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
 
-	err = encoder.Encode(simpleCurrencies)
-	if err != nil {
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(result); err != nil {
 		return fmt.Errorf("unable to encode json: %w", err)
 	}
 
