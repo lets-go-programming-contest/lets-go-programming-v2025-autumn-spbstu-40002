@@ -7,7 +7,6 @@ import (
 var (
 	ErrNoConfigFileFound         = errors.New("unable to open configuration file")
 	ErrFailedToDeserializeConfig = errors.New("did not find expected key")
-	ErrNoConfigFileProvided      = errors.New("the configuration file was not provided")
 	ErrFailedToOpenXML           = errors.New("no such file or directory")
 	ErrFailedToDecodeXML         = errors.New("failed to decode data from XML")
 	ErrFailedToOpenOutputFile    = errors.New("failed to open output file")
