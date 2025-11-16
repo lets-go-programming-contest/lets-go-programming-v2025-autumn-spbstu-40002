@@ -35,7 +35,11 @@ func EncodeJSON(currencies *xml.Currencies, outputFile string) error {
 		}
 	}()
 
-	var result []tempCurrency
+	result := make([]struct {
+		NumCode  int     `json:"num_code"`
+		CharCode string  `json:"char_code"`
+		Value    float64 `json:"value"`
+	}, 0, len(currencies.Currencies))
 
 	for _, currency := range currencies.Currencies {
 		value, err := currency.GetFloat()
@@ -43,7 +47,11 @@ func EncodeJSON(currencies *xml.Currencies, outputFile string) error {
 			return fmt.Errorf("invalid format float: %w", err)
 		}
 
-		result = append(result, tempCurrency{
+		result = append(result, struct {
+			NumCode  int     `json:"num_code"`
+			CharCode string  `json:"char_code"`
+			Value    float64 `json:"value"`
+		}{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
 			Value:    value,
@@ -51,8 +59,8 @@ func EncodeJSON(currencies *xml.Currencies, outputFile string) error {
 	}
 
 	encoder := json.NewEncoder(file)
-
 	encoder.SetIndent("", "  ")
+
 	if err := encoder.Encode(result); err != nil {
 		return fmt.Errorf("unable to encode json: %w", err)
 	}
