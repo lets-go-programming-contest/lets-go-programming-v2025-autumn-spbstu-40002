@@ -14,8 +14,8 @@ type ValStruct struct {
 	Date    string   `json:"-" xml:"Date,attr"`
 	Name    string   `json:"-" xml:"name,attr"`
 	Valute  []struct {
-		NumCode   int          `json:"num_code"  xml:"NumCode"`
-		CharCode  string       `json:"char_code" xml:"CharCode"`
-		Value     CommaFloat64 `json:"value"     xml:"Value"`
+		NumCode  int          `json:"num_code"  xml:"NumCode"`
+		CharCode string       `json:"char_code" xml:"CharCode"`
+		Value    CommaFloat64 `json:"value"     xml:"Value"`
 	} `json:"-" xml:"Valute"`
 }
