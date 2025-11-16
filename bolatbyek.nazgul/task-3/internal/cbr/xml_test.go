@@ -94,4 +94,3 @@ func TestParseXML_EmptyFile(t *testing.T) {
 		t.Error("Expected error for empty XML file, got nil")
 	}
 }
-
