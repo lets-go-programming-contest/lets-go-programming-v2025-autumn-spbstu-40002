@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	
 	cur "github.com/InsomniaDemon/task-3/internal/currenciesTypes"
 )
 
