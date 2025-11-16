@@ -4,7 +4,6 @@ import (
 	"flag"
 
 	"github.com/slendycs/go-lab-3/internal/config"
-	merr "github.com/slendycs/go-lab-3/internal/myerrors"
 	"github.com/slendycs/go-lab-3/internal/parsers"
 	"github.com/slendycs/go-lab-3/internal/utils"
 )
@@ -17,11 +16,10 @@ func main() {
 
 	// Read config path from cli flags.
 	flag.StringVar(&configPath, "config", "", "path to config file")
-
 	flag.Parse()
 
 	if configPath == "" {
-		panic(merr.ErrNoConfigFileProvided)
+		configPath = "config.yaml" // Default config path
 	}
 
 	// Read config from YAML.
