@@ -1,0 +1,14 @@
+mode: set
+github.com/Nazkaaa/task-3/cmd/service/main.go:13.35,15.16 2 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:15.16,17.3 1 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:19.2,20.16 2 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:20.16,22.3 1 0
+github.com/Nazkaaa/task-3/cmd/service/main.go:24.2,25.16 2 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:25.16,27.3 1 0
+github.com/Nazkaaa/task-3/cmd/service/main.go:29.2,32.31 3 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:32.31,34.3 1 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:36.2,37.16 2 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:37.16,39.3 1 0
+github.com/Nazkaaa/task-3/cmd/service/main.go:41.2,42.12 2 1
+github.com/Nazkaaa/task-3/cmd/service/main.go:45.13,49.41 3 0
+github.com/Nazkaaa/task-3/cmd/service/main.go:49.41,50.21 1 0
