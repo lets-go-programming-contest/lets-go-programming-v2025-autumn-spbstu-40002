@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/net/html/charset"
-
 	cur "github.com/InsomniaDemon/task-3/internal/currenciesTypes"
+	"golang.org/x/net/html/charset"
 )
 
 var (
