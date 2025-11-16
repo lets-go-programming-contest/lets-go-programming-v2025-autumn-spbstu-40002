@@ -21,15 +21,15 @@ func ConvertAndSort(valCurs *cbr.ValCurs) []CurrencyOutput {
 		valueStr := strings.Replace(v.Value, ",", ".", 1)
 		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
-			// Пропускаем записи с некорректным значением,
-			// чтобы программа не падала при разборе входных данных.
-			continue
+			// В случае ошибки парсинга значения считаем его равным 0,
+			// но не паникуем и не выбрасываем запись.
+			value = 0
 		}
 
 		numCode, err := strconv.Atoi(v.NumCode)
 		if err != nil {
-			// Аналогично, пропускаем записи с некорректным числовым кодом.
-			continue
+			// Аналогично для некорректного числового кода — используем 0 по умолчанию.
+			numCode = 0
 		}
 
 		outputCurrencies = append(outputCurrencies, CurrencyOutput{
