@@ -55,8 +55,15 @@ func main() {
 
 	newContent := strings.ReplaceAll(string(content), ",", ".")
 
-	outputFile.Write([]byte(newContent))
-	outputFile.Seek(0, 0)
+	_, err = outputFile.Write([]byte(newContent))
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = outputFile.Seek(0, 0)
+	if err != nil {
+		panic(err)
+	}
 
 	valutes := new(structures.ValuteStruct)
 
@@ -65,21 +72,19 @@ func main() {
 		panic(err)
 	}
 
-	outputFile.Seek(0, 0)
-	outputFile.Truncate(0)
+	_, err = outputFile.Seek(0, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	err = outputFile.Truncate(0)
+	if err != nil {
+		panic(err)
+	}
 
 	sort.Slice(valutes.ValCurs, func(i, j int) bool {
-		//valuei, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[i].Value, ",", ".", 1), 64)
-		//valuej, _ := strconv.ParseFloat(strings.Replace(valutes.ValCurs[j].Value, ",", ".", 1), 64)
 		return valutes.ValCurs[i].Value > valutes.ValCurs[j].Value
 	})
-
-	/*jsonValutes, err := structures.ConvertXMLToJSON(*valutes)
-	if err != nil {
-		fmt.Println(err)
-
-		return
-	}*/
 
 	err = marshaljson.MarshalJSON(outputFile, valutes)
 	if err != nil {
