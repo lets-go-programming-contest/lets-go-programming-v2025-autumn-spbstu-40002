@@ -13,7 +13,7 @@ import (
 var errNoConfigFileProvided = errors.New("no config file was provided")
 
 func main() {
-	pathToConfig := flag.String("config", "", "Path to config file")
+	pathToConfig := flag.String("config", "config.yaml", "Path to config file")
 	flag.Parse()
 
 	if *pathToConfig == "" {
