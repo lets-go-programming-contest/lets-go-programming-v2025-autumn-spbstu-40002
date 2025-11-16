@@ -12,12 +12,6 @@ import (
 const dirPermission = 0o755
 
 func EncodeJSON(currencies *xml.Currencies, outputFile string) error {
-	type tempCurrency struct {
-		NumCode  int     `json:"num_code"`
-		CharCode string  `json:"char_code"`
-		Value    float64 `json:"value"`
-	}
-
 	dir := filepath.Dir(outputFile)
 	if err := os.MkdirAll(dir, dirPermission); err != nil {
 		return fmt.Errorf("unable to create directory: %w", err)
