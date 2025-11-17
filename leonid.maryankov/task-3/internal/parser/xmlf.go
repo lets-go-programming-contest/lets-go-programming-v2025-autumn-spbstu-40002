@@ -17,10 +17,8 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	ID       string  `json:"id"        xml:"ID,attr"`
 	NumCode  int     `json:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Nominal  int     `json:"nominal"   xml:"Nominal"`
 	ValueStr string  `json:"-"         xml:"Value"`
 	Value    float64 `json:"value"     xml:"-"`
 }
