@@ -17,12 +17,12 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	ID       string  `xml:"ID,attr"`
-	NumCode  int     `xml:"NumCode"`
-	CharCode string  `xml:"CharCode"`
-	Nominal  int     `xml:"Nominal"`
-	ValueStr string  `xml:"Value"`
-	Value    float64 `xml:"-"`
+	ID       string  `xml:"ID,attr"  json:"id"`
+	NumCode  int     `xml:"NumCode"  json:"num_code"`
+	CharCode string  `xml:"CharCode" json:"char_code"`
+	Nominal  int     `xml:"Nominal"  json:"nominal"`
+	ValueStr string  `xml:"Value"    json:"-"`
+	Value    float64 `xml:"-"        json:"value"`
 }
 
 var errEmptyValue = errors.New("empty value for currency")
