@@ -102,4 +102,3 @@ func TestConvertAndSort_SingleItem(t *testing.T) {
 		t.Errorf("Expected Value to be 120.0, got %f", result[0].Value)
 	}
 }
-
