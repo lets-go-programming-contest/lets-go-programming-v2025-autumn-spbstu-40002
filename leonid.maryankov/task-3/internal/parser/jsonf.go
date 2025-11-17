@@ -24,22 +24,7 @@ func SaveToJSON(path string, valutes []Valute) error {
 		return fmt.Errorf("error creating directory for %s: %w", path, err)
 	}
 
-	type Currency struct {
-		NumCode  int     `json:"num_code"`
-		CharCode string  `json:"char_code"`
-		Value    float64 `json:"value"`
-	}
-
-	output := make([]Currency, 0, len(valutes))
-	for _, v := range valutes {
-		output = append(output, Currency{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    v.Value,
-		})
-	}
-
-	data, err := json.MarshalIndent(output, "", "  ")
+	data, err := json.MarshalIndent(valutes, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error in json serialization: %w", err)
 	}
