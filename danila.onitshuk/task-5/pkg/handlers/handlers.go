@@ -114,8 +114,12 @@ func SeparatorFunc(
 			}
 
 			if cntOut != 0 {
-				outputs[cnt%cntOut] <- line
-				cnt++
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case outputs[cnt%cntOut] <- line:
+					cnt++
+				}
 			}
 		}
 	}
