@@ -2,6 +2,7 @@ package conveyer
 
 import (
 	"context"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -95,7 +96,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return groupHendlers.Wait()
+	return fmt.Errorf("handlers group error: %w", groupHendlers.Wait())
 }
 
 // Отправка сообщение в канал input.
@@ -112,13 +113,13 @@ func (c *Conveyer) Send(input string, data string) error {
 
 // Получение данных из канала output.
 func (c *Conveyer) Recv(output string) (string, error) {
-	channel, ok := c.channels[output]
-	if !ok {
+	channel, channelAvailability := c.channels[output]
+	if !channelAvailability {
 		return "", ErrNoChannel
 	}
 
-	data, ok := <-channel
-	if !ok {
+	data, dataAvailability := <-channel
+	if !dataAvailability {
 		return undefinedData, nil
 	}
 
