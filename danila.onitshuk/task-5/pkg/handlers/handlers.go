@@ -30,13 +30,15 @@ func PrefixDecoratorFunc(
 
 			if strings.Contains(line, noDecoratorData) {
 				return ErrNoDecorator
-			} else if !strings.Contains(line, textForDecoratorString) {
+			}
+
+			if !strings.Contains(line, textForDecoratorString) {
 				line = textForDecoratorString + line
 			}
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case output <- line:
 			}
 		}
@@ -78,6 +80,7 @@ func MultiplexerFunc(
 	}
 
 	<-ctx.Done()
+
 	return nil
 }
 
