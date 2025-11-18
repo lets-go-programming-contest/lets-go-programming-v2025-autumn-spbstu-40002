@@ -75,6 +75,7 @@ func MultiplexerFunc(
 						return
 					}
 					presenceTag := strings.Contains(line, noMultiplexerData)
+
 					if !presenceTag {
 						select {
 						case <-ctx.Done():
