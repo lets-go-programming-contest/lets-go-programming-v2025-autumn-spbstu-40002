@@ -1,12 +1,23 @@
-package convert
+package models
 
 import (
+	"encoding/xml"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/Nazkaaa/task-3/internal/cbr"
 )
+
+type ValCurs struct {
+	XMLName xml.Name `xml:"ValCurs"`
+	Valutes []Valute `xml:"Valute"`
+}
+
+type Valute struct {
+	XMLName  xml.Name `xml:"Valute"`
+	NumCode  string   `xml:"NumCode"`
+	CharCode string   `xml:"CharCode"`
+	Value    string   `xml:"Value"`
+}
 
 type CurrencyOutput struct {
 	NumCode  int     `json:"num_code"`
@@ -14,7 +25,7 @@ type CurrencyOutput struct {
 	Value    float64 `json:"value"`
 }
 
-func ConvertAndSort(valCurs *cbr.ValCurs) []CurrencyOutput {
+func ConvertAndSort(valCurs *ValCurs) []CurrencyOutput {
 	var outputCurrencies []CurrencyOutput
 
 	for _, v := range valCurs.Valutes {
