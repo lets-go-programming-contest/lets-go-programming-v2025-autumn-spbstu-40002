@@ -111,4 +111,3 @@ func TestSaveToJSON_WithExistingDirectory(t *testing.T) {
 		t.Fatalf("Output file was not created: %v", err)
 	}
 }
-

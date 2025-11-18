@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -15,13 +16,13 @@ type Config struct {
 func LoadConfig(configPath string) (*Config, error) {
 	configData, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read config file %q: %w", configPath, err)
 	}
 
 	var cfg Config
 	err = yaml.Unmarshal(configData, &cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal YAML config from file %q: %w", configPath, err)
 	}
 
 	return &cfg, nil
@@ -29,5 +30,8 @@ func LoadConfig(configPath string) (*Config, error) {
 
 func EnsureOutputDir(outputFile string) error {
 	outputDir := filepath.Dir(outputFile)
-	return os.MkdirAll(outputDir, 0755)
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		return fmt.Errorf("failed to create output directory %q: %w", outputDir, err)
+	}
+	return nil
 }
