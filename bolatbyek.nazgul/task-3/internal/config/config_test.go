@@ -8,6 +8,11 @@ import (
 	"github.com/Nazkaaa/task-3/internal/config"
 )
 
+const (
+	testFilePerm = 0o600
+	testDirPerm  = 0o755
+)
+
 func TestLoadConfig(t *testing.T) {
 	t.Parallel()
 
@@ -18,7 +23,7 @@ func TestLoadConfig(t *testing.T) {
 output-file: "output/currencies.json"
 `
 
-	err := os.WriteFile(configPath, []byte(configContent), 0o600)
+	err := os.WriteFile(configPath, []byte(configContent), testFilePerm)
 	if err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
@@ -53,7 +58,7 @@ func TestLoadConfig_InvalidYAML(t *testing.T) {
 	configPath := filepath.Join(tmpDir, "invalid_config.yaml")
 	configContent := `invalid: yaml: content`
 
-	err := os.WriteFile(configPath, []byte(configContent), 0o600)
+	err := os.WriteFile(configPath, []byte(configContent), testFilePerm)
 	if err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
@@ -89,7 +94,7 @@ func TestEnsureOutputDir_ExistingDir(t *testing.T) {
 	outputFile := filepath.Join(tmpDir, "output.json")
 
 	// Create directory first
-	err := os.MkdirAll(tmpDir, 0o755)
+	err := os.MkdirAll(tmpDir, testDirPerm)
 	if err != nil {
 		t.Fatalf("Failed to create directory: %v", err)
 	}

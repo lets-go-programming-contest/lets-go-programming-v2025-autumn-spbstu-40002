@@ -8,6 +8,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	dirPerm = 0o755
+)
+
 type Config struct {
 	InputFile  string `yaml:"input-file"`
 	OutputFile string `yaml:"output-file"`
@@ -32,7 +36,7 @@ func LoadConfig(configPath string) (*Config, error) {
 func EnsureOutputDir(outputFile string) error {
 	outputDir := filepath.Dir(outputFile)
 
-	if err := os.MkdirAll(outputDir, 0o755); err != nil {
+	if err := os.MkdirAll(outputDir, dirPerm); err != nil {
 		return fmt.Errorf("failed to create output directory %q: %w", outputDir, err)
 	}
 
