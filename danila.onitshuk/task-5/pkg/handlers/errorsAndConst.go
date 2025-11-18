@@ -9,5 +9,5 @@ const (
 )
 
 var (
-	ErrNoDecorator = errors.New("can’t be decorated")
+	ErrNoDecorator = errors.New("can't be decorated")
 )
