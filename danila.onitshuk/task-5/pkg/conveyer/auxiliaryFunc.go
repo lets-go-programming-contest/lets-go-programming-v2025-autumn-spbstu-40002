@@ -11,9 +11,3 @@ func (c *Conveyer) makeChannels(names ...string) {
 		c.makeChannel(name)
 	}
 }
-
-func (c *Conveyer) closeChannels() {
-	for _, ch := range c.channels {
-		close(ch)
-	}
-}

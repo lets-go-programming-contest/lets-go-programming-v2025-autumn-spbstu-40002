@@ -85,8 +85,6 @@ func (c *Conveyer) RegisterSeparator(
 
 // Запуск конвеера.
 func (c *Conveyer) Run(ctx context.Context) error {
-	defer c.closeChannels()
-
 	groupHendlers, gctx := errgroup.WithContext(ctx)
 
 	for _, hendler := range c.handlersPool {

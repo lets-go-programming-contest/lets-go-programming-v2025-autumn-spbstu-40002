@@ -18,6 +18,8 @@ func PrefixDecoratorFunc(
 	input chan string,
 	output chan string,
 ) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -48,6 +50,8 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
+	defer close(output)
+
 	wg := &sync.WaitGroup{}
 	done := make(chan struct{})
 	go func() {
@@ -99,6 +103,12 @@ func SeparatorFunc(
 	input chan string,
 	outputs []chan string,
 ) error {
+	defer (func() {
+		for _, ch := range outputs {
+			close(ch)
+		}
+	})()
+
 	var (
 		cnt    = 0
 		cntOut = len(outputs)
