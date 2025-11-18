@@ -22,7 +22,7 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case line, ok := <-input:
 			if !ok {
 				return nil
@@ -78,7 +78,7 @@ func MultiplexerFunc(
 	}
 
 	<-ctx.Done()
-	return ctx.Err()
+	return nil
 }
 
 /*
@@ -106,7 +106,7 @@ func SeparatorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case line, ok := <-input:
 			if !ok {
 				return nil
@@ -115,7 +115,7 @@ func SeparatorFunc(
 			if cntOut != 0 {
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return nil
 				case outputs[cnt%cntOut] <- line:
 					cnt++
 				}
