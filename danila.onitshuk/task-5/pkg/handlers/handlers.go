@@ -68,6 +68,7 @@ func MultiplexerFunc(
 					if !ok {
 						return
 					}
+
 					if !strings.Contains(line, noMultiplexerData) {
 						output <- line
 					}
@@ -78,8 +79,6 @@ func MultiplexerFunc(
 
 	select {
 	case <-ctx.Done():
-		wg.Wait()
-
 		return ctx.Err()
 	case <-done:
 		return nil
