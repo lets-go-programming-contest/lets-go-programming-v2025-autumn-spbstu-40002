@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+const (
+	noDecoratorData        = "no decorator"
+	textForDecoratorString = "decorated: "
+	noMultiplexerData      = "no multiplexer"
+)
+
 /*
 Модификатор данных, выполняющий добавление к входных данным
 префикса “decorated: <исходные данные>”, если данный префикс не
