@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"strings"
-	"sync"
 )
 
 /*
@@ -52,13 +51,8 @@ func MultiplexerFunc(
 ) error {
 	defer close(output)
 
-	wg := &sync.WaitGroup{}
-
 	for _, inputChan := range inputs {
-		wg.Add(1)
 		go func(ch <-chan string) {
-			defer wg.Done()
-
 			for {
 				select {
 				case <-ctx.Done():
