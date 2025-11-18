@@ -6,6 +6,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const (
+	undefinedData = "undefined"
+)
+
 type Conveyer struct {
 	channelSize  int
 	channels     map[string]chan string
