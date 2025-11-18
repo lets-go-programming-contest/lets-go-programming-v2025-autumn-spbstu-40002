@@ -20,7 +20,7 @@ func New(channelSize int) *Conveyer {
 	}
 }
 
-// Добавление декоратора
+// Добавление декоратора.
 func (c *Conveyer) RegisterDecorator(
 	fn func(
 		ctx context.Context,
@@ -37,7 +37,7 @@ func (c *Conveyer) RegisterDecorator(
 	})
 }
 
-// Добавление мультиплексора
+// Добавление мультиплексора.
 func (c *Conveyer) RegisterMultiplexer(
 	fn func(
 		ctx context.Context,
@@ -60,7 +60,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	})
 }
 
-// Добавление сепаратора
+// Добавление сепаратора.
 func (c *Conveyer) RegisterSeparator(
 	fn func(
 		ctx context.Context,
@@ -83,7 +83,7 @@ func (c *Conveyer) RegisterSeparator(
 	})
 }
 
-// Запуск конвеера
+// Запуск конвеера.
 func (c *Conveyer) Run(ctx context.Context) error {
 	defer c.closeChannels()
 
@@ -99,7 +99,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	return groupHendlers.Wait()
 }
 
-// Отправка сообщение в канал input
+// Отправка сообщение в канал input.
 func (c *Conveyer) Send(input string, data string) error {
 	ch, ok := c.channels[input]
 	if !ok {
@@ -111,7 +111,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	return nil
 }
 
-// Получение данных из канала output
+// Получение данных из канала output.
 func (c *Conveyer) Recv(output string) (string, error) {
 	ch, ok := c.channels[output]
 
