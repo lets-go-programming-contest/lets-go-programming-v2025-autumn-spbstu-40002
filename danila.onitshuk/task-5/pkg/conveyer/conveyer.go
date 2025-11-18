@@ -22,7 +22,7 @@ func New(channelSize int) *Conveyer {
 
 // Добавление декоратора.
 func (c *Conveyer) RegisterDecorator(
-	fn func(
+	hendlerFunc func(
 		ctx context.Context,
 		input chan string,
 		output chan string,
@@ -33,13 +33,13 @@ func (c *Conveyer) RegisterDecorator(
 	c.makeChannels(input)
 	c.makeChannels(output)
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
-		return fn(ctx, c.channels[input], c.channels[output])
+		return hendlerFunc(ctx, c.channels[input], c.channels[output])
 	})
 }
 
 // Добавление мультиплексора.
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(
+	hendlerFunc func(
 		ctx context.Context,
 		inputs []chan string,
 		output chan string,
@@ -56,13 +56,13 @@ func (c *Conveyer) RegisterMultiplexer(
 			inputsCh = append(inputsCh, c.channels[ch])
 		}
 
-		return fn(ctx, inputsCh, c.channels[output])
+		return hendlerFunc(ctx, inputsCh, c.channels[output])
 	})
 }
 
 // Добавление сепаратора.
 func (c *Conveyer) RegisterSeparator(
-	fn func(
+	hendlerFunc func(
 		ctx context.Context,
 		input chan string,
 		outputs []chan string,
@@ -79,7 +79,7 @@ func (c *Conveyer) RegisterSeparator(
 			outputsCh = append(outputsCh, c.channels[ch])
 		}
 
-		return fn(ctx, c.channels[input], outputsCh)
+		return hendlerFunc(ctx, c.channels[input], outputsCh)
 	})
 }
 
@@ -111,13 +111,13 @@ func (c *Conveyer) Send(input string, data string) error {
 
 // Получение данных из канала output.
 func (c *Conveyer) Recv(output string) (string, error) {
-	ch, ok := c.channels[output]
+	channel, ok := c.channels[output]
 
 	if !ok {
 		return "", ErrNoChannel
 	}
 
-	data, ok := <-ch
+	data, ok := <-channel
 	if !ok {
 		return undefinedData, nil
 	}
