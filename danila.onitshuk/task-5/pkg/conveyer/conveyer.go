@@ -89,6 +89,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, hendler := range c.handlersPool {
 		h := hendler
+
 		groupHendlers.Go(func() error {
 			return h(gctx)
 		})
@@ -112,7 +113,6 @@ func (c *Conveyer) Send(input string, data string) error {
 // Получение данных из канала output.
 func (c *Conveyer) Recv(output string) (string, error) {
 	channel, ok := c.channels[output]
-
 	if !ok {
 		return "", ErrNoChannel
 	}
