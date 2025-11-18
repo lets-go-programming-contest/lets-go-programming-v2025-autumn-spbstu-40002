@@ -34,7 +34,11 @@ func PrefixDecoratorFunc(
 				line = textForDecoratorString + line
 			}
 
-			output <- line
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case output <- line:
+			}
 		}
 	}
 }
