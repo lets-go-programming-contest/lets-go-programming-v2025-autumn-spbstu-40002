@@ -26,10 +26,11 @@ type CurrencyOutput struct {
 }
 
 func ConvertAndSort(valCurs *ValCurs) []CurrencyOutput {
-	var outputCurrencies []CurrencyOutput
+	outputCurrencies := make([]CurrencyOutput, 0, len(valCurs.Valutes))
 
-	for _, v := range valCurs.Valutes {
-		valueStr := strings.Replace(v.Value, ",", ".", 1)
+	for _, valute := range valCurs.Valutes {
+		valueStr := strings.Replace(valute.Value, ",", ".", 1)
+
 		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
 			// В случае ошибки парсинга значения считаем его равным 0,
@@ -37,7 +38,7 @@ func ConvertAndSort(valCurs *ValCurs) []CurrencyOutput {
 			value = 0
 		}
 
-		numCode, err := strconv.Atoi(v.NumCode)
+		numCode, err := strconv.Atoi(valute.NumCode)
 		if err != nil {
 			// Аналогично для некорректного числового кода — используем 0 по умолчанию.
 			numCode = 0
@@ -45,7 +46,7 @@ func ConvertAndSort(valCurs *ValCurs) []CurrencyOutput {
 
 		outputCurrencies = append(outputCurrencies, CurrencyOutput{
 			NumCode:  numCode,
-			CharCode: v.CharCode,
+			CharCode: valute.CharCode,
 			Value:    value,
 		})
 	}

@@ -20,6 +20,7 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 
 	var cfg Config
+
 	err = yaml.Unmarshal(configData, &cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal YAML config from file %q: %w", configPath, err)
@@ -30,8 +31,10 @@ func LoadConfig(configPath string) (*Config, error) {
 
 func EnsureOutputDir(outputFile string) error {
 	outputDir := filepath.Dir(outputFile)
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
+
+	if err := os.MkdirAll(outputDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create output directory %q: %w", outputDir, err)
 	}
+
 	return nil
 }

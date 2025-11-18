@@ -1,24 +1,29 @@
-package config
+package config_test
 
 import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Nazkaaa/task-3/internal/config"
 )
 
 func TestLoadConfig(t *testing.T) {
+	t.Parallel()
+
 	// Create a temporary config file
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test_config.yaml")
 	configContent := `input-file: "data/input.xml"
 output-file: "output/currencies.json"
 `
-	err := os.WriteFile(configPath, []byte(configContent), 0600)
+
+	err := os.WriteFile(configPath, []byte(configContent), 0o600)
 	if err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
 
-	cfg, err := LoadConfig(configPath)
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		t.Fatalf("LoadConfig failed: %v", err)
 	}
@@ -33,32 +38,39 @@ output-file: "output/currencies.json"
 }
 
 func TestLoadConfig_NonExistentFile(t *testing.T) {
-	_, err := LoadConfig("non_existent_file.yaml")
+	t.Parallel()
+
+	_, err := config.LoadConfig("non_existent_file.yaml")
 	if err == nil {
 		t.Error("Expected error for non-existent file, got nil")
 	}
 }
 
 func TestLoadConfig_InvalidYAML(t *testing.T) {
+	t.Parallel()
+
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "invalid_config.yaml")
 	configContent := `invalid: yaml: content`
-	err := os.WriteFile(configPath, []byte(configContent), 0600)
+
+	err := os.WriteFile(configPath, []byte(configContent), 0o600)
 	if err != nil {
 		t.Fatalf("Failed to create test config file: %v", err)
 	}
 
-	_, err = LoadConfig(configPath)
+	_, err = config.LoadConfig(configPath)
 	if err == nil {
 		t.Error("Expected error for invalid YAML, got nil")
 	}
 }
 
 func TestEnsureOutputDir(t *testing.T) {
+	t.Parallel()
+
 	tmpDir := t.TempDir()
 	outputFile := filepath.Join(tmpDir, "subdir", "output.json")
 
-	err := EnsureOutputDir(outputFile)
+	err := config.EnsureOutputDir(outputFile)
 	if err != nil {
 		t.Fatalf("EnsureOutputDir failed: %v", err)
 	}
@@ -71,16 +83,18 @@ func TestEnsureOutputDir(t *testing.T) {
 }
 
 func TestEnsureOutputDir_ExistingDir(t *testing.T) {
+	t.Parallel()
+
 	tmpDir := t.TempDir()
 	outputFile := filepath.Join(tmpDir, "output.json")
 
 	// Create directory first
-	err := os.MkdirAll(tmpDir, 0755)
+	err := os.MkdirAll(tmpDir, 0o755)
 	if err != nil {
 		t.Fatalf("Failed to create directory: %v", err)
 	}
 
-	err = EnsureOutputDir(outputFile)
+	err = config.EnsureOutputDir(outputFile)
 	if err != nil {
 		t.Fatalf("EnsureOutputDir failed for existing directory: %v", err)
 	}

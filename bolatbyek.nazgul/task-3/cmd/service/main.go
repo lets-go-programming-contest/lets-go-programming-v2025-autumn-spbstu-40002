@@ -28,7 +28,7 @@ func run(configPath string) error {
 
 	currencies := models.ConvertAndSort(valCurs)
 
-	var outputCurrencies []interface{}
+	outputCurrencies := make([]interface{}, 0, len(currencies))
 	for _, c := range currencies {
 		outputCurrencies = append(outputCurrencies, c)
 	}
@@ -39,6 +39,7 @@ func run(configPath string) error {
 	}
 
 	fmt.Printf("Successfully processed %d currencies and saved to %s\n", len(currencies), cfg.OutputFile)
+
 	return nil
 }
 

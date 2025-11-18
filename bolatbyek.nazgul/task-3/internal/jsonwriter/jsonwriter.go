@@ -12,7 +12,7 @@ func SaveToJSON(currencies []interface{}, filePath string) error {
 		return fmt.Errorf("failed to marshal currencies to JSON: %w", err)
 	}
 
-	err = os.WriteFile(filePath, outputJSON, 0600)
+	err = os.WriteFile(filePath, outputJSON, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write JSON to file %q: %w", filePath, err)
 	}
