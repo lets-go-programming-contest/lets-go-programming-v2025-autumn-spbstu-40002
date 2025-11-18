@@ -32,14 +32,15 @@ func PrefixDecoratorFunc(
 				return ErrNoDecorator
 			}
 
-			if strings.Contains(line, textForDecoratorString) {
-				continue
+			presenceTag := strings.Contains(line, textForDecoratorString)
+			if !presenceTag {
+				line = textForDecoratorString + line
 			}
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case output <- textForDecoratorString + line:
+			case output <- line:
 			}
 		}
 	}
