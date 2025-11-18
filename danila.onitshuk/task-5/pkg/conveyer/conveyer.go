@@ -2,7 +2,6 @@ package conveyer
 
 import (
 	"context"
-	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -96,7 +95,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return fmt.Errorf("handlers group error: %w", groupHendlers.Wait())
+	return groupHendlers.Wait() //nolint:wrapcheck
 }
 
 // Отправка сообщение в канал input.
