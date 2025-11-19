@@ -1,26 +1,40 @@
 package utils
 
 import (
-	"fmt"
+	"encoding/xml"
+	"errors"
 	"strconv"
 	"strings"
 )
 
+var (
+	errDecodingElement = errors.New("failed to decode XML element")
+	errParsingValue    = errors.New("failed to parse value")
+)
+
 type Valute struct {
-	NumCode  int    `xml:"NumCode" json:"num_code"`
-	CharCode string `xml:"CharCode" json:"char_code"`
-	Value    string `xml:"Value" json:"value"`
+	NumCode  int     `json:"num_code" xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float64 `json:"value" xml:"Value"`
 }
 
-func (v *Valute) GetFloatValue() (float64, error) {
-	normalized := strings.ReplaceAll(v.Value, ",", ".")
-
-	value, err := strconv.ParseFloat(normalized, 64)
-	if err != nil {
-		return 0, fmt.Errorf("parse float value: %w", err)
+func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var aux struct {
+		Value string `xml:"Value"`
 	}
 
-	return value, nil
+	if err := decoder.DecodeElement(&aux, &start); err != nil {
+		return errDecodingElement
+	}
+
+	normalized := strings.Replace(aux.Value, ",", ".", -1)
+	value, err := strconv.ParseFloat(normalized, 64)
+	if err != nil {
+		return errParsingValue
+	}
+	v.Value = value
+
+	return nil
 }
 
 type Valutes []Valute
@@ -29,16 +43,6 @@ func (v Valutes) Len() int { return len(v) }
 
 func (v Valutes) Swap(i, j int) { v[i], v[j] = v[j], v[i] }
 
-func (v Valutes) Less(indI, indJ int) bool {
-	valueI, err := v[indI].GetFloatValue()
-	if err != nil {
-		panic(err)
-	}
-
-	valueJ, err := v[indJ].GetFloatValue()
-	if err != nil {
-		panic(err)
-	}
-
-	return valueI > valueJ
+func (v Valutes) Less(i, j int) bool {
+	return v[i].Value > v[j].Value
 }
