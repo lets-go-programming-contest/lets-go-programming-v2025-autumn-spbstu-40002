@@ -5,9 +5,9 @@ import (
 )
 
 type ValCurs struct {
-	Date    string   `xml:"Date,attr" json:"date"`
-	Name    string   `xml:"name,attr" json:"name"`
-	Valutes []Valute `xml:"Valute" json:"valutes"`
+	Date    string   `json:"date" xml:"Date,attr"`
+	Name    string   `json:"name" xml:"name,attr"`
+	Valutes []Valute `json:"valutes" xml:"Valute"`
 }
 
 func (v *ValCurs) SortByValue() {
@@ -18,7 +18,6 @@ func (v *ValCurs) ConvertToOutput() ([]Valute, error) {
 	output := make([]Valute, 0, len(v.Valutes))
 
 	for _, valute := range v.Valutes {
-
 		output = append(output, Valute{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
