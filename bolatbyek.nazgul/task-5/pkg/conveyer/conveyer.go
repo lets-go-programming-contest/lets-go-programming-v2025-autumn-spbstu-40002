@@ -2,7 +2,7 @@ package conveyer
 
 import (
 	"context"
-	"errors"
+	"fmt"
 )
 
 const undefined = "undefined"
@@ -55,6 +55,7 @@ func (c *conveyer) RegisterMultiplexer(
 	for _, input := range inputs {
 		c.ensureChannel(input)
 	}
+
 	c.ensureChannel(output)
 
 	c.handlers = append(c.handlers, handler{
@@ -72,6 +73,7 @@ func (c *conveyer) RegisterSeparator(
 	outputs []string,
 ) {
 	c.ensureChannel(input)
+
 	for _, output := range outputs {
 		c.ensureChannel(output)
 	}
@@ -95,33 +97,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 	// Start all handlers
 	for _, h := range c.handlers {
 		go func(h handler) {
-			var err error
-
-			switch h.handlerType {
-			case "decorator":
-				fn := h.fn.(func(ctx context.Context, input chan string, output chan string) error)
-				inputChan := c.channels[h.inputs[0]]
-				outputChan := c.channels[h.outputs[0]]
-				err = fn(ctx, inputChan, outputChan)
-
-			case "multiplexer":
-				fn := h.fn.(func(ctx context.Context, inputs []chan string, output chan string) error)
-				inputChans := make([]chan string, len(h.inputs))
-				for i, input := range h.inputs {
-					inputChans[i] = c.channels[input]
-				}
-				outputChan := c.channels[h.outputs[0]]
-				err = fn(ctx, inputChans, outputChan)
-
-			case "separator":
-				fn := h.fn.(func(ctx context.Context, input chan string, outputs []chan string) error)
-				inputChan := c.channels[h.inputs[0]]
-				outputChans := make([]chan string, len(h.outputs))
-				for i, output := range h.outputs {
-					outputChans[i] = c.channels[output]
-				}
-				err = fn(ctx, inputChan, outputChans)
-			}
+			err := c.runHandler(ctx, h)
 
 			if err != nil {
 				errChan <- err
@@ -136,7 +112,8 @@ func (c *conveyer) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			c.stop()
-			return ctx.Err()
+
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case err := <-errChan:
 			if err != nil {
 				c.stop()
@@ -154,14 +131,14 @@ func (c *conveyer) Run(ctx context.Context) error {
 func (c *conveyer) Send(input string, data string) error {
 	ch, exists := c.channels[input]
 	if !exists {
-		return errors.New("chan not found")
+		return ErrChanNotFound
 	}
 
 	select {
 	case ch <- data:
 		return nil
 	default:
-		return errors.New("chan not found")
+		return ErrChanNotFound
 	}
 }
 
@@ -169,7 +146,7 @@ func (c *conveyer) Send(input string, data string) error {
 func (c *conveyer) Recv(output string) (string, error) {
 	ch, exists := c.channels[output]
 	if !exists {
-		return "", errors.New("chan not found")
+		return "", ErrChanNotFound
 	}
 
 	data, ok := <-ch
@@ -184,6 +161,43 @@ func (c *conveyer) Recv(output string) (string, error) {
 func (c *conveyer) ensureChannel(name string) {
 	if _, exists := c.channels[name]; !exists {
 		c.channels[name] = make(chan string, c.size)
+	}
+}
+
+// runHandler executes a single handler based on its type
+func (c *conveyer) runHandler(ctx context.Context, h handler) error {
+	switch h.handlerType {
+	case "decorator":
+		fn := h.fn.(func(ctx context.Context, input chan string, output chan string) error)
+		inputChan := c.channels[h.inputs[0]]
+		outputChan := c.channels[h.outputs[0]]
+
+		return fn(ctx, inputChan, outputChan)
+
+	case "multiplexer":
+		fn := h.fn.(func(ctx context.Context, inputs []chan string, output chan string) error)
+		inputChans := make([]chan string, len(h.inputs))
+
+		for i, input := range h.inputs {
+			inputChans[i] = c.channels[input]
+		}
+		outputChan := c.channels[h.outputs[0]]
+
+		return fn(ctx, inputChans, outputChan)
+
+	case "separator":
+		fn := h.fn.(func(ctx context.Context, input chan string, outputs []chan string) error)
+		inputChan := c.channels[h.inputs[0]]
+		outputChans := make([]chan string, len(h.outputs))
+
+		for i, output := range h.outputs {
+			outputChans[i] = c.channels[output]
+		}
+
+		return fn(ctx, inputChan, outputChans)
+
+	default:
+		return nil
 	}
 }
 

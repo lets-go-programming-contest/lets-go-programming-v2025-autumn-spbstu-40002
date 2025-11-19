@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -21,7 +21,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -29,7 +29,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			// Check if data contains "по decorator"
 			if strings.Contains(data, noDecoratorMsg) {
-				return errors.New("can't be decorated")
+				return ErrCantBeDecorated
 			}
 
 			// Check if prefix already exists
@@ -37,15 +37,16 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				// Prefix already exists, send as is
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return fmt.Errorf("context cancelled: %w", ctx.Err())
 				case output <- data:
 				}
 			} else {
 				// Add prefix
 				decorated := decoratorPrefix + data
+
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return fmt.Errorf("context cancelled: %w", ctx.Err())
 				case output <- decorated:
 				}
 			}
@@ -67,6 +68,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		Dir:  reflect.SelectRecv,
 		Chan: reflect.ValueOf(ctx.Done()),
 	})
+
 	for _, input := range inputs {
 		selectCases = append(selectCases, reflect.SelectCase{
 			Dir:  reflect.SelectRecv,
@@ -78,13 +80,14 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		chosen, value, ok := reflect.Select(selectCases)
 		if chosen == 0 {
 			// Context cancelled
-			return ctx.Err()
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		}
 
 		if !ok {
 			// Channel closed, rebuild select cases without this channel
 			newCases := make([]reflect.SelectCase, 0, len(selectCases))
 			newCases = append(newCases, selectCases[0]) // Keep context case
+
 			for i := 1; i < len(selectCases); i++ {
 				if i != chosen {
 					newCases = append(newCases, selectCases[i])
@@ -107,7 +110,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case output <- data:
 		}
 	}
@@ -122,10 +125,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -134,7 +138,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			// Distribute to next output channel in round-robin fashion
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context cancelled: %w", ctx.Err())
 			case outputs[index] <- data:
 				index = (index + 1) % len(outputs)
 			}
