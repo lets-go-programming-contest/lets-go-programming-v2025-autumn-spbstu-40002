@@ -67,23 +67,25 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	selectCases = append(selectCases, reflect.SelectCase{
 		Dir:  reflect.SelectRecv,
 		Chan: reflect.ValueOf(ctx.Done()),
+		Send: reflect.Value{},
 	})
 
 	for _, input := range inputs {
 		selectCases = append(selectCases, reflect.SelectCase{
 			Dir:  reflect.SelectRecv,
 			Chan: reflect.ValueOf(input),
+			Send: reflect.Value{},
 		})
 	}
 
 	for {
-		chosen, value, ok := reflect.Select(selectCases)
+		chosen, value, channelOpen := reflect.Select(selectCases)
 		if chosen == 0 {
 			// Context cancelled
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		}
 
-		if !ok {
+		if !channelOpen {
 			// Channel closed, rebuild select cases without this channel
 			newCases := make([]reflect.SelectCase, 0, len(selectCases))
 			newCases = append(newCases, selectCases[0]) // Keep context case
@@ -93,12 +95,14 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					newCases = append(newCases, selectCases[i])
 				}
 			}
+
 			selectCases = newCases
 
 			// If no input channels left, return
 			if len(selectCases) == 1 {
 				return nil
 			}
+
 			continue
 		}
 
