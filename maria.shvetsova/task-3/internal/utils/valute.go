@@ -7,13 +7,9 @@ import (
 )
 
 type Valute struct {
-	ID        string `xml:"ID,attr"`
-	NumCode   int    `xml:"NumCode"`
-	CharCode  string `xml:"CharCode"`
-	Nominal   int    `xml:"Nominal"`
-	Name      string `xml:"Name"`
-	Value     string `xml:"Value"`
-	VunitRate string `xml:"VunitRate"`
+	NumCode  int    `xml:"NumCode" json:"num_code"`
+	CharCode string `xml:"CharCode" json:"char_code"`
+	Value    string `xml:"Value" json:"value"`
 }
 
 func (v *Valute) GetFloatValue() (float64, error) {
