@@ -173,6 +173,7 @@ func (c *conveyer) runHandler(ctx context.Context, handlerItem handler) error {
 		if !ok {
 			return nil
 		}
+
 		inputChan := c.channels[handlerItem.inputs[0]]
 		outputChan := c.channels[handlerItem.outputs[0]]
 
@@ -183,11 +184,13 @@ func (c *conveyer) runHandler(ctx context.Context, handlerItem handler) error {
 		if !ok {
 			return nil
 		}
+
 		inputChans := make([]chan string, len(handlerItem.inputs))
 
 		for i, input := range handlerItem.inputs {
 			inputChans[i] = c.channels[input]
 		}
+
 		outputChan := c.channels[handlerItem.outputs[0]]
 
 		return handlerFn(ctx, inputChans, outputChan)

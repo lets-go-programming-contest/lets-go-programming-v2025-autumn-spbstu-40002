@@ -16,7 +16,7 @@ const (
 // PrefixDecoratorFunc is a data modifier that adds prefix "decorated: <original data>"
 // to input data, but only if this prefix hasn't been added before.
 // If input data contains substring "по decorator", the handler must terminate
-// and return an error containing substring "can't be decorated"
+// and return an error containing substring "can't be decorated".
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
@@ -55,8 +55,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 // MultiplexerFunc is a multiplexer that receives data from input channels and combines it.
-// If data contains substring "по multiplexer", the data should be skipped (filtered)
-// Continues working if at least one channel is open
+// If data contains substring "по multiplexer", the data should be skipped (filtered).
+// Continues working if at least one channel is open.
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
 		return nil
