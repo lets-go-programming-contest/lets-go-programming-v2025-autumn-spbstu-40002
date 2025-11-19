@@ -13,25 +13,31 @@ var (
 )
 
 type Valute struct {
-	NumCode  int     `json:"num_code" xml:"NumCode"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value" xml:"Value"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var aux struct {
-		Value string `xml:"Value"`
+		NumCode  int    `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
 	}
 
 	if err := decoder.DecodeElement(&aux, &start); err != nil {
 		return errDecodingElement
 	}
 
-	normalized := strings.Replace(aux.Value, ",", ".", -1)
+	normalized := strings.ReplaceAll(aux.Value, ",", ".")
+
 	value, err := strconv.ParseFloat(normalized, 64)
 	if err != nil {
 		return errParsingValue
 	}
+
+	v.NumCode = aux.NumCode
+	v.CharCode = aux.CharCode
 	v.Value = value
 
 	return nil

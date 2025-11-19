@@ -5,8 +5,8 @@ import (
 )
 
 type ValCurs struct {
-	Date    string   `json:"date" xml:"Date,attr"`
-	Name    string   `json:"name" xml:"name,attr"`
+	Date    string   `json:"date"    xml:"Date,attr"`
+	Name    string   `json:"name"    xml:"name,attr"`
 	Valutes []Valute `json:"valutes" xml:"Valute"`
 }
 
