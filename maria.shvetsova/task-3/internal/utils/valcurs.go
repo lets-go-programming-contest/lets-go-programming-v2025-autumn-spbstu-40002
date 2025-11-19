@@ -1,34 +1,28 @@
 package utils
 
 import (
-	"encoding/xml"
 	"sort"
 )
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"Valute"`
+	Date    string   `xml:"Date,attr" json:"date"`
+	Name    string   `xml:"name,attr" json:"name"`
+	Valutes []Valute `xml:"Valute" json:"valutes"`
 }
 
 func (v *ValCurs) SortByValue() {
 	sort.Sort(Valutes(v.Valutes))
 }
 
-func (v *ValCurs) ConvertToOutput() ([]Output, error) {
-	output := make([]Output, 0, len(v.Valutes))
+func (v *ValCurs) ConvertToOutput() ([]Valute, error) {
+	output := make([]Valute, 0, len(v.Valutes))
 
 	for _, valute := range v.Valutes {
-		value, err := valute.GetFloatValue()
-		if err != nil {
-			return nil, errInvalidFormat
-		}
 
-		output = append(output, Output{
+		output = append(output, Valute{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
-			Value:    value,
+			Value:    valute.Value,
 		})
 	}
 

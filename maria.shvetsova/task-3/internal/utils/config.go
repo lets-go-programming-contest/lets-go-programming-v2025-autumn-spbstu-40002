@@ -28,7 +28,7 @@ type Config struct {
 func parseFlags() (string, error) {
 	var configPath string
 
-	flag.StringVar(&configPath, "config", "", "path to config file")
+	flag.StringVar(&configPath, "config", "./config.yaml", "path to config file")
 
 	flag.Parse()
 
