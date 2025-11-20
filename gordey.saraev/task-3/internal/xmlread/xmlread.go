@@ -4,14 +4,15 @@ import (
 	"encoding/xml"
 	"os"
 
-	currency "github.com/F0LY/task-3/internal/currency"
-	errors "github.com/F0LY/task-3/internal/errors"
 	"golang.org/x/net/html/charset"
+
+	"github.com/F0LY/task-3/internal/currency"
+	"github.com/F0LY/task-3/internal/errors"
 )
 
 type ValCurs struct {
-	XMLName xml.Name          `xml:"ValCurs"`
-	Valutes []currency.Valute `xml:"Valute"`
+	XMLName xml.Name            `xml:"ValCurs"`
+	Valutes []currency.Currency `xml:"Valute"`
 }
 
 func ReadCurrenciesFromXML(filePath string) []currency.Currency {
@@ -34,16 +35,9 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())
 	}
 
-	currencies := make([]currency.Currency, 0, len(valCurs.Valutes))
-
-	for _, valute := range valCurs.Valutes {
-		curr := currency.ValuteToCurrency(valute)
-		currencies = append(currencies, *curr)
-	}
-
-	if len(currencies) == 0 {
+	if len(valCurs.Valutes) == 0 {
 		panic(errors.ErrNoCurrenciesExtracted.Error())
 	}
 
-	return currencies
+	return valCurs.Valutes
 }

@@ -6,35 +6,39 @@ import (
 	"strings"
 )
 
-type Valute struct {
-	XMLName  xml.Name `xml:"Valute"`
-	NumCode  string   `xml:"NumCode"`
-	CharCode string   `xml:"CharCode"`
-	Value    string   `xml:"Value"`
-}
-
 type Currency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+	XMLName  xml.Name `xml:"Valute" json:"-"`
+	NumCode  int      `json:"num_code"`
+	CharCode string   `json:"char_code"`
+	Value    float64  `json:"value"`
 }
 
-func ValuteToCurrency(valute Valute) *Currency {
-	cleanValue := strings.ReplaceAll(valute.Value, ",", ".")
+func (c *Currency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var raw struct {
+		NumCode  string `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
+	}
 
-	value, err := strconv.ParseFloat(cleanValue, 64)
+	if err := d.DecodeElement(&raw, &start); err != nil {
+
+		return err
+	}
+
+	num, err := strconv.Atoi(raw.NumCode)
 	if err != nil {
-		value = 0
+		num = 0
 	}
+	c.NumCode = num
 
-	numCode, err := strconv.Atoi(valute.NumCode)
+	cleanValue := strings.ReplaceAll(raw.Value, ",", ".")
+	val, err := strconv.ParseFloat(cleanValue, 64)
 	if err != nil {
-		numCode = 0
+		val = 0
 	}
+	c.Value = val
 
-	return &Currency{
-		NumCode:  numCode,
-		CharCode: valute.CharCode,
-		Value:    value,
-	}
+	c.CharCode = raw.CharCode
+
+	return nil
 }
