@@ -22,6 +22,7 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 
 	err := decoder.DecodeElement(&raw, &start)
 	if err != nil {
+
 		return err
 	}
 
