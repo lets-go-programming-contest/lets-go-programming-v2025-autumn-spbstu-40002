@@ -110,16 +110,17 @@ func (c *conveyer) Run(ctx context.Context) error {
 	completed := 0
 	for completed < len(c.handlers) {
 		select {
-		case <-ctx.Done():
-			c.stop()
-
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case err := <-errChan:
 			if err != nil {
+				cancel()
 				c.stop()
 
 				return err
 			}
+		case <-ctx.Done():
+			c.stop()
+
+			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
 			completed++
 		}
