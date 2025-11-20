@@ -31,7 +31,8 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-	if err = decoder.Decode(&valCurs); err != nil {
+	err = decoder.Decode(&valCurs)
+	if err != nil {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())
 	}
 

@@ -2,7 +2,6 @@ package currency
 
 import (
 	"encoding/xml"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -21,20 +20,23 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 		Value    string `xml:"Value"`
 	}
 
-	if err := decoder.DecodeElement(&raw, &start); err != nil {
-		return fmt.Errorf("decode XML element: %w", err)
+	err := decoder.DecodeElement(&raw, &start)
+	if err != nil {
+		return err
 	}
 
 	num, err := strconv.Atoi(raw.NumCode)
-	c.NumCode = 0
-	if err == nil {
+	if err != nil {
+		c.NumCode = 0
+	} else {
 		c.NumCode = num
 	}
 
 	cleanValue := strings.ReplaceAll(raw.Value, ",", ".")
 	val, err := strconv.ParseFloat(cleanValue, 64)
-	c.Value = 0
-	if err == nil {
+	if err != nil {
+		c.Value = 0
+	} else {
 		c.Value = val
 	}
 
