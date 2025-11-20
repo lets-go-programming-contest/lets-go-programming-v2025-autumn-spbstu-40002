@@ -13,11 +13,12 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to configuration file")
+	//Я добавил дефолтное значение.
+	configPath := flag.String("config", "config.yaml", "Path to configuration file")
 	flag.Parse()
 
-	if *configPath == "" {
-		fmt.Fprintln(os.Stderr, errors.ErrConfigPathNotSpecified.Error())
+	if _, err := os.Stat(*configPath); os.IsNotExist(err) {
+		fmt.Fprintln(os.Stderr, errors.ErrConfigPathNotSpecified.Error()+": "+*configPath)
 
 		return
 	}
@@ -31,7 +32,6 @@ func main() {
 	}
 
 	currencies := xmlread.ReadCurrenciesFromXML(cfg.InputFile)
-
 	if len(currencies) == 0 {
 		fmt.Fprintln(os.Stderr, errors.ErrNoCurrenciesExtracted.Error())
 
