@@ -20,7 +20,6 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 	if err != nil {
 		panic(errors.ErrXMLFileRead.Error() + ": " + err.Error())
 	}
-
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			panic(errors.ErrXMLFileRead.Error() + ": " + closeErr.Error())
