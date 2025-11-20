@@ -9,9 +9,9 @@ import (
 
 type Currency struct {
 	XMLName  xml.Name `json:"-"         xml:"Valute"`
-	NumCode  int      `json:"num_code"         xml:"NumCode"`
-	CharCode string   `json:"char_code"         xml:"CharCode"`
-	Value    float64  `json:"value"         xml:"Value"`
+	NumCode  int      `json:"num_code"  xml:"NumCode"`
+	CharCode string   `json:"char_code" xml:"CharCode"`
+	Value    float64  `json:"value"     xml:"Value"`
 }
 
 func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
