@@ -2,6 +2,7 @@ package currency
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -22,8 +23,7 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 
 	err := decoder.DecodeElement(&raw, &start)
 	if err != nil {
-
-		return err
+		return fmt.Errorf("decode element: %w", err)
 	}
 
 	num, err := strconv.Atoi(raw.NumCode)
