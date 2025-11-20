@@ -4,10 +4,9 @@ import (
 	"encoding/xml"
 	"os"
 
-	"golang.org/x/net/html/charset"
-
 	"github.com/F0LY/task-3/internal/currency"
 	"github.com/F0LY/task-3/internal/errors"
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
@@ -31,8 +30,8 @@ func ReadCurrenciesFromXML(filePath string) []currency.Currency {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-	err = decoder.Decode(&valCurs)
 
+	err = decoder.Decode(&valCurs)
 	if err != nil {
 		panic(errors.ErrXMLDecode.Error() + ": " + err.Error())
 	}

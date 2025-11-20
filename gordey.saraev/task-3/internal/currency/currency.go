@@ -8,10 +8,10 @@ import (
 )
 
 type Currency struct {
-	XMLName  xml.Name `xml:"Valute"   json:"-"`
-	NumCode  int      `xml:"NumCode"  json:"num_code"`
-	CharCode string   `xml:"CharCode" json:"char_code"`
-	Value    float64  `xml:"Value"    json:"value"`
+	XMLName  xml.Name `json:"-" xml:"Valute"`
+	NumCode  int      `json:"num_code" xml:"NumCode"`
+	CharCode string   `json:"char_code" xml:"CharCode"`
+	Value    float64  `json:"value"  xml:"Value"`
 }
 
 func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
