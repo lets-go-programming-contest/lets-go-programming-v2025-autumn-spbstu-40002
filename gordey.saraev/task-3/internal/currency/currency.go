@@ -35,6 +35,7 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 
 	cleanValue := strings.ReplaceAll(raw.Value, ",", ".")
 	val, err := strconv.ParseFloat(cleanValue, 64)
+
 	if err != nil {
 		c.Value = 0
 	} else {
