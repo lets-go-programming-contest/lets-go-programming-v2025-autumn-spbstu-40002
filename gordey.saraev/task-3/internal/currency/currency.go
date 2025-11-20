@@ -21,7 +21,6 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 		Value    string `xml:"Value"`
 	}
 	if err := decoder.DecodeElement(&raw, &start); err != nil {
-
 		return fmt.Errorf("decode XML element: %w", err)
 	}
 
@@ -40,6 +39,5 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 
 	c.Value = val
 	c.CharCode = raw.CharCode
-
 	return nil
 }
