@@ -8,10 +8,10 @@ import (
 )
 
 type Currency struct {
-	XMLName  xml.Name `xml:"Valute"  json:"-"`
-	NumCode  int      `xml:"NumCode" json:"num_code"`
+	XMLName  xml.Name `xml:"Valute"   json:"-"`
+	NumCode  int      `xml:"NumCode"  json:"num_code"`
 	CharCode string   `xml:"CharCode" json:"char_code"`
-	Value    float64  `xml:"Value"   json:"value"`
+	Value    float64  `xml:"Value"    json:"value"`
 }
 
 func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
@@ -20,16 +20,16 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 		CharCode string `xml:"CharCode"`
 		Value    string `xml:"Value"`
 	}
-
 	if err := decoder.DecodeElement(&raw, &start); err != nil {
 
-		return fmt.Errorf("failed to decode XML element: %w", err)
+		return fmt.Errorf("decode XML element: %w", err)
 	}
 
 	num, err := strconv.Atoi(raw.NumCode)
 	if err != nil {
 		num = 0
 	}
+
 	c.NumCode = num
 
 	cleanValue := strings.ReplaceAll(raw.Value, ",", ".")
@@ -37,6 +37,7 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 	if err != nil {
 		val = 0
 	}
+
 	c.Value = val
 	c.CharCode = raw.CharCode
 
