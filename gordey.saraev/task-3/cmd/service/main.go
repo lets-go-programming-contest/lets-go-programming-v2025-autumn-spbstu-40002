@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	//Я добавил дефолтное значение.
+	// add default.
 	configPath := flag.String("config", "config.yaml", "Path to configuration file")
 	flag.Parse()
 
