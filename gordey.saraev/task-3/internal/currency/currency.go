@@ -26,19 +26,18 @@ func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) er
 	}
 
 	num, err := strconv.Atoi(raw.NumCode)
-	if err != nil {
-		num = 0
+	c.NumCode = 0
+	if err == nil {
+		c.NumCode = num
 	}
-
-	c.NumCode = num
 
 	cleanValue := strings.ReplaceAll(raw.Value, ",", ".")
 	val, err := strconv.ParseFloat(cleanValue, 64)
-	if err != nil {
-		val = 0
+	c.Value = 0
+	if err == nil {
+		c.Value = val
 	}
 
-	c.Value = val
 	c.CharCode = raw.CharCode
 
 	return nil
