@@ -1,4 +1,4 @@
-module github.com/Nazkaaa/task-5
+module github.com/bolatbyek/task-5
 
 go 1.22
 
