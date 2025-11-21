@@ -6,10 +6,9 @@ import (
 	"time"
 )
 
-const (
-	undefined           = "undefined"
-	handlerWaitTimeout  = 100 * time.Millisecond
-)
+const undefined = "undefined"
+
+const handlerWaitTimeout = 100 * time.Millisecond
 
 type conveyer struct {
 	channels map[string]chan string
