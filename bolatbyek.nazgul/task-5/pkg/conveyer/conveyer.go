@@ -98,7 +98,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 	for _, handlerItem := range c.handlers {
 		go func(handlerItem handler) {
 			err := c.runHandler(ctx, handlerItem)
-
 			if err != nil {
 				errChan <- err
 			}
@@ -118,7 +117,17 @@ func (c *conveyer) Run(ctx context.Context) error {
 				return err
 			}
 		case <-ctx.Done():
+			// Stop channels first to allow handlers to finish
 			c.stop()
+			// Wait for all handlers to finish
+			for completed < len(c.handlers) {
+				select {
+				case <-doneChan:
+					completed++
+				case <-errChan:
+					// Ignore errors when context is cancelled
+				}
+			}
 
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
@@ -201,6 +210,7 @@ func (c *conveyer) runHandler(ctx context.Context, handlerItem handler) error {
 		if !ok {
 			return nil
 		}
+
 		inputChan := c.channels[handlerItem.inputs[0]]
 		outputChans := make([]chan string, len(handlerItem.outputs))
 
