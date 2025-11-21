@@ -6,7 +6,10 @@ import (
 	"time"
 )
 
-const undefined = "undefined"
+const (
+	undefined           = "undefined"
+	handlerWaitTimeout  = 100 * time.Millisecond
+)
 
 type conveyer struct {
 	channels map[string]chan string
@@ -121,7 +124,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 			// Close channels to allow handlers to finish quickly
 			c.stop()
 			// Wait for all handlers to finish with timeout
-			waitCtx, waitCancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+			waitCtx, waitCancel := context.WithTimeout(context.Background(), handlerWaitTimeout)
 			defer waitCancel()
 		waitLoop:
 			for completed < len(c.handlers) {
