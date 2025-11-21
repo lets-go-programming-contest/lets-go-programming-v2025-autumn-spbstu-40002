@@ -125,7 +125,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 				case <-doneChan:
 					completed++
 				case <-errChan:
-					// Ignore errors when context is cancelled
 				}
 			}
 
