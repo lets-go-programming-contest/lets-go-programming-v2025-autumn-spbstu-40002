@@ -117,8 +117,8 @@ func (c *conveyer) Run(ctx context.Context) error {
 				return err
 			}
 		case <-ctx.Done():
-			// Stop channels first to allow handlers to finish
-			c.stop()
+			// Cancel context first to signal handlers to stop
+			cancel()
 			// Wait for all handlers to finish
 			for completed < len(c.handlers) {
 				select {
@@ -127,6 +127,8 @@ func (c *conveyer) Run(ctx context.Context) error {
 				case <-errChan:
 				}
 			}
+			// Close channels after handlers finish
+			c.stop()
 
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
