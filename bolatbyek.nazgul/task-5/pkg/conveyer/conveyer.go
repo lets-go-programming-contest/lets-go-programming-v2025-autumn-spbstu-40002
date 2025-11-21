@@ -3,9 +3,12 @@ package conveyer
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 const undefined = "undefined"
+
+const handlerWaitTimeout = 50 * time.Millisecond
 
 type conveyer struct {
 	channels map[string]chan string
@@ -117,9 +120,26 @@ func (c *conveyer) Run(ctx context.Context) error {
 				return err
 			}
 		case <-ctx.Done():
-			// Signal handlers to stop by closing channels
+			// Cancel context to signal handlers
+			cancel()
+			// Close channels to allow handlers to finish
 			c.stop()
-			// Return immediately without waiting for handlers
+			// Wait briefly for handlers to finish
+			waitCtx, waitCancel := context.WithTimeout(context.Background(), handlerWaitTimeout)
+			defer waitCancel()
+		waitLoop:
+			for completed < len(c.handlers) {
+				select {
+				case <-doneChan:
+					completed++
+				case <-errChan:
+					// Ignore errors when context is cancelled
+				case <-waitCtx.Done():
+					// Timeout waiting for handlers, return anyway
+					break waitLoop
+				}
+			}
+
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
 			completed++
