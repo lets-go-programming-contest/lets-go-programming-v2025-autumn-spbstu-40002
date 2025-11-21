@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-const (
-	decoratorPrefix   = "decorated: "
-	noDecoratorMsg    = "по decorator"
-	multiplexerFilter = "по multiplexer"
-)
+const decoratorPrefix = "decorated: "
+
+const noDecoratorMsg = "по decorator"
+
+const multiplexerFilter = "по multiplexer"
 
 // PrefixDecoratorFunc is a data modifier that adds prefix "decorated: <original data>"
 // to input data, but only if this prefix hasn't been added before.
