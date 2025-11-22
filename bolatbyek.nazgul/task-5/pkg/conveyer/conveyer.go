@@ -92,9 +92,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 		return nil
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	errChan := make(chan error, len(c.handlers))
 	doneChan := make(chan struct{}, len(c.handlers))
 
@@ -115,22 +112,10 @@ func (c *conveyer) Run(ctx context.Context) error {
 		select {
 		case err := <-errChan:
 			if err != nil {
-				cancel()
 				c.stop()
-				// Wait for remaining handlers to finish
-				for completed < len(c.handlers) {
-					select {
-					case <-doneChan:
-						completed++
-					case <-errChan:
-						// Ignore additional errors
-					}
-				}
-
 				return err
 			}
 		case <-ctx.Done():
-			cancel()
 			c.stop()
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
