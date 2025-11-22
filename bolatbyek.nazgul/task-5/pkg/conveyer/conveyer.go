@@ -3,7 +3,6 @@ package conveyer
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 const undefined = "undefined"
@@ -133,21 +132,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			cancel()
 			c.stop()
-			// Wait briefly for handlers to finish, but don't block forever
-			timeout := time.NewTimer(100 * time.Millisecond)
-			defer timeout.Stop()
-			for completed < len(c.handlers) {
-				select {
-				case <-doneChan:
-					completed++
-				case <-errChan:
-					// Ignore errors during shutdown
-				case <-timeout.C:
-					// Timeout waiting for handlers
-					break
-				}
-			}
-
+			// Don't wait for handlers - return immediately on context cancellation
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
 			completed++
