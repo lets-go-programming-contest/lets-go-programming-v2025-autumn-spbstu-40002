@@ -132,7 +132,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			cancel()
 			c.stop()
-			// Don't wait for handlers - return immediately on context cancellation
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
 			completed++
