@@ -14,6 +14,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			return ctx.Err()
 		case val, ok := <-input:
 			if !ok {
+				close(output)
 				return nil
 			}
 			if strings.Contains(val, "no decorator") {
@@ -51,6 +52,10 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			return ctx.Err()
 		case val, ok := <-input:
 			if !ok {
+				for _, out := range outputs {
+					close(out)
+				}
+
 				return nil
 			}
 			out := outputs[counter%len(outputs)]
@@ -79,7 +84,20 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			return ctx.Err()
 		default:
 		}
+
+		allNil := true
+		for _, cs := range cases {
+			if cs.Chan.IsValid() && cs.Chan.Kind() != reflect.Invalid {
+				allNil = false
+				break
+			}
+		}
+		if allNil {
+			return nil
+		}
+
 		chosen, recv, ok := reflect.Select(cases)
+
 		if !ok {
 			cases[chosen].Chan = reflect.ValueOf(nil)
 			closedCount++
