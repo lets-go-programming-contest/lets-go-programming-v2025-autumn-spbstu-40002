@@ -38,58 +38,67 @@ func (c *Conveyer) makeChannels(names ...string) {
 }
 
 func (c *Conveyer) RegisterDecorator(
-	h func(ctx context.Context, input chan string, output chan string) error,
+	handler func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
 	c.makeChannels(input)
 	c.makeChannels(output)
+
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
-		return h(ctx, c.channels[input], c.channels[output])
+
+		return handler(ctx, c.channels[input], c.channels[output])
 	})
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	h func(ctx context.Context, inputs []chan string, output chan string) error,
+	handler func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
 	c.makeChannels(inputs...)
 	c.makeChannels(output)
+
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
 		ins := make([]chan string, 0, len(inputs))
 		for _, n := range inputs {
 			ins = append(ins, c.channels[n])
 		}
-		return h(ctx, ins, c.channels[output])
+
+		return handler(ctx, ins, c.channels[output])
 	})
 }
 
 func (c *Conveyer) RegisterSeparator(
-	h func(ctx context.Context, input chan string, outputs []chan string) error,
+	handler func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
 	c.makeChannels(input)
 	c.makeChannels(outputs...)
+
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
 		outs := make([]chan string, 0, len(outputs))
 		for _, n := range outputs {
 			outs = append(outs, c.channels[n])
 		}
-		return h(ctx, c.channels[input], outs)
+
+		return handler(ctx, c.channels[input], outs)
 	})
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	g, gctx := errgroup.WithContext(ctx)
-	for _, hf := range c.handlersPool {
-		h := hf
-		g.Go(func() error {
-			return h(gctx)
+	errGroup, egCtx := errgroup.WithContext(ctx)
+
+	for _, handlerFunc := range c.handlersPool {
+		hf := handlerFunc
+
+		errGroup.Go(func() error {
+			return hf(egCtx)
 		})
 	}
-	return g.Wait()
+
+	return errGroup.Wait()
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -97,7 +106,9 @@ func (c *Conveyer) Send(input string, data string) error {
 	if !ok {
 		return ErrChanNotFound
 	}
+
 	ch <- data
+
 	return nil
 }
 
@@ -106,9 +117,12 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	if !ok {
 		return "", ErrChanNotFound
 	}
+
 	v, open := <-ch
+
 	if !open {
 		return undefinedData, nil
 	}
+
 	return v, nil
 }

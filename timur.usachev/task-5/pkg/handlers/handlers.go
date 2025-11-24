@@ -52,7 +52,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	for _, inputCh := range inputs {
-		ch := inputCh
+		inCh := inputCh
 
 		go func(chLocal chan string) {
 			for {
@@ -76,7 +76,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(ch)
+		}(inCh)
 	}
 
 	<-ctx.Done()
@@ -85,8 +85,8 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	defer func() {
-		for _, ch := range outputs {
-			close(ch)
+		for _, outCh := range outputs {
+			close(outCh)
 		}
 	}()
 

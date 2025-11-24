@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -35,7 +34,7 @@ func sendInputs(cvr *conveyer.Conveyer, inputs []string) {
 }
 
 func receiveOutputs(cvr *conveyer.Conveyer) {
-	for i := 0; i < repeatCount; i++ {
+	for range make([]struct{}, repeatCount) {
 		resCh := make(chan struct{})
 
 		var val string
@@ -50,10 +49,11 @@ func receiveOutputs(cvr *conveyer.Conveyer) {
 		case <-resCh:
 			if err != nil {
 				log.Println(err)
+
 				continue
 			}
 
-			fmt.Println("recv:", val)
+			log.Println("recv:", val)
 
 		case <-time.After(recvTimeoutSec * time.Second):
 			log.Println("timeout")
@@ -70,6 +70,7 @@ func main() {
 
 	ctx := context.Background()
 	ctxRun, cancelRun := context.WithCancel(ctx)
+
 	defer cancelRun()
 
 	runErrCh := runConveyer(ctxRun, cvr)
