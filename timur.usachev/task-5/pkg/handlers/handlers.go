@@ -55,7 +55,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				for _, out := range outputs {
 					close(out)
 				}
-
 				return nil
 			}
 			out := outputs[counter%len(outputs)]
@@ -70,13 +69,17 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	cases := make([]reflect.SelectCase, 0, len(inputs))
-	for _, ch := range inputs {
-		cases = append(cases, reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(ch)})
+	if len(inputs) == 0 {
+		return nil
+	}
+	cases := make([]reflect.SelectCase, len(inputs))
+	for i, ch := range inputs {
+		cases[i] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(ch)}
 	}
 	closedCount := 0
 	for {
 		if closedCount == len(cases) {
+			close(output)
 			return nil
 		}
 		select {
@@ -84,22 +87,9 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			return ctx.Err()
 		default:
 		}
-
-		allNil := true
-		for _, cs := range cases {
-			if cs.Chan.IsValid() && cs.Chan.Kind() != reflect.Invalid {
-				allNil = false
-				break
-			}
-		}
-		if allNil {
-			return nil
-		}
-
 		chosen, recv, ok := reflect.Select(cases)
-
 		if !ok {
-			cases[chosen].Chan = reflect.ValueOf(nil)
+			cases[chosen].Chan = reflect.ValueOf((chan string)(nil))
 			closedCount++
 			continue
 		}
