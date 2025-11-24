@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -10,18 +9,26 @@ import (
 	"github.com/t1wt/task-5/pkg/handlers"
 )
 
+const (
+	chanSize       = 4
+	readIterations = 3
+	readTimeout    = 2 * time.Second
+)
+
 func main() {
-	cvr := conveyer.New(4)
+	cvr := conveyer.New(chanSize)
 
 	cvr.RegisterDecorator(handlers.PrefixDecoratorFunc, "input", "decorated")
 	cvr.RegisterSeparator(handlers.SeparatorFunc, "decorated", []string{"s1", "s2"})
 	cvr.RegisterMultiplexer(handlers.MultiplexerFunc, []string{"s1", "s2"}, "out")
 
 	ctx := context.Background()
+
 	ctxRun, cancelRun := context.WithCancel(ctx)
 	defer cancelRun()
 
 	runErrCh := make(chan error, 1)
+
 	go func() {
 		runErrCh <- cvr.Run(ctxRun)
 	}()
@@ -40,30 +47,38 @@ func main() {
 		}
 	}
 
-	repCount := 3
-	for i := 0; i < repCount; i++ {
+	for range readIterations {
 		resCh := make(chan struct{})
+
 		var val string
 		var err error
+
 		go func() {
 			val, err = cvr.Recv("out")
+
 			close(resCh)
 		}()
+
 		select {
 		case <-resCh:
 			if err != nil {
 				log.Println(err)
+
 				continue
 			}
-			fmt.Println("recv:", val)
-		case <-time.After(2 * time.Second):
+
+			log.Println("recv:", val)
+
+		case <-time.After(readTimeout):
 			log.Println("timeout")
 		}
 	}
 
 	cancelRun()
+
 	if err := <-runErrCh; err != nil {
 		log.Println("conveyer finished with error:", err)
+
 	} else {
 		log.Println("conveyer finished")
 	}
