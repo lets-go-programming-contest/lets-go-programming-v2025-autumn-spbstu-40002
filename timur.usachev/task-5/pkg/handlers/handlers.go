@@ -70,6 +70,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
+		close(output)
 		return nil
 	}
 	cases := make([]reflect.SelectCase, len(inputs))

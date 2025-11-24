@@ -133,15 +133,15 @@ func (cvr *conveyerImpl) Run(ctx context.Context) error {
 	ctxRun, cancelRun := context.WithCancel(ctx)
 	defer cancelRun()
 
-	var wgroup sync.WaitGroup
+	wgroup := &sync.WaitGroup{}
 	errchan := make(chan error, 1)
 
 	for _, reg := range cvr.decorators {
 		inCh := cvr.getChan(reg.inputID)
 		outCh := cvr.getChan(reg.outputID)
 		wgroup.Add(1)
-		go func(fn func(context.Context, chan string, chan string) error, rin chan string, rout chan string) {
-			defer wgroup.Done()
+		go func(fn func(context.Context, chan string, chan string) error, rin chan string, rout chan string, wg *sync.WaitGroup) {
+			defer wg.Done()
 			if err := fn(ctxRun, rin, rout); err != nil {
 				select {
 				case errchan <- err:
@@ -149,7 +149,7 @@ func (cvr *conveyerImpl) Run(ctx context.Context) error {
 				}
 				cancelRun()
 			}
-		}(reg.fn, inCh, outCh)
+		}(reg.fn, inCh, outCh, wgroup)
 	}
 
 	for _, reg := range cvr.multiplexes {
@@ -159,8 +159,8 @@ func (cvr *conveyerImpl) Run(ctx context.Context) error {
 		}
 		outCh := cvr.getChan(reg.outputID)
 		wgroup.Add(1)
-		go func(fn func(context.Context, []chan string, chan string) error, ins []chan string, rout chan string) {
-			defer wgroup.Done()
+		go func(fn func(context.Context, []chan string, chan string) error, ins []chan string, rout chan string, wg *sync.WaitGroup) {
+			defer wg.Done()
 			if err := fn(ctxRun, ins, rout); err != nil {
 				select {
 				case errchan <- err:
@@ -168,7 +168,7 @@ func (cvr *conveyerImpl) Run(ctx context.Context) error {
 				}
 				cancelRun()
 			}
-		}(reg.fn, ins, outCh)
+		}(reg.fn, ins, outCh, wgroup)
 	}
 
 	for _, reg := range cvr.separators {
@@ -178,8 +178,8 @@ func (cvr *conveyerImpl) Run(ctx context.Context) error {
 			outs = append(outs, cvr.getChan(id))
 		}
 		wgroup.Add(1)
-		go func(fn func(context.Context, chan string, []chan string) error, rin chan string, routs []chan string) {
-			defer wgroup.Done()
+		go func(fn func(context.Context, chan string, []chan string) error, rin chan string, routs []chan string, wg *sync.WaitGroup) {
+			defer wg.Done()
 			if err := fn(ctxRun, rin, routs); err != nil {
 				select {
 				case errchan <- err:
@@ -187,14 +187,14 @@ func (cvr *conveyerImpl) Run(ctx context.Context) error {
 				}
 				cancelRun()
 			}
-		}(reg.fn, inCh, outs)
+		}(reg.fn, inCh, outs, wgroup)
 	}
 
 	done := make(chan struct{})
-	go func() {
-		wgroup.Wait()
+	go func(wg *sync.WaitGroup) {
+		wg.Wait()
 		close(done)
-	}()
+	}(wgroup)
 
 	select {
 	case err := <-errchan:
