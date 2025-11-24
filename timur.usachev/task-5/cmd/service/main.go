@@ -37,12 +37,15 @@ func receiveOutputs(cvr *conveyer.Conveyer) {
 	for range make([]struct{}, repeatCount) {
 		resCh := make(chan struct{})
 
-		var val string
-		var err error
+		var (
+			val string
+			err error
+		)
 
 		go func() {
+			defer close(resCh)
+
 			val, err = cvr.Recv("out")
-			close(resCh)
 		}()
 
 		select {
@@ -90,6 +93,7 @@ func main() {
 
 	if err := <-runErrCh; err != nil {
 		log.Println("conveyer finished with error:", err)
+
 		return
 	}
 
