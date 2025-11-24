@@ -9,7 +9,7 @@ import (
 
 const undefinedData = "undefined"
 
-var ErrNoChannel = errors.New("chan not found")
+var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer struct {
 	channelSize  int
@@ -42,7 +42,8 @@ func (c *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
-	c.makeChannels(input, output)
+	c.makeChannels(input)
+	c.makeChannels(output)
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
 		return h(ctx, c.channels[input], c.channels[output])
 	})
@@ -54,7 +55,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	output string,
 ) {
 	c.makeChannels(inputs...)
-	c.makeChannel(output)
+	c.makeChannels(output)
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
 		ins := make([]chan string, 0, len(inputs))
 		for _, n := range inputs {
@@ -69,7 +70,7 @@ func (c *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	c.makeChannel(input)
+	c.makeChannels(input)
 	c.makeChannels(outputs...)
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
 		outs := make([]chan string, 0, len(outputs))
@@ -94,7 +95,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 func (c *Conveyer) Send(input string, data string) error {
 	ch, ok := c.channels[input]
 	if !ok {
-		return ErrNoChannel
+		return ErrChanNotFound
 	}
 	ch <- data
 	return nil
@@ -103,7 +104,7 @@ func (c *Conveyer) Send(input string, data string) error {
 func (c *Conveyer) Recv(output string) (string, error) {
 	ch, ok := c.channels[output]
 	if !ok {
-		return "", ErrNoChannel
+		return "", ErrChanNotFound
 	}
 	v, open := <-ch
 	if !open {
