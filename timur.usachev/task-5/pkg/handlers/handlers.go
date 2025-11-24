@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
+	"sync"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -53,7 +53,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		case val, ok := <-input:
 			if !ok {
 				for _, out := range outputs {
-					close(out)
+					if out != nil {
+						close(out)
+					}
 				}
 				return nil
 			}
@@ -73,35 +75,45 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		close(output)
 		return nil
 	}
-	cases := make([]reflect.SelectCase, len(inputs))
-	for i, ch := range inputs {
-		cases[i] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(ch)}
+	var wg sync.WaitGroup
+	wg.Add(len(inputs))
+
+	for _, ch := range inputs {
+		ch := ch
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case val, ok := <-ch:
+					if !ok {
+						return
+					}
+					if strings.Contains(val, "no multiplexer") {
+						continue
+					}
+					select {
+					case <-ctx.Done():
+						return
+					case output <- val:
+					}
+				}
+			}
+		}()
 	}
-	closedCount := 0
-	for {
-		if closedCount == len(cases) {
-			close(output)
-			return nil
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-		chosen, recv, ok := reflect.Select(cases)
-		if !ok {
-			cases[chosen].Chan = reflect.ValueOf((chan string)(nil))
-			closedCount++
-			continue
-		}
-		val := recv.Interface().(string)
-		if strings.Contains(val, "no multiplexer") {
-			continue
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case output <- val:
-		}
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-done:
+		close(output)
+		return nil
 	}
 }

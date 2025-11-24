@@ -7,6 +7,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var ErrChanNotFound = errors.New("chan not found")
+
 type decorator struct {
 	fn         func(ctx context.Context, input, output chan string) error
 	inputChan  chan string
@@ -37,17 +39,17 @@ func New(size int) *Conveyer {
 	return &Conveyer{
 		size:         size,
 		channels:     make(map[string]chan string),
-		decorators:   make([]decorator, 0),
-		multiplexers: make([]multiplexer, 0),
-		separators:   make([]separator, 0),
+		decorators:   nil,
+		multiplexers: nil,
+		separators:   nil,
 	}
 }
 
 func (c *Conveyer) RegisterDecorator(fn func(ctx context.Context, input, output chan string) error, inputName, outputName string) {
-	if _, exists := c.channels[inputName]; !exists {
+	if _, ok := c.channels[inputName]; !ok {
 		c.channels[inputName] = make(chan string, c.size)
 	}
-	if _, exists := c.channels[outputName]; !exists {
+	if _, ok := c.channels[outputName]; !ok {
 		c.channels[outputName] = make(chan string, c.size)
 	}
 	c.decorators = append(c.decorators, decorator{
@@ -58,86 +60,99 @@ func (c *Conveyer) RegisterDecorator(fn func(ctx context.Context, input, output 
 }
 
 func (c *Conveyer) RegisterMultiplexer(fn func(ctx context.Context, inputs []chan string, output chan string) error, inputNames []string, outputName string) {
-	inputChans := make([]chan string, len(inputNames))
-	for i, name := range inputNames {
-		if _, exists := c.channels[name]; !exists {
-			c.channels[name] = make(chan string, c.size)
+	inputs := make([]chan string, len(inputNames))
+	for i, n := range inputNames {
+		if _, ok := c.channels[n]; !ok {
+			c.channels[n] = make(chan string, c.size)
 		}
-		inputChans[i] = c.channels[name]
+		inputs[i] = c.channels[n]
 	}
-	if _, exists := c.channels[outputName]; !exists {
+	if _, ok := c.channels[outputName]; !ok {
 		c.channels[outputName] = make(chan string, c.size)
 	}
 	c.multiplexers = append(c.multiplexers, multiplexer{
 		fn:         fn,
-		inputChans: inputChans,
+		inputChans: inputs,
 		outputChan: c.channels[outputName],
 	})
 }
 
 func (c *Conveyer) RegisterSeparator(fn func(ctx context.Context, input chan string, outputs []chan string) error, inputName string, outputNames []string) {
-	if _, exists := c.channels[inputName]; !exists {
+	if _, ok := c.channels[inputName]; !ok {
 		c.channels[inputName] = make(chan string, c.size)
 	}
-	inputChan := c.channels[inputName]
-	outputChans := make([]chan string, len(outputNames))
-	for i, name := range outputNames {
-		if _, exists := c.channels[name]; !exists {
-			c.channels[name] = make(chan string, c.size)
+	input := c.channels[inputName]
+	outChans := make([]chan string, len(outputNames))
+	for i, n := range outputNames {
+		if _, ok := c.channels[n]; !ok {
+			c.channels[n] = make(chan string, c.size)
 		}
-		outputChans[i] = c.channels[name]
+		outChans[i] = c.channels[n]
 	}
 	c.separators = append(c.separators, separator{
 		fn:          fn,
-		inputChan:   inputChan,
-		outputChans: outputChans,
+		inputChan:   input,
+		outputChans: outChans,
 	})
 }
 
 func (c *Conveyer) Send(inputName string, data string) error {
-	ch, exists := c.channels[inputName]
-	if !exists {
-		return errors.New("chan not found")
+	ch, ok := c.channels[inputName]
+	if !ok {
+		return ErrChanNotFound
 	}
 	ch <- data
 	return nil
 }
 
 func (c *Conveyer) Recv(outputName string) (string, error) {
-	ch, exists := c.channels[outputName]
-	if !exists {
-		return "", errors.New("chan not found")
+	ch, ok := c.channels[outputName]
+	if !ok {
+		return "", ErrChanNotFound
 	}
-	val, ok := <-ch
+	v, ok := <-ch
 	if !ok {
 		return "undefined", nil
 	}
-	return val, nil
+	return v, nil
+}
+
+func safeClose(ch chan string) {
+	if ch == nil {
+		return
+	}
+	defer func() { _ = recover() }()
+	close(ch)
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
+
 	for _, d := range c.decorators {
 		d := d
 		g.Go(func() error {
 			return d.fn(ctx, d.inputChan, d.outputChan)
 		})
 	}
+
 	for _, m := range c.multiplexers {
 		m := m
 		g.Go(func() error {
 			return m.fn(ctx, m.inputChans, m.outputChan)
 		})
 	}
+
 	for _, s := range c.separators {
 		s := s
 		g.Go(func() error {
 			return s.fn(ctx, s.inputChan, s.outputChans)
 		})
 	}
+
 	err := g.Wait()
+
 	for _, ch := range c.channels {
-		close(ch)
+		safeClose(ch)
 	}
 	return err
 }
