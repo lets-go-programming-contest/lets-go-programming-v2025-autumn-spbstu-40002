@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -46,7 +47,6 @@ func (c *Conveyer) RegisterDecorator(
 	c.makeChannels(output)
 
 	c.handlersPool = append(c.handlersPool, func(ctx context.Context) error {
-
 		return handler(ctx, c.channels[input], c.channels[output])
 	})
 }
@@ -98,7 +98,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return errGroup.Wait()
+	if err := errGroup.Wait(); err != nil {
+		return fmt.Errorf("conveyer handlers: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -118,11 +122,11 @@ func (c *Conveyer) Recv(output string) (string, error) {
 		return "", ErrChanNotFound
 	}
 
-	v, open := <-ch
+	value, open := <-ch
 
 	if !open {
 		return undefinedData, nil
 	}
 
-	return v, nil
+	return value, nil
 }
