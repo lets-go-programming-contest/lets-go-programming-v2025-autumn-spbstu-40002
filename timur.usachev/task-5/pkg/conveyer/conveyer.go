@@ -68,7 +68,10 @@ func (cvr *conveyerImpl) closeAll() {
 	defer cvr.mtx.Unlock()
 	for ident, chn := range cvr.chans {
 		if chn != nil {
-			close(chn)
+			func() {
+				defer func() { _ = recover() }()
+				close(chn)
+			}()
 			cvr.chans[ident] = nil
 		}
 	}
