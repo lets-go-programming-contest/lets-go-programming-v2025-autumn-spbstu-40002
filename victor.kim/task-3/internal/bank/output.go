@@ -13,50 +13,76 @@ import (
 	"github.com/victor.kim/task-3/pkg/must"
 )
 
-func (b *Bank) EncodeJSON(w io.Writer) error {
-	// prepare currencies for output
-	prepared := make([]map[string]interface{}, 0, len(b.Currencies))
+type outputCurrency struct {
+	NumCode  int     `json:"num_code"`
+	CharCode string  `json:"char_code"`
+	Value    float64 `json:"value"`
+}
 
-	for _, cur := range b.Currencies {
-		v := strings.Replace(strings.TrimSpace(cur.Value), ",", ".", 1)
-		parsed, err := strconv.ParseFloat(v, 64)
-		if err != nil {
-			return fmt.Errorf("parse currency value: %w", err)
+type outputBank []outputCurrency
+
+func buildOutput(b *Bank) (outputBank, error) {
+	out := make(outputBank, 0, len(b.Currencies))
+
+	for _, currency := range b.Currencies {
+		raw := strings.TrimSpace(currency.Value)
+		raw = strings.Replace(raw, ",", ".", 1)
+
+		parsed, parseErr := strconv.ParseFloat(raw, 64)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid type of value for %q: %w", currency.CharCode, parseErr)
 		}
 
-		prepared = append(prepared, map[string]interface{}{
-			"num_code":  cur.NumCode,
-			"char_code": cur.CharCode,
-			"value":     parsed,
+		out = append(out, outputCurrency{
+			NumCode:  currency.NumCode,
+			CharCode: currency.CharCode,
+			Value:    parsed,
 		})
 	}
 
-	sort.Slice(prepared, func(i, j int) bool {
-		return prepared[i]["value"].(float64) > prepared[j]["value"].(float64)
+	return out, nil
+}
+
+func (ob outputBank) sortByValueDesc() {
+	sort.Slice(ob, func(i, j int) bool {
+		return ob[i].Value > ob[j].Value
 	})
+}
 
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
+func (b *Bank) EncodeJSON(writer io.Writer) error {
+	out, err := buildOutput(b)
+	if err != nil {
+		return err
+	}
 
-	return enc.Encode(prepared)
+	out.sortByValueDesc()
+
+	encoder := json.NewEncoder(writer)
+	encoder.SetIndent("", "  ")
+
+	if encErr := encoder.Encode(out); encErr != nil {
+		return fmt.Errorf("encoding bank: %w", encErr)
+	}
+
+	return nil
 }
 
 func (b *Bank) EncodeFileJSON(path string) error {
-	const perms = 0o755
+	const perm = 0o755
 
 	dir := filepath.Dir(path)
 	if dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, perms); err != nil {
-			return fmt.Errorf("mkdir: %w", err)
+		if err := os.MkdirAll(dir, perm); err != nil {
+			return fmt.Errorf("create dir: %w", err)
 		}
 	}
 
-	f, err := os.Create(path)
+	outFile, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("create output: %w", err)
+		return fmt.Errorf("create file: %w", err)
 	}
 
-	defer must.Close(path, f)
+	defer must.Close(path, outFile)
 
-	return b.EncodeJSON(f)
+	return b.EncodeJSON(outFile)
 }

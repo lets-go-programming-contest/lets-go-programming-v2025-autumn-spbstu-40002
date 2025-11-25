@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/victor.kim/task-3/pkg/must"
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,21 +15,22 @@ type Config struct {
 }
 
 func ParseFile(path string) (*Config, error) {
-	f, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("open config: %w", err)
+		return nil, fmt.Errorf("open config file: %w", err)
 	}
 
-	defer f.Close()
+	defer must.Close(path, file)
 
-	return Parse(f)
+	return Parse(file)
 }
 
 func Parse(r io.Reader) (*Config, error) {
 	cfg := new(Config)
 
-	if err := yaml.NewDecoder(r).Decode(cfg); err != nil {
-		return nil, fmt.Errorf("decode config: %w", err)
+	decoder := yaml.NewDecoder(r)
+	if err := decoder.Decode(cfg); err != nil {
+		return nil, fmt.Errorf("decoding config file: %w", err)
 	}
 
 	return cfg, nil
