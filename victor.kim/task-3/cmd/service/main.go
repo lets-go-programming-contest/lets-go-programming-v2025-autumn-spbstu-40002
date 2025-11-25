@@ -16,12 +16,10 @@ func main() {
 	cfg, err := config.ParseFile(*configPath)
 	must.Must("parse config", err)
 
-	bankData, err := bank.ParseFileXML(cfg.Input)
+	b, err := bank.ParseFileXML(cfg.Input)
 	must.Must("parse input-file", err)
 
-	if err := bankData.EncodeFileJSON(cfg.Output); err != nil {
-		must.Must("encode bank", err)
-	}
+	must.Must("encode bank", b.EncodeFileJSON(cfg.Output))
 
 	fmt.Println("ok")
 }

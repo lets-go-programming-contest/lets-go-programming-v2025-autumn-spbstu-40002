@@ -14,22 +14,21 @@ type Config struct {
 }
 
 func ParseFile(path string) (*Config, error) {
-	file, err := os.Open(path)
+	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("open config file: %w", err)
+		return nil, fmt.Errorf("open config: %w", err)
 	}
 
-	defer func() { _ = file.Close() }()
+	defer f.Close()
 
-	return Parse(file)
+	return Parse(f)
 }
 
 func Parse(r io.Reader) (*Config, error) {
 	cfg := new(Config)
 
-	decoder := yaml.NewDecoder(r)
-	if err := decoder.Decode(cfg); err != nil {
-		return nil, fmt.Errorf("decoding config file: %w", err)
+	if err := yaml.NewDecoder(r).Decode(cfg); err != nil {
+		return nil, fmt.Errorf("decode config: %w", err)
 	}
 
 	return cfg, nil
