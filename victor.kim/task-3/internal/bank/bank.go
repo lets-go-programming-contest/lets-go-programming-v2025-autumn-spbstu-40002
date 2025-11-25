@@ -6,52 +6,51 @@ import (
 	"io"
 	"os"
 
+	"github.com/victor.kim/task-3/pkg/must"
 	"golang.org/x/text/encoding/charmap"
 )
 
-type Bank struct {
-	Date       string     `xml:"Date,attr"`
-	Name       string     `xml:"name,attr"`
-	Currencies []Currency `xml:"Valute"`
+type Currency struct {
+	ID       string `xml:"ID,attr" json:"-"`
+	NumCode  int    `xml:"NumCode"    json:"num_code"`
+	CharCode string `xml:"CharCode"   json:"char_code"`
+	Value    string `xml:"Value"      json:"value_raw"`
 }
 
-type Currency struct {
-	ID       string `xml:"ID,attr"`
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
-	Nominal  int    `xml:"Nominal"`
-	Name     string `xml:"Name"`
+type Bank struct {
+	Date       string     `xml:"Date,attr" json:"date"`
+	Name       string     `xml:"name,attr" json:"name"`
+	Currencies []Currency `xml:"Valute"    json:"currencies"`
 }
 
 func charsetReader(charset string, input io.Reader) (io.Reader, error) {
 	switch charset {
 	case "windows-1251":
 		return charmap.Windows1251.NewDecoder().Reader(input), nil
-	default:
-		return input, nil
 	}
+
+	return input, nil
 }
 
 func ParseXML(r io.Reader) (*Bank, error) {
-	decoder := xml.NewDecoder(r)
-	decoder.CharsetReader = charsetReader
+	dec := xml.NewDecoder(r)
+	dec.CharsetReader = charsetReader
 
-	b := new(Bank)
-	if err := decoder.Decode(b); err != nil {
-		return nil, fmt.Errorf("decoding currency bank: %w", err)
+	out := new(Bank)
+	if err := dec.Decode(out); err != nil {
+		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
-	return b, nil
+	return out, nil
 }
 
 func ParseFileXML(path string) (*Bank, error) {
-	file, err := os.Open(path)
+	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("open input file: %w", err)
+		return nil, fmt.Errorf("open input: %w", err)
 	}
 
-	defer func() { _ = file.Close() }()
+	defer must.Close(path, f)
 
-	return ParseXML(file)
+	return ParseXML(f)
 }

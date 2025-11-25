@@ -9,79 +9,54 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/victor.kim/task-3/pkg/must"
 )
 
-type outputCurrency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
+func (b *Bank) EncodeJSON(w io.Writer) error {
+	// prepare currencies for output
+	prepared := make([]map[string]interface{}, 0, len(b.Currencies))
 
-type outputBank []outputCurrency
-
-func buildOutput(b *Bank) (outputBank, error) {
-	out := make(outputBank, 0, len(b.Currencies))
-
-	for _, currency := range b.Currencies {
-		raw := strings.TrimSpace(currency.Value)
-		raw = strings.Replace(raw, ",", ".", 1)
-
-		parsed, parseErr := strconv.ParseFloat(raw, 64)
-		if parseErr != nil {
-			return nil, fmt.Errorf("invalid type of value: %w", parseErr)
+	for _, cur := range b.Currencies {
+		v := strings.Replace(strings.TrimSpace(cur.Value), ",", ".", 1)
+		parsed, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return fmt.Errorf("parse currency value: %w", err)
 		}
 
-		// NOTE: Do NOT divide by Nominal — tests expect the raw parsed value.
-		out = append(out, outputCurrency{
-			NumCode:  currency.NumCode,
-			CharCode: currency.CharCode,
-			Value:    parsed,
+		prepared = append(prepared, map[string]interface{}{
+			"num_code":  cur.NumCode,
+			"char_code": cur.CharCode,
+			"value":     parsed,
 		})
 	}
 
-	return out, nil
-}
-
-func (ob outputBank) sortByValueDesc() {
-	sort.Slice(ob, func(i, j int) bool {
-		return ob[i].Value > ob[j].Value
+	sort.Slice(prepared, func(i, j int) bool {
+		return prepared[i]["value"].(float64) > prepared[j]["value"].(float64)
 	})
-}
 
-func (b *Bank) EncodeJSON(writer io.Writer) error {
-	out, err := buildOutput(b)
-	if err != nil {
-		return err
-	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
 
-	out.sortByValueDesc()
-
-	encoder := json.NewEncoder(writer)
-	encoder.SetIndent("", "  ")
-
-	if err := encoder.Encode(out); err != nil {
-		return fmt.Errorf("encoding bank: %w", err)
-	}
-
-	return nil
+	return enc.Encode(prepared)
 }
 
 func (b *Bank) EncodeFileJSON(path string) error {
-	const perm = 0o755
+	const perms = 0o755
 
 	dir := filepath.Dir(path)
 	if dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, perm); err != nil {
-			return fmt.Errorf("create dir: %w", err)
+		if err := os.MkdirAll(dir, perms); err != nil {
+			return fmt.Errorf("mkdir: %w", err)
 		}
 	}
 
-	file, err := os.Create(path)
+	f, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("create file: %w", err)
+		return fmt.Errorf("create output: %w", err)
 	}
 
-	defer func() { _ = file.Close() }()
+	defer must.Close(path, f)
 
-	return b.EncodeJSON(file)
+	return b.EncodeJSON(f)
 }
