@@ -6,19 +6,18 @@ import (
 )
 
 type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr" json:"date"`
-	Name    string   `xml:"name,attr" json:"name"`
-	Valutes []Valute `xml:"Valute"    json:"valutes"`
+	Date    string   `json:"date"    xml:"Date,attr"`
+	Name    string   `json:"name"    xml:"name,attr"`
+	Valutes []Valute `json:"valutes" xml:"Valute"`
 }
 
 type Valute struct {
 	ID        string  `xml:"ID,attr"`
-	NumCode   int     `xml:"NumCode"  json:"num_code"`
-	CharCode  string  `xml:"CharCode" json:"char_code"`
+	NumCode   int     `json:"num_code"  xml:"NumCode"`
+	CharCode  string  `json:"char_code" xml:"CharCode"`
 	Nominal   int     `xml:"Nominal"`
 	Name      string  `xml:"Name"`
-	Value     float64 `xml:"Value"    json:"value"`
+	Value     float64 `json:"value"     xml:"Value"`
 	VunitRate string  `xml:"VunitRate"`
 }
 
