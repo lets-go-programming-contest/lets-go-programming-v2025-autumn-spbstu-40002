@@ -11,22 +11,11 @@ const (
 	filePerm = 0o600
 )
 
-type CurrencyOutput struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
-
 func GetValutesForJSON(valutes *Valutes) ([]byte, error) {
-	outputData := make([]CurrencyOutput, 0)
+	outputData := make([]Valute, 0)
 
 	for _, valute := range *valutes {
-		value, err := valute.ConvertValue()
-		if err != nil {
-			return nil, err
-		}
-
-		output := CurrencyOutput{
+		output := Valute{
 			NumCode:  valute.NumCode,
 			CharCode: valute.CharCode,
 			Value:    value,
