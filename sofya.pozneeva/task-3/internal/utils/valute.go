@@ -19,23 +19,28 @@ type Valute struct {
 	Value    float64 `json:"value"     xml:"Value"`
 }
 
-type Float64 float64
+func (v *Valute) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var aux struct {
+		NumCode  int    `xml:"NumCode"`
+		CharCode string `xml:"CharCode"`
+		Value    string `xml:"Value"`
+	}
 
-func (f *Float64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var s string
-	if err := d.DecodeElement(&s, &start); err != nil {
-		return err
+	if err := decoder.DecodeElement(&aux, &start); err != nil {
+		return errDecodingElement
 	}
-	
-	// Заменяем запятую на точку для корректного парсинга
-	s = strings.Replace(s, ",", ".", 1)
-	
-	val, err := strconv.ParseFloat(s, 64)
+
+	normalized := strings.ReplaceAll(aux.Value, ",", ".")
+
+	value, err := strconv.ParseFloat(normalized, 64)
 	if err != nil {
-		return err
+		return errParsingValue
 	}
-	
-	*f = Float64(val)
+
+	v.NumCode = aux.NumCode
+	v.CharCode = aux.CharCode
+	v.Value = value
+
 	return nil
 }
 
