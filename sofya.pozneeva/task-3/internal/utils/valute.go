@@ -32,17 +32,7 @@ func (v Valutes) Len() int { return len(v) }
 func (v Valutes) Swap(i, j int) { v[i], v[j] = v[j], v[i] }
 
 func (v Valutes) Less(indI, indJ int) bool {
-	valueI, err := v[indI].ConvertValue()
-	if err != nil {
-		panic(err)
-	}
-
-	valueJ, err := v[indJ].ConvertValue()
-	if err != nil {
-		panic(err)
-	}
-
-	return valueI > valueJ
+	return v[indI].Value > v[indJ].Value
 }
 
 func (v *ValCurs) SortByValue() {
