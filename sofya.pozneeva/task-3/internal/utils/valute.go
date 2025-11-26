@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+var (
+	errDecodingElement = errors.New("failed to decode XML element")
+	errParsingValue    = errors.New("failed to parse value")
+)
+
 type ValCurs struct {
 	Date    string   `json:"date"    xml:"Date,attr"`
 	Name    string   `json:"name"    xml:"name,attr"`
