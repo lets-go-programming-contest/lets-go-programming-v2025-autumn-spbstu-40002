@@ -18,6 +18,26 @@ type Valute struct {
 	Value    float64 `json:"value"     xml:"Value"`
 }
 
+type Float64 float64
+
+func (f *Float64) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var s string
+	if err := d.DecodeElement(&s, &start); err != nil {
+		return err
+	}
+	
+	// Заменяем запятую на точку для корректного парсинга
+	s = strings.Replace(s, ",", ".", 1)
+	
+	val, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return err
+	}
+	
+	*f = Float64(val)
+	return nil
+}
+
 type Valutes []Valute
 
 func (v Valutes) Len() int { return len(v) }
