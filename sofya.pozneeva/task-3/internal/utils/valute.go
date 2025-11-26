@@ -2,10 +2,7 @@ package utils
 
 import (
 	"encoding/xml"
-	"fmt"
 	"sort"
-	"strconv"
-	"strings"
 )
 
 type ValCurs struct {
