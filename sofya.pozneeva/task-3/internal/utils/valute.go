@@ -10,30 +10,19 @@ import (
 
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"Valute"`
+	Date    string   `xml:"Date,attr"` `json:"date" 
+	Name    string   `xml:"name,attr"` `json:"name"
+	Valutes []Valute `xml:"Valute"`    `json:"valutes"
 }
 
 type Valute struct {
-	ID        string `xml:"ID,attr"`
-	NumCode   int    `xml:"NumCode"`
-	CharCode  string `xml:"CharCode"`
-	Nominal   int    `xml:"Nominal"`
-	Name      string `xml:"Name"`
-	Value     string `xml:"Value"`
-	VunitRate string `xml:"VunitRate"`
-}
-
-func (v *Valute) ConvertValue() (float64, error) {
-	strValue := strings.ReplaceAll(v.Value, ",", ".")
-
-	value, err := strconv.ParseFloat(strValue, 64)
-	if err != nil {
-		return 0, fmt.Errorf("parse float value: %w", err)
-	}
-
-	return value, nil
+	ID        string  `xml:"ID,attr"`
+	NumCode   int     `xml:"NumCode"`  `json:"num_code"
+	CharCode  string  `xml:"CharCode"` `json:"char_code"
+	Nominal   int     `xml:"Nominal"`
+	Name      string  `xml:"Name"`
+	Value     float64 `xml:"Value"`    `json:"value"
+	VunitRate string  `xml:"VunitRate"`
 }
 
 type Valutes []Valute
