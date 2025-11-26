@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"encoding/xml"
 	"sort"
+	"encoding/xml"
 	"errors"
 	"strconv"
 	"strings"
