@@ -36,7 +36,7 @@ type conv struct {
 	runners []func(ctx context.Context) error
 }
 
-func New(size int) Conveyer {
+func New(size int) *conv {
 	return &conv{
 		mu:      sync.Mutex{},
 		startMu: sync.Mutex{},
@@ -74,7 +74,8 @@ func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, output
 	outputChan := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return decorator(ctx, inputChan, outputChan)
+		return decorator(ctx, inputChan, outputChan
+		)
 	})
 
 	return nil
@@ -171,6 +172,7 @@ func (c *conv) Run(ctx context.Context) error {
 	c.startMu.Lock()
 	if c.started {
 		c.startMu.Unlock()
+
 		return ErrAlreadyRunning
 	}
 

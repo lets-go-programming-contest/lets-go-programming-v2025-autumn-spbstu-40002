@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 	"sync"
+
+	"github.com/megurumacabre/task-5/pkg/conveyer"
 )
 
 var (
@@ -12,6 +14,10 @@ var (
 	ErrNoMultiplexer = errors.New("no multiplexer")
 	ErrNoSeparator   = errors.New("no separator")
 )
+
+type DecoratorFunc = conveyer.DecoratorFunc
+type MultiplexerFunc = conveyer.MultiplexerFunc
+type SeparatorFunc = conveyer.SeparatorFunc
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
@@ -39,7 +45,13 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	}
 }
 
-func consumeOne(ctx context.Context, input chan string, output chan string, errOnce chan<- error, stop <-chan struct{}) {
+func consumeOne(
+	ctx context.Context,
+	input chan string,
+	output chan string,
+	errOnce chan<- error,
+	stop <-chan struct{},
+) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -58,6 +70,7 @@ func consumeOne(ctx context.Context, input chan string, output chan string, errO
 				case errOnce <- ErrNoMultiplexer:
 				default:
 				}
+
 				return
 			}
 
@@ -78,6 +91,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	var waitGroup sync.WaitGroup
+
 	errOnce := make(chan error, 1)
 	stop := make(chan struct{})
 
@@ -103,6 +117,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	case <-ctx.Done():
 		close(stop)
 		<-done
+
 		return nil
 
 	case <-done:
@@ -145,6 +160,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 			index++
+
 			if index == len(outputs) {
 				index = 0
 			}
