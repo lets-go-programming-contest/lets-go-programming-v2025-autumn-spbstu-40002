@@ -5,8 +5,6 @@ import (
 	"errors"
 	"strings"
 	"sync"
-
-	"github.com/megurumacabre/task-5/pkg/conveyer"
 )
 
 var (
@@ -15,16 +13,15 @@ var (
 	ErrNoSeparator   = errors.New("no separator")
 )
 
-type DecoratorFunc = conveyer.DecoratorFunc
-type MultiplexerFunc = conveyer.MultiplexerFunc
-type SeparatorFunc = conveyer.SeparatorFunc
-
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+func PrefixDecoratorFunc(
+	ctx context.Context,
+	input chan string,
+	output chan string,
+) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-
 		case value, ok := <-input:
 			if !ok {
 				return nil
@@ -55,13 +52,14 @@ func consumeOne(
 	for {
 		select {
 		case <-ctx.Done():
-			return
 
+			return
 		case <-stop:
-			return
 
+			return
 		case value, ok := <-input:
 			if !ok {
+
 				return
 			}
 
@@ -76,8 +74,10 @@ func consumeOne(
 
 			select {
 			case <-ctx.Done():
+
 				return
 			case <-stop:
+
 				return
 			case output <- value:
 			}
@@ -85,7 +85,11 @@ func consumeOne(
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+func MultiplexerFunc(
+	ctx context.Context,
+	inputs []chan string,
+	output chan string,
+) error {
 	if len(inputs) == 0 {
 		return nil
 	}
@@ -119,18 +123,23 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		<-done
 
 		return nil
-
 	case <-done:
 		select {
 		case err := <-errOnce:
+
 			return err
 		default:
+
 			return nil
 		}
 	}
 }
 
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+func SeparatorFunc(
+	ctx context.Context,
+	input chan string,
+	outputs []chan string,
+) error {
 	if len(outputs) == 0 {
 		return nil
 	}
@@ -140,10 +149,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
 
+			return nil
 		case value, ok := <-input:
 			if !ok {
+
 				return nil
 			}
 
@@ -155,12 +165,12 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
+
 				return nil
 			case target <- value:
 			}
 
 			index++
-
 			if index == len(outputs) {
 				index = 0
 			}

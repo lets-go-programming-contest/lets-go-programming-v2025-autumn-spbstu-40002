@@ -31,7 +31,6 @@ type conv struct {
 	mu      sync.Mutex
 	startMu sync.Mutex
 	started bool
-
 	chans   map[string]chan string
 	runners []func(ctx context.Context) error
 }
@@ -41,7 +40,6 @@ func New(size int) *conv {
 		mu:      sync.Mutex{},
 		startMu: sync.Mutex{},
 		started: false,
-
 		chans:   make(map[string]chan string, size),
 		runners: make([]func(context.Context) error, 0, defaultRunnerCap),
 	}
@@ -74,8 +72,7 @@ func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, output
 	outputChan := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return decorator(ctx, inputChan, outputChan
-		)
+		return decorator(ctx, inputChan, outputChan)
 	})
 
 	return nil
