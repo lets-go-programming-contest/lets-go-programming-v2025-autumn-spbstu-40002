@@ -3,222 +3,214 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 )
 
-type DecoratorFunc func(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-) error
-
-type MultiplexerFunc func(
-	ctx context.Context,
-	inputs []chan string,
-	output chan string,
-) error
-
-type SeparatorFunc func(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error
-
-type Conveyer interface {
-	RegisterDecorator(fn DecoratorFunc, input string, output string) error
-	RegisterMultiplexer(fn MultiplexerFunc, inputs []string, output string) error
-	RegisterSeparator(fn SeparatorFunc, input string, outputs []string) error
-
-	Run(ctx context.Context) error
-
-	Send(input string, data string) error
-	Recv(output string) (string, error)
-}
+type (
+	DecoratorFunc   func(ctx context.Context, input chan string, output chan string) error
+	MultiplexerFunc func(ctx context.Context, inputs []chan string, output chan string) error
+	SeparatorFunc   func(ctx context.Context, input chan string, outputs []chan string) error
+)
 
 const Undefined = "undefined"
 
-var ErrChanNotFound = errors.New("chan not found")
+var (
+	ErrAlreadyRunning = errors.New("conveyer already running")
+	ErrChanNotFound   = errors.New("chan not found")
+	ErrNotStarted     = errors.New("conveyer not started")
+)
 
-type runFn func(context.Context) error
+type Conveyer interface {
+	RegisterDecorator(
+		decorator DecoratorFunc,
+		inputID string,
+		outputID string,
+	) error
+
+	RegisterMultiplexer(
+		multiplexer MultiplexerFunc,
+		inputIDs []string,
+		outputID string,
+	) error
+
+	RegisterSeparator(
+		separator SeparatorFunc,
+		inputID string,
+		outputIDs []string,
+	) error
+
+	Run(ctx context.Context) error
+	Send(inputID string, data string) error
+	Recv(outputID string) (string, error)
+}
+
+type runFunc func(ctx context.Context) error
 
 type conv struct {
-	size int
+	bufferSize int
 
-	mu      sync.RWMutex
-	chans   map[string]chan string
-	runners []runFn
-
-	startMux sync.Mutex
+	chans    map[string]chan string
+	runners  []runFunc
 	started  bool
+	mu       sync.RWMutex
+	startMux sync.Mutex
 }
 
 func New(size int) Conveyer {
 	return &conv{
-		size:    size,
-		chans:   make(map[string]chan string),
-		runners: make([]runFn, 0),
+		bufferSize: size,
+		chans:      make(map[string]chan string),
+		runners:    make([]runFunc, 0),
+		started:    false,
+		mu:         sync.RWMutex{},
+		startMux:   sync.Mutex{},
 	}
 }
 
-func (c *conv) ensureChan(id string) chan string {
+func (c *conv) ensureChan(chanID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	exists, ok := c.chans[id]
-	if ok {
-		return exists
+	ch, found := c.chans[chanID]
+	if !found {
+		ch = make(chan string, c.bufferSize)
+		c.chans[chanID] = ch
 	}
-
-	created := make(chan string, c.size)
-	c.chans[id] = created
-
-	return created
+	return ch
 }
 
-func (c *conv) getChan(id string) (chan string, bool) {
+func (c *conv) getChan(chanID string) (chan string, bool) {
 	c.mu.RLock()
-	ch, ok := c.chans[id]
-	c.mu.RUnlock()
+	defer c.mu.RUnlock()
 
-	return ch, ok
+	ch, found := c.chans[chanID]
+	return ch, found
 }
 
 func (c *conv) RegisterDecorator(
-	fn DecoratorFunc,
-	input string,
-	output string,
+	decorator DecoratorFunc,
+	inputID string,
+	outputID string,
 ) error {
-	inputChan := c.ensureChan(input)
-	outputChan := c.ensureChan(output)
+	in := c.ensureChan(inputID)
+	out := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return fn(ctx, inputChan, outputChan)
+		return decorator(ctx, in, out)
 	})
-
 	return nil
 }
 
 func (c *conv) RegisterMultiplexer(
-	fn MultiplexerFunc,
-	inputs []string,
-	output string,
+	multiplexer MultiplexerFunc,
+	inputIDs []string,
+	outputID string,
 ) error {
-	inputChans := make([]chan string, 0, len(inputs))
-
-	for _, id := range inputs {
-		inputChans = append(inputChans, c.ensureChan(id))
+	inputs := make([]chan string, 0, len(inputIDs))
+	for _, id := range inputIDs {
+		inputs = append(inputs, c.ensureChan(id))
 	}
-
-	outputChan := c.ensureChan(output)
+	out := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return fn(ctx, inputChans, outputChan)
+		return multiplexer(ctx, inputs, out)
 	})
-
 	return nil
 }
 
 func (c *conv) RegisterSeparator(
-	fn SeparatorFunc,
-	input string,
-	outputs []string,
+	separator SeparatorFunc,
+	inputID string,
+	outputIDs []string,
 ) error {
-	inputChan := c.ensureChan(input)
+	in := c.ensureChan(inputID)
 
-	outputChans := make([]chan string, 0, len(outputs))
-
-	for _, id := range outputs {
-		outputChans = append(outputChans, c.ensureChan(id))
+	outputs := make([]chan string, 0, len(outputIDs))
+	for _, id := range outputIDs {
+		outputs = append(outputs, c.ensureChan(id))
 	}
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return fn(ctx, inputChan, outputChans)
+		return separator(ctx, in, outputs)
 	})
-
 	return nil
-}
-
-func (c *conv) closeAllChans() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for id, ch := range c.chans {
-		func() {
-			defer func() { _ = recover() }()
-			close(ch)
-		}()
-		delete(c.chans, id)
-	}
 }
 
 func (c *conv) Run(ctx context.Context) error {
 	c.startMux.Lock()
-	already := c.started
-	if !already {
-		c.started = true
+
+	if c.started {
+		c.startMux.Unlock()
+		return ErrAlreadyRunning
 	}
+	c.started = true
 	c.startMux.Unlock()
 
-	if already {
-		return nil
-	}
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	var wg sync.WaitGroup
 	errChan := make(chan error, len(c.runners))
+	var waitGroup sync.WaitGroup
 
-	for _, rf := range c.runners {
-		wg.Add(1)
+	for _, run := range c.runners {
+		waitGroup.Add(1)
 
-		go func(f runFn) {
-			defer wg.Done()
+		go func(r runFunc) {
+			defer waitGroup.Done()
 
-			if err := f(ctx); err != nil {
+			if err := r(runCtx); err != nil {
 				errChan <- err
 			}
-		}(rf)
+		}(run)
 	}
-
-	waitDone := make(chan struct{})
-
-	go func() {
-		wg.Wait()
-		close(waitDone)
-	}()
 
 	var firstErr error
 
 	select {
-	case firstErr = <-errChan:
-
-	case <-waitDone:
+	case <-ctx.Done():
+		firstErr = fmt.Errorf("context canceled: %w", ctx.Err())
+	case err := <-errChan:
+		firstErr = err
 	}
 
-	c.closeAllChans()
+	cancel()
+
+	c.mu.Lock()
+	for id, ch := range c.chans {
+		close(ch)
+		delete(c.chans, id)
+	}
+	c.mu.Unlock()
+
+	waitGroup.Wait()
 
 	return firstErr
 }
 
-func (c *conv) Send(input string, data string) error {
-	ch, ok := c.getChan(input)
-	if !ok {
-		return ErrChanNotFound
+func (c *conv) Send(inputID string, data string) error {
+	ch, found := c.getChan(inputID)
+	if !found {
+		return fmt.Errorf("%w", ErrChanNotFound)
+	}
+
+	select {
+	default:
 	}
 
 	ch <- data
-
 	return nil
 }
 
-func (c *conv) Recv(output string) (string, error) {
-	ch, ok := c.getChan(output)
-	if !ok {
-		return "", ErrChanNotFound
+func (c *conv) Recv(outputID string) (string, error) {
+	ch, found := c.getChan(outputID)
+	if !found {
+		return "", fmt.Errorf("%w", ErrChanNotFound)
 	}
 
 	value, ok := <-ch
 	if !ok {
 		return Undefined, nil
 	}
-
 	return value, nil
 }
