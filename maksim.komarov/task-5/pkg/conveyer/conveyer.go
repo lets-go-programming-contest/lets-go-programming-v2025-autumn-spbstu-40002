@@ -18,7 +18,6 @@ const Undefined = "undefined"
 var (
 	ErrAlreadyRunning = errors.New("conveyer already running")
 	ErrChanNotFound   = errors.New("chan not found")
-	ErrNotStarted     = errors.New("conveyer not started")
 )
 
 type Conveyer interface {
@@ -41,7 +40,7 @@ type conv struct {
 	startMux   sync.Mutex
 }
 
-func New(size int) *conv {
+func New(size int) Conveyer {
 	return &conv{
 		bufferSize: size,
 		chans:      make(map[string]chan string),
@@ -55,27 +54,33 @@ func New(size int) *conv {
 func (c *conv) ensureChan(chanID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	existing, found := c.chans[chanID]
 	if !found {
 		existing = make(chan string, c.bufferSize)
 		c.chans[chanID] = existing
 	}
+
 	return existing
 }
 
 func (c *conv) getChan(chanID string) (chan string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	existing, found := c.chans[chanID]
+
 	return existing, found
 }
 
 func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, outputID string) error {
 	inputChan := c.ensureChan(inputID)
 	outputChan := c.ensureChan(outputID)
+
 	c.runners = append(c.runners, func(ctx context.Context) error {
 		return decorator(ctx, inputChan, outputChan)
 	})
+
 	return nil
 }
 
@@ -84,22 +89,28 @@ func (c *conv) RegisterMultiplexer(multiplexer MultiplexerFunc, inputIDs []strin
 	for _, oneID := range inputIDs {
 		inputs = append(inputs, c.ensureChan(oneID))
 	}
+
 	outputChan := c.ensureChan(outputID)
+
 	c.runners = append(c.runners, func(ctx context.Context) error {
 		return multiplexer(ctx, inputs, outputChan)
 	})
+
 	return nil
 }
 
 func (c *conv) RegisterSeparator(separator SeparatorFunc, inputID string, outputIDs []string) error {
 	inputChan := c.ensureChan(inputID)
+
 	outputs := make([]chan string, 0, len(outputIDs))
 	for _, oneID := range outputIDs {
 		outputs = append(outputs, c.ensureChan(oneID))
 	}
+
 	c.runners = append(c.runners, func(ctx context.Context) error {
 		return separator(ctx, inputChan, outputs)
 	})
+
 	return nil
 }
 
@@ -118,12 +129,13 @@ func (c *conv) Run(ctx context.Context) error {
 	errChan := make(chan error, len(c.runners))
 
 	var waitGroup sync.WaitGroup
-	waitGroup.Add(len(c.runners))
 
+	waitGroup.Add(len(c.runners))
 	for _, runner := range c.runners {
 		r := runner
 		go func() {
 			defer waitGroup.Done()
+
 			if err := r(runCtx); err != nil {
 				errChan <- err
 			}
@@ -157,7 +169,9 @@ func (c *conv) Send(inputID string, data string) error {
 	if !found {
 		return fmt.Errorf("%w", ErrChanNotFound)
 	}
+
 	targetChan <- data
+
 	return nil
 }
 
@@ -166,9 +180,11 @@ func (c *conv) Recv(outputID string) (string, error) {
 	if !found {
 		return "", fmt.Errorf("%w", ErrChanNotFound)
 	}
+
 	value, ok := <-outputChan
 	if !ok {
 		return Undefined, nil
 	}
+
 	return value, nil
 }
