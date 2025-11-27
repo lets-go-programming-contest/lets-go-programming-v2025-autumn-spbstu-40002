@@ -21,14 +21,12 @@ func LoadConfigFromFile(path string) (*Config, error) {
 
 	loadedConfig, decodeErr := DecodeConfig(fileHandle)
 	
-	closeError := fileHandle.Close()
-	if decodeErr != nil {
+if closeError := fileHandle.Close(); decodeErr != nil {
 		if closeError != nil {
-			return nil, fmt.Errorf("decode config error: %v; close error: %w", decodeErr, closeError)
+			return nil, fmt.Errorf("decode config error: %w; close error: %v", decodeErr, closeError)
 		}
 		return nil, decodeErr
-	}
-	if closeError != nil {
+	} else if closeError != nil {
 		return nil, fmt.Errorf("failed to close config file: %w", closeError)
 	}
 
