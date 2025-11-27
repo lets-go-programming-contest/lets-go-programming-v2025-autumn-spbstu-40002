@@ -34,17 +34,18 @@ func LoadXML(path string) (Document, error) {
 	if err != nil {
 		return Document{}, fmt.Errorf("%w: %s", ErrOpenInputXML, err.Error())
 	}
+
 	defer func() { _ = file.Close() }()
 
 	var doc Document
 
 	dec := xml.NewDecoder(file)
-	dec.CharsetReader = func(charset string, r io.Reader) (io.Reader, error) {
+	dec.CharsetReader = func(charset string, rdr io.Reader) (io.Reader, error) {
 		switch strings.ToLower(strings.ReplaceAll(charset, "-", "")) {
 		case "utf8", "utf-8":
-			return r, nil
+			return rdr, nil
 		case "windows1251", "cp1251":
-			return charmap.Windows1251.NewDecoder().Reader(r), nil
+			return charmap.Windows1251.NewDecoder().Reader(rdr), nil
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrDecodeInputXML, ErrUnsupportedCharset.Error())
 		}
