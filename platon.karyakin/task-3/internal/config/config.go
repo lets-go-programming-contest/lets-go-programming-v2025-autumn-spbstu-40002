@@ -19,9 +19,20 @@ func LoadConfigFromFile(path string) (*Config, error) {
 		return nil, fmt.Errorf("unable to open config file: %w", err)
 	}
 
-	defer func() { _ = fileHandle.Close() }()
+	loadedConfig, decodeErr := DecodeConfig(fileHandle)
+	
+	closeError := fileHandle.Close()
+	if decodeErr != nil {
+		if closeError != nil {
+			return nil, fmt.Errorf("decode config error: %v; close error: %w", decodeErr, closeError)
+		}
+		return nil, decodeErr
+	}
+	if closeError != nil {
+		return nil, fmt.Errorf("failed to close config file: %w", closeError)
+	}
 
-	return DecodeConfig(fileHandle)
+	return loadedConfig, nil
 }
 
 func DecodeConfig(r io.Reader) (*Config, error) {
