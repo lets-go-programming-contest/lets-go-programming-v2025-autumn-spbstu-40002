@@ -12,29 +12,19 @@ import (
 
 var ErrParseValue = errors.New("parse currency value")
 
-type CurrencyOut struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
-
-func MapAndSort(doc cbr.Document) ([]CurrencyOut, error) {
-	out := make([]CurrencyOut, 0, len(doc.Valutes))
+func Sort(doc cbr.Document) ([]cbr.Valute, error) {
+	out := make([]cbr.Valute, 0, len(doc.Valutes))
 
 	for _, val := range doc.Valutes {
-		parsed, err := strconv.ParseFloat(
-			strings.ReplaceAll(strings.TrimSpace(val.Value), ",", "."),
-			64,
-		)
+		num := strings.ReplaceAll(val.ValueRaw, ",", ".")
+		parsed, err := strconv.ParseFloat(num, 64)
+
 		if err != nil {
-			return nil, fmt.Errorf("%w: %q", ErrParseValue, val.Value)
+			return nil, fmt.Errorf("%s: %w", ErrParseValue, err)
 		}
 
-		out = append(out, CurrencyOut{
-			NumCode:  val.NumCode,
-			CharCode: val.CharCode,
-			Value:    parsed,
-		})
+		val.Value = parsed
+		out = append(out, val)
 	}
 
 	sort.Slice(out, func(i, j int) bool {

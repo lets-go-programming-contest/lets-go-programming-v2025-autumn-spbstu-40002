@@ -9,13 +9,11 @@ import (
 	"strings"
 
 	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/transform"
 )
 
 var (
-	ErrOpenInputXML       = errors.New("open input xml")
-	ErrDecodeInputXML     = errors.New("decode input xml")
-	ErrUnsupportedCharset = errors.New("unsupported charset")
+	ErrOpenInputXML   = errors.New("open input xml")
+	ErrDecodeInputXML = errors.New("decode input xml")
 )
 
 type Document struct {
@@ -23,39 +21,39 @@ type Document struct {
 }
 
 type Valute struct {
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
+	NumCode  int     `xml:"NumCode" json:"num_code"`
+	CharCode string  `xml:"CharCode" json:"char_code"`
+	Value    float64 `xml:"-" json:"value"`
+	ValueRaw string  `xml:"Value" json:"-"`
 }
 
-func ReadFile(path string) (Document, error) {
-	file, err := os.Open(path)
+func LoadXML(path string) (Document, error) {
+	f, err := os.Open(path)
 	if err != nil {
-		return Document{}, fmt.Errorf("%s: %w", ErrOpenInputXML.Error(), err)
+		return Document{}, fmt.Errorf("%s: %w", ErrOpenInputXML, err)
 	}
 
-	defer func() {
-		_ = file.Close()
-	}()
+	defer func() { _ = f.Close() }()
 
-	decoder := xml.NewDecoder(file)
-	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+	dec := xml.NewDecoder(f)
+
+	dec.CharsetReader = func(charset string, in io.Reader) (io.Reader, error) {
 		cs := strings.ToLower(strings.TrimSpace(charset))
 		switch cs {
-		case "utf-8", "utf8", "":
-			return input, nil
+		case "", "utf-8", "utf8":
+			return in, nil
 		case "windows-1251", "windows1251", "cp1251":
-			return transform.NewReader(input, charmap.Windows1251.NewDecoder()), nil
+			return charmap.Windows1251.NewDecoder().Reader(in), nil
 		default:
-			return nil, fmt.Errorf("%w: %q", ErrUnsupportedCharset, charset)
+			return nil, fmt.Errorf("%s: %s", ErrDecodeInputXML, "unsupported charset")
 		}
 	}
 
-	var doc Document
+	var d Document
 
-	if err := decoder.Decode(&doc); err != nil {
-		return Document{}, fmt.Errorf("%s: %w", ErrDecodeInputXML.Error(), err)
+	if err := dec.Decode(&d); err != nil {
+		return Document{}, fmt.Errorf("%s: %w", ErrDecodeInputXML, err)
 	}
 
-	return doc, nil
+	return d, nil
 }

@@ -6,45 +6,29 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/megurumacabre/task-3/internal/convert"
-)
-
-const (
-	permDir  = 0o755
-	permFile = 0o644
 )
 
 var (
 	ErrMakeOutputDir    = errors.New("make output dir")
 	ErrCreateOutputFile = errors.New("create output file")
-	ErrWriteJSON        = errors.New("write output json")
+	ErrWriteJSON        = errors.New("write json")
 )
 
-func WriteJSON(path string, data []convert.CurrencyOut) error {
-	dir := filepath.Dir(path)
-	if dir != "." && dir != "" {
-		if err := os.MkdirAll(dir, permDir); err != nil {
-			return fmt.Errorf("%s: %w", ErrMakeOutputDir.Error(), err)
-		}
+func WriteJSON(path string, data any) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("%s: %w", ErrMakeOutputDir, err)
 	}
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, permFile)
+	f, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("%s: %w", ErrCreateOutputFile.Error(), err)
+		return fmt.Errorf("%s: %w", ErrCreateOutputFile, err)
 	}
+	defer func() { _ = f.Close() }()
 
-	defer func() {
-		_ = file.Close()
-	}()
-
-	blob, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return fmt.Errorf("%s: %w", ErrWriteJSON.Error(), err)
-	}
-
-	if _, err := file.Write(append(blob, '\n')); err != nil {
-		return fmt.Errorf("%s: %w", ErrWriteJSON.Error(), err)
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(data); err != nil {
+		return fmt.Errorf("%s: %w", ErrWriteJSON, err)
 	}
 
 	return nil
