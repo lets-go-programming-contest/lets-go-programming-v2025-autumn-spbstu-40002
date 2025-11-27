@@ -25,8 +25,6 @@ var (
 	ErrChannelNotFound = errors.New("chan not found")
 )
 
-const defaultRunnerCap = 8
-
 type conv struct {
 	mu      sync.Mutex
 	startMu sync.Mutex
@@ -37,8 +35,11 @@ type conv struct {
 
 func New(size int) *conv {
 	return &conv{
+		mu:      sync.Mutex{},
+		startMu: sync.Mutex{},
+		started: false,
 		chans:   make(map[string]chan string, size),
-		runners: make([]func(context.Context) error, 0, defaultRunnerCap),
+		runners: make([]func(context.Context) error, 0),
 	}
 }
 
@@ -61,12 +62,12 @@ func (c *conv) getChan(chanID string) (chan string, bool) {
 	defer c.mu.Unlock()
 
 	ch, found := c.chans[chanID]
+
 	return ch, found
 }
 
 func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, outputID string) error {
 	inputChan := c.ensureChan(inputID)
-
 	outputChan := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
@@ -78,11 +79,9 @@ func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, output
 
 func (c *conv) RegisterMultiplexer(multiplexer MultiplexerFunc, inputIDs []string, outputID string) error {
 	inputs := make([]chan string, 0, len(inputIDs))
-
 	for _, id := range inputIDs {
 		inputs = append(inputs, c.ensureChan(id))
 	}
-
 	outputChan := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
@@ -94,9 +93,7 @@ func (c *conv) RegisterMultiplexer(multiplexer MultiplexerFunc, inputIDs []strin
 
 func (c *conv) RegisterSeparator(separator SeparatorFunc, inputID string, outputIDs []string) error {
 	inputChan := c.ensureChan(inputID)
-
 	outputs := make([]chan string, 0, len(outputIDs))
-
 	for _, id := range outputIDs {
 		outputs = append(outputs, c.ensureChan(id))
 	}
@@ -133,7 +130,7 @@ func (c *conv) Recv(chanID string) (string, error) {
 	return val, nil
 }
 
-func (c *conv) runAll(ctx context.Context) (done <-chan struct{}, errOnce <-chan error) {
+func (c *conv) runAll(ctx context.Context) (<-chan struct{}, <-chan error) {
 	var waitGroup sync.WaitGroup
 
 	waitGroup.Add(len(c.runners))
@@ -169,8 +166,10 @@ func (c *conv) Run(ctx context.Context) error {
 	c.startMu.Lock()
 	if c.started {
 		c.startMu.Unlock()
+
 		return ErrAlreadyRunning
 	}
+
 	c.started = true
 	c.startMu.Unlock()
 
