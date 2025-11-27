@@ -19,9 +19,7 @@ func main() {
 	exchangeRates, errLoadXML := bank.LoadFromXML(appConfig.Input)
 	must.Must("load exchange XML", errLoadXML)
 
-	if errSave := exchangeRates.WriteJSONFile(appConfig.Output); errSave != nil {
-		must.Must("save output json", errSave)
-	}
+	must.Must("save output json", exchangeRates.WriteJSONFile(appConfig.Output))
 
 	fmt.Println("ok")
 }
