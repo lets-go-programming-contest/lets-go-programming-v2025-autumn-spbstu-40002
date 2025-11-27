@@ -19,17 +19,14 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-input:
+		case value, ok := <-input:
 			if !ok {
 				return nil
 			}
-
-			if strings.Contains(v, "no decorator") {
-				return fmt.Errorf("no decorator: %w", ErrDecorator)
+			if strings.Contains(value, "no decorator") {
+				return fmt.Errorf("can't be decorated")
 			}
-
-			outVal := "decorated: " + v
-
+			outVal := "decorated: " + value
 			select {
 			case <-ctx.Done():
 				return nil
@@ -39,79 +36,61 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	}
 }
 
-func consumeOne(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-	errOnce chan<- error,
-	stop <-chan struct{},
-) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-stop:
-			return
-		case v, ok := <-input:
-			if !ok {
-				return
-			}
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+	var waitGroup sync.WaitGroup
+	errOnce := make(chan error, 1)
+	stop := make(chan struct{})
 
-			if strings.Contains(v, "no multiplexer") {
-				select {
-				case errOnce <- fmt.Errorf("no multiplexer: %w", ErrMultiplexer):
-				default:
-				}
-
-				return
-			}
-
+	consume := func(in chan string) {
+		defer waitGroup.Done()
+		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-stop:
 				return
-			case output <- v:
+			case value, ok := <-in:
+				if !ok {
+					return
+				}
+				if strings.Contains(value, "no multiplexer") {
+					select {
+					case errOnce <- fmt.Errorf("no multiplexer"):
+					default:
+					}
+					return
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-stop:
+					return
+				case output <- value:
+				}
 			}
 		}
 	}
-}
 
-func MergeMultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	if len(inputs) == 0 {
-		return nil
-	}
-
-	var wg sync.WaitGroup
-
-	errOnce := make(chan error, 1)
-	stopAll := make(chan struct{})
-
+	waitGroup.Add(len(inputs))
 	for _, ch := range inputs {
-		in := ch
-
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-			consumeOne(ctx, in, output, errOnce, stopAll)
-		}()
+		inputChan := ch
+		go consume(inputChan)
 	}
 
 	done := make(chan struct{})
-
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(done)
 	}()
 
 	select {
 	case <-ctx.Done():
-		close(stopAll)
+		close(stop)
 		<-done
-
 		return nil
-
 	case <-done:
 		select {
 		case err := <-errOnce:
@@ -122,42 +101,32 @@ func MergeMultiplexerFunc(ctx context.Context, inputs []chan string, output chan
 	}
 }
 
-func RoundRobinSeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
 		return nil
 	}
-
-	i := 0
-
+	idx := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-input:
+		case value, ok := <-input:
 			if !ok {
 				return nil
 			}
-
-			if strings.Contains(v, "no separator") {
-				return fmt.Errorf("no separator: %w", ErrSeparator)
+			if strings.Contains(value, "no separator") {
+				return fmt.Errorf("no separator")
 			}
-
-			target := outputs[i]
-
+			target := outputs[idx]
 			select {
 			case <-ctx.Done():
 				return nil
-			case target <- v:
+			case target <- value:
 			}
-
-			i++
-
-			if i == len(outputs) {
-				i = 0
+			idx++
+			if idx == len(outputs) {
+				idx = 0
 			}
 		}
 	}
 }
-
-var MultiplexerFunc = MergeMultiplexerFunc
-var SeparatorFunc = RoundRobinSeparatorFunc
