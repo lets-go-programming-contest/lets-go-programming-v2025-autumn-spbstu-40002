@@ -24,10 +24,13 @@ func Load(path string) (AppConfig, error) {
 	if err != nil {
 		return AppConfig{}, fmt.Errorf("%w: %s", ErrOpenConfig, err.Error())
 	}
+
 	defer func() { _ = file.Close() }()
 
 	var cfg AppConfig
+
 	dec := yaml.NewDecoder(file)
+
 	if err := dec.Decode(&cfg); err != nil {
 		return AppConfig{}, fmt.Errorf("%w: %s", ErrDecodeConfigYAML, err.Error())
 	}

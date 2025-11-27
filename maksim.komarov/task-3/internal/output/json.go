@@ -23,14 +23,16 @@ func WriteJSON(path string, data []cbr.Currency) error {
 		return fmt.Errorf("%w: %s", ErrMakeOutputDir, err.Error())
 	}
 
-	f, err := os.Create(filepath.Clean(path))
+	file, err := os.Create(filepath.Clean(path))
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrCreateOutputFile, err.Error())
 	}
-	defer func() { _ = f.Close() }()
 
-	enc := json.NewEncoder(f)
+	defer func() { _ = file.Close() }()
+
+	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
+
 	if err := enc.Encode(data); err != nil {
 		return fmt.Errorf("%w: %s", ErrWriteJSON, err.Error())
 	}

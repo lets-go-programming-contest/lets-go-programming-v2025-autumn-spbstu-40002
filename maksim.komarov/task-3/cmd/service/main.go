@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	"github.com/megurumacabre/task-3/internal/cbr"
 	"github.com/megurumacabre/task-3/internal/config"
@@ -38,6 +37,4 @@ func main() {
 	if err := output.WriteJSON(cfg.OutputFile, items); err != nil {
 		panic(err)
 	}
-
-	log.Println("done")
 }
