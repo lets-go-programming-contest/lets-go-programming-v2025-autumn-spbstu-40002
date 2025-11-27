@@ -13,10 +13,10 @@ import (
 var ErrEmptyConfigFlag = errors.New("config flag is empty")
 
 func main() {
-	configPath := flag.String("config", "", "path to YAML config file")
+	configPath := flag.String("config", "config.yaml", "path to YAML config file")
 	flag.Parse()
 
-	if *configPath == "" {
+	if configPath == nil || *configPath == "" {
 		panic(ErrEmptyConfigFlag)
 	}
 
@@ -25,17 +25,17 @@ func main() {
 		panic(err)
 	}
 
-	doc, err := cbr.ReadFile(cfg.InputFile)
+	doc, err := cbr.LoadXML(cfg.InputFile)
 	if err != nil {
 		panic(err)
 	}
 
-	data, err := convert.MapAndSort(doc)
+	valutes, err := convert.Sort(doc)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := output.WriteJSON(cfg.OutputFile, data); err != nil {
+	if err := output.WriteJSON(cfg.OutputFile, valutes); err != nil {
 		panic(err)
 	}
 }
