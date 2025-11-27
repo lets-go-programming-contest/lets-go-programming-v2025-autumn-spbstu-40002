@@ -10,18 +10,17 @@ import (
 )
 
 type Bank struct {
-	Date       string     `xml:"Date,attr"`
-	Name       string     `xml:"name,attr"`
-	Currencies []Currency `xml:"Valute"`
+	Date       string     `xml:"Date,attr" json:"date"`
+	Name       string     `xml:"name,attr" json:"name"`
+	Currencies []Currency `xml:"Valute" json:"currencies"`
 }
 
 type Currency struct {
-	ID       string `xml:"ID,attr"`
-	NumCode  int    `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
-	Nominal  int    `xml:"Nominal"`
-	Name     string `xml:"Name"`
+	ID       string `xml:"ID,attr" json:"id"`
+	NumCode  int    `xml:"NumCode" json:"num_code"`
+	CharCode string `xml:"CharCode" json:"char_code"`
+	Value    string `xml:"Value" json:"value"`
+	Nominal  int    `xml:"Nominal" json:"nominal"`
 }
 
 func charsetReader(charset string, reader io.Reader) (io.Reader, error) {
