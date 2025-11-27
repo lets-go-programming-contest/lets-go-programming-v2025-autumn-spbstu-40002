@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/megurumacabre/task-3/internal/cbr"
 )
 
 var (
@@ -14,21 +16,23 @@ var (
 	ErrWriteJSON        = errors.New("write json")
 )
 
-func WriteJSON(path string, data any) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("%s: %w", ErrMakeOutputDir, err)
+const dirPerm = 0o755
+
+func WriteJSON(path string, data []cbr.Currency) error {
+	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
+		return fmt.Errorf("%w: %s", ErrMakeOutputDir, err.Error())
 	}
 
-	f, err := os.Create(path)
+	f, err := os.Create(filepath.Clean(path))
 	if err != nil {
-		return fmt.Errorf("%s: %w", ErrCreateOutputFile, err)
+		return fmt.Errorf("%w: %s", ErrCreateOutputFile, err.Error())
 	}
 	defer func() { _ = f.Close() }()
 
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(data); err != nil {
-		return fmt.Errorf("%s: %w", ErrWriteJSON, err)
+		return fmt.Errorf("%w: %s", ErrWriteJSON, err.Error())
 	}
 
 	return nil
