@@ -6,13 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-
-	"github.com/megurumacabre/task-5/pkg/conveyer"
 )
-
-type DecoratorFunc = conveyer.DecoratorFunc
-type MultiplexerFunc = conveyer.MultiplexerFunc
-type SeparatorFunc = conveyer.SeparatorFunc
 
 var (
 	ErrDecorator   = errors.New("decorator failed")
