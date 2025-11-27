@@ -40,7 +40,7 @@ type conv struct {
 	startMux   sync.Mutex
 }
 
-func New(size int) Conveyer {
+func New(size int) *conv {
 	return &conv{
 		bufferSize: size,
 		chans:      make(map[string]chan string),
@@ -51,64 +51,64 @@ func New(size int) Conveyer {
 	}
 }
 
-func (c *conv) ensureChan(chanID string) chan string {
+func (c *conv) ensureChan(id string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	existing, found := c.chans[chanID]
+	existing, found := c.chans[id]
 	if !found {
 		existing = make(chan string, c.bufferSize)
-		c.chans[chanID] = existing
+		c.chans[id] = existing
 	}
 
 	return existing
 }
 
-func (c *conv) getChan(chanID string) (chan string, bool) {
+func (c *conv) getChan(id string) (chan string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	existing, found := c.chans[chanID]
+	existing, found := c.chans[id]
 
 	return existing, found
 }
 
-func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, outputID string) error {
-	inputChan := c.ensureChan(inputID)
-	outputChan := c.ensureChan(outputID)
+func (c *conv) RegisterDecorator(fn DecoratorFunc, inputID string, outputID string) error {
+	in := c.ensureChan(inputID)
+	out := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return decorator(ctx, inputChan, outputChan)
+		return fn(ctx, in, out)
 	})
 
 	return nil
 }
 
-func (c *conv) RegisterMultiplexer(multiplexer MultiplexerFunc, inputIDs []string, outputID string) error {
+func (c *conv) RegisterMultiplexer(fn MultiplexerFunc, inputIDs []string, outputID string) error {
 	inputs := make([]chan string, 0, len(inputIDs))
-	for _, oneID := range inputIDs {
-		inputs = append(inputs, c.ensureChan(oneID))
+	for _, one := range inputIDs {
+		inputs = append(inputs, c.ensureChan(one))
 	}
 
-	outputChan := c.ensureChan(outputID)
+	out := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return multiplexer(ctx, inputs, outputChan)
+		return fn(ctx, inputs, out)
 	})
 
 	return nil
 }
 
-func (c *conv) RegisterSeparator(separator SeparatorFunc, inputID string, outputIDs []string) error {
-	inputChan := c.ensureChan(inputID)
+func (c *conv) RegisterSeparator(fn SeparatorFunc, inputID string, outputIDs []string) error {
+	in := c.ensureChan(inputID)
 
-	outputs := make([]chan string, 0, len(outputIDs))
-	for _, oneID := range outputIDs {
-		outputs = append(outputs, c.ensureChan(oneID))
+	outs := make([]chan string, 0, len(outputIDs))
+	for _, one := range outputIDs {
+		outs = append(outs, c.ensureChan(one))
 	}
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return separator(ctx, inputChan, outputs)
+		return fn(ctx, in, outs)
 	})
 
 	return nil
@@ -118,6 +118,7 @@ func (c *conv) Run(ctx context.Context) error {
 	c.startMux.Lock()
 	if c.started {
 		c.startMux.Unlock()
+
 		return ErrAlreadyRunning
 	}
 	c.started = true
@@ -129,20 +130,22 @@ func (c *conv) Run(ctx context.Context) error {
 	errChan := make(chan error, len(c.runners))
 
 	var waitGroup sync.WaitGroup
-
 	waitGroup.Add(len(c.runners))
-	for _, runner := range c.runners {
-		r := runner
+
+	for _, r := range c.runners {
+		runner := r
+
 		go func() {
 			defer waitGroup.Done()
 
-			if err := r(runCtx); err != nil {
+			if err := runner(runCtx); err != nil {
 				errChan <- err
 			}
 		}()
 	}
 
 	var firstErr error
+
 	select {
 	case <-ctx.Done():
 		firstErr = fmt.Errorf("context canceled: %w", ctx.Err())
@@ -165,23 +168,23 @@ func (c *conv) Run(ctx context.Context) error {
 }
 
 func (c *conv) Send(inputID string, data string) error {
-	targetChan, found := c.getChan(inputID)
+	ch, found := c.getChan(inputID)
 	if !found {
 		return fmt.Errorf("%w", ErrChanNotFound)
 	}
 
-	targetChan <- data
+	ch <- data
 
 	return nil
 }
 
 func (c *conv) Recv(outputID string) (string, error) {
-	outputChan, found := c.getChan(outputID)
+	ch, found := c.getChan(outputID)
 	if !found {
 		return "", fmt.Errorf("%w", ErrChanNotFound)
 	}
 
-	value, ok := <-outputChan
+	value, ok := <-ch
 	if !ok {
 		return Undefined, nil
 	}
