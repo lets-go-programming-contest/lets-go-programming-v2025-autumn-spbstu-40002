@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -20,14 +21,14 @@ func LoadConfigFromFile(path string) (*Config, error) {
 	}
 
 	loadedConfig, decodeErr := DecodeConfig(fileHandle)
-	
-if closeError := fileHandle.Close(); decodeErr != nil {
-		if closeError != nil {
-			return nil, fmt.Errorf("decode config error: %w; close error: %v", decodeErr, closeError)
+	if closeErr := fileHandle.Close(); decodeErr != nil {
+		if closeErr != nil {
+			return nil, fmt.Errorf("failed to load config: %w", errors.Join(decodeErr, closeErr))
 		}
-		return nil, decodeErr
-	} else if closeError != nil {
-		return nil, fmt.Errorf("failed to close config file: %w", closeError)
+
+		return nil, fmt.Errorf("failed to load config: %w", decodeErr)
+	} else if closeErr != nil {
+		return nil, fmt.Errorf("failed to close config file: %w", closeErr)
 	}
 
 	return loadedConfig, nil
