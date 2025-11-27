@@ -6,141 +6,154 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/megurumacabre/task-5/pkg/conveyer"
 )
 
-var ErrDecorator = errors.New("decorator failed")
-var ErrMultiplexer = errors.New("multiplexer failed")
-var ErrSeparator = errors.New("separator failed")
+type DecoratorFunc = conveyer.DecoratorFunc
+type MultiplexerFunc = conveyer.MultiplexerFunc
+type SeparatorFunc = conveyer.SeparatorFunc
 
-func PrefixDecoratorFunc(prefix string) func(context.Context, <-chan string, chan<- string) error {
-	return func(ctx context.Context, input <-chan string, output chan<- string) error {
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
+var (
+	ErrDecorator   = errors.New("decorator failed")
+	ErrMultiplexer = errors.New("multiplexer failed")
+	ErrSeparator   = errors.New("separator failed")
+)
 
-			case v, ok := <-input:
-				if !ok {
-					return nil
-				}
-
-				if strings.Contains(v, "no decorator") {
-					return fmt.Errorf("no decorator: %w", ErrDecorator)
-				}
-
-				val := prefix + v
-
-				select {
-				case <-ctx.Done():
-					return nil
-				case output <- val:
-				}
-			}
-		}
-	}
-}
-
-func MergeMultiplexerFunc() func(context.Context, []<-chan string, chan<- string) error {
-	return func(ctx context.Context, inputs []<-chan string, output chan<- string) error {
-		var wg sync.WaitGroup
-
-		errOnce := make(chan error, 1)
-
-		for _, ch := range inputs {
-			in := ch
-
-			wg.Add(1)
-
-			go func() {
-				defer wg.Done()
-
-				for {
-					select {
-					case <-ctx.Done():
-						return
-
-					case v, ok := <-in:
-						if !ok {
-							return
-						}
-
-						if strings.Contains(v, "no multiplexer") {
-							select {
-							case errOnce <- fmt.Errorf("no multiplexer: %w", ErrMultiplexer):
-							default:
-							}
-
-							return
-						}
-
-						select {
-						case <-ctx.Done():
-							return
-						case output <- v:
-						}
-					}
-				}
-			}()
-		}
-
-		done := make(chan struct{})
-
-		go func() {
-			wg.Wait()
-			close(done)
-		}()
-
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	for {
 		select {
 		case <-ctx.Done():
-			<-done
-
 			return nil
 
-		case <-done:
-			select {
-			case err := <-errOnce:
-				return err
-			default:
+		case value, ok := <-input:
+			if !ok {
 				return nil
+			}
+
+			if strings.Contains(value, "no decorator") {
+				return fmt.Errorf("no decorator: %w", ErrDecorator)
+			}
+
+			outVal := "decorated: " + value
+
+			select {
+			case <-ctx.Done():
+				return nil
+			case output <- outVal:
 			}
 		}
 	}
 }
 
-func RoundRobinSeparatorFunc() func(context.Context, <-chan string, []chan<- string) error {
-	return func(ctx context.Context, input <-chan string, outputs []chan<- string) error {
-		if len(outputs) == 0 {
+func consumeOne(ctx context.Context, input chan string, output chan string, errOnce chan<- error, stop <-chan struct{}) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-stop:
+			return
+		case value, ok := <-input:
+			if !ok {
+				return
+			}
+
+			if strings.Contains(value, "no multiplexer") {
+				select {
+				case errOnce <- fmt.Errorf("no multiplexer: %w", ErrMultiplexer):
+				default:
+				}
+
+				return
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case <-stop:
+				return
+			case output <- value:
+			}
+		}
+	}
+}
+
+func MergeMultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	var waitGroup sync.WaitGroup
+
+	errOnce := make(chan error, 1)
+	stopAll := make(chan struct{})
+
+	for _, ch := range inputs {
+		inCh := ch
+
+		waitGroup.Add(1)
+
+		go func() {
+			defer waitGroup.Done()
+			consumeOne(ctx, inCh, output, errOnce, stopAll)
+		}()
+	}
+
+	done := make(chan struct{})
+
+	go func() {
+		waitGroup.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		close(stopAll)
+		<-done
+		return nil
+
+	case <-done:
+		select {
+		case err := <-errOnce:
+			return err
+		default:
 			return nil
 		}
+	}
+}
 
-		idx := 0
+func RoundRobinSeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	if len(outputs) == 0 {
+		return nil
+	}
 
-		for {
+	index := 0
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+
+		case value, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			if strings.Contains(value, "no separator") {
+				return fmt.Errorf("no separator: %w", ErrSeparator)
+			}
+
+			target := outputs[index]
+
 			select {
 			case <-ctx.Done():
 				return nil
+			case target <- value:
+			}
 
-			case v, ok := <-input:
-				if !ok {
-					return nil
-				}
-
-				if strings.Contains(v, "no separator") {
-					return fmt.Errorf("no separator: %w", ErrSeparator)
-				}
-
-				target := outputs[idx]
-
-				select {
-				case <-ctx.Done():
-					return nil
-				case target <- v:
-				}
-
-				idx++
-				if idx == len(outputs) {
-					idx = 0
-				}
+			index++
+			if index == len(outputs) {
+				index = 0
 			}
 		}
 	}
