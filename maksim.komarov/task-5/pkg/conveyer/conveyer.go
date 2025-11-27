@@ -37,9 +37,6 @@ type conv struct {
 
 func New(size int) *conv {
 	return &conv{
-		mu:      sync.Mutex{},
-		startMu: sync.Mutex{},
-		started: false,
 		chans:   make(map[string]chan string, size),
 		runners: make([]func(context.Context) error, 0, defaultRunnerCap),
 	}
@@ -48,51 +45,66 @@ func New(size int) *conv {
 func (c *conv) ensureChan(chanID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if ch, ok := c.chans[chanID]; ok {
-		return ch
+
+	if existing, found := c.chans[chanID]; found {
+		return existing
 	}
-	ch := make(chan string)
-	c.chans[chanID] = ch
-	return ch
+
+	newChan := make(chan string)
+	c.chans[chanID] = newChan
+
+	return newChan
 }
 
 func (c *conv) getChan(chanID string) (chan string, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	ch, ok := c.chans[chanID]
-	return ch, ok
+
+	ch, found := c.chans[chanID]
+	return ch, found
 }
 
 func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, outputID string) error {
-	in := c.ensureChan(inputID)
-	out := c.ensureChan(outputID)
+	inputChan := c.ensureChan(inputID)
+
+	outputChan := c.ensureChan(outputID)
+
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return decorator(ctx, in, out)
+		return decorator(ctx, inputChan, outputChan)
 	})
+
 	return nil
 }
 
 func (c *conv) RegisterMultiplexer(multiplexer MultiplexerFunc, inputIDs []string, outputID string) error {
 	inputs := make([]chan string, 0, len(inputIDs))
+
 	for _, id := range inputIDs {
 		inputs = append(inputs, c.ensureChan(id))
 	}
-	out := c.ensureChan(outputID)
+
+	outputChan := c.ensureChan(outputID)
+
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return multiplexer(ctx, inputs, out)
+		return multiplexer(ctx, inputs, outputChan)
 	})
+
 	return nil
 }
 
 func (c *conv) RegisterSeparator(separator SeparatorFunc, inputID string, outputIDs []string) error {
-	in := c.ensureChan(inputID)
-	outs := make([]chan string, 0, len(outputIDs))
+	inputChan := c.ensureChan(inputID)
+
+	outputs := make([]chan string, 0, len(outputIDs))
+
 	for _, id := range outputIDs {
-		outs = append(outs, c.ensureChan(id))
+		outputs = append(outputs, c.ensureChan(id))
 	}
+
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return separator(ctx, in, outs)
+		return separator(ctx, inputChan, outputs)
 	})
+
 	return nil
 }
 
@@ -101,7 +113,9 @@ func (c *conv) Send(chanID string, value string) error {
 	if !ok {
 		return fmt.Errorf("%w: send: %s", ErrChannelNotFound, chanID)
 	}
+
 	ch <- value
+
 	return nil
 }
 
@@ -110,35 +124,45 @@ func (c *conv) Recv(chanID string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("%w: recv: %s", ErrChannelNotFound, chanID)
 	}
-	v, ok := <-ch
-	if !ok {
+
+	val, opened := <-ch
+	if !opened {
 		return "", nil
 	}
-	return v, nil
+
+	return val, nil
 }
 
-func (c *conv) runAll(ctx context.Context) (chan struct{}, chan error) {
-	var wg sync.WaitGroup
-	wg.Add(len(c.runners))
-	errOnce := make(chan error, 1)
+func (c *conv) runAll(ctx context.Context) (done <-chan struct{}, errOnce <-chan error) {
+	var waitGroup sync.WaitGroup
+
+	waitGroup.Add(len(c.runners))
+
+	errChan := make(chan error, 1)
+
 	for _, r := range c.runners {
-		run := r
+		runFunc := r
+
 		go func() {
-			defer wg.Done()
-			if err := run(ctx); err != nil {
+			defer waitGroup.Done()
+
+			if err := runFunc(ctx); err != nil {
 				select {
-				case errOnce <- err:
+				case errChan <- err:
 				default:
 				}
 			}
 		}()
 	}
-	done := make(chan struct{})
+
+	doneChan := make(chan struct{})
+
 	go func() {
-		wg.Wait()
-		close(done)
+		waitGroup.Wait()
+		close(doneChan)
 	}()
-	return done, errOnce
+
+	return doneChan, errChan
 }
 
 func (c *conv) Run(ctx context.Context) error {
