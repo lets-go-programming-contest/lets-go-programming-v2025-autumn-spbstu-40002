@@ -1,8 +1,8 @@
 package main
 
 import (
-	"errors"
 	"flag"
+	"log"
 
 	"github.com/megurumacabre/task-3/internal/cbr"
 	"github.com/megurumacabre/task-3/internal/config"
@@ -10,13 +10,13 @@ import (
 	"github.com/megurumacabre/task-3/internal/output"
 )
 
-var ErrEmptyConfigFlag = errors.New("config flag is empty")
+var ErrEmptyConfigFlag = config.ErrEmptyConfigFlag
 
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to YAML config file")
 	flag.Parse()
 
-	if configPath == nil || *configPath == "" {
+	if *configPath == "" {
 		panic(ErrEmptyConfigFlag)
 	}
 
@@ -30,12 +30,14 @@ func main() {
 		panic(err)
 	}
 
-	valutes, err := convert.Sort(doc)
+	items, err := convert.ToUnifiedSorted(doc)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := output.WriteJSON(cfg.OutputFile, valutes); err != nil {
+	if err := output.WriteJSON(cfg.OutputFile, items); err != nil {
 		panic(err)
 	}
+
+	log.Println("done")
 }

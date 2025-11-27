@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrOpenConfig   = errors.New("open config file")
-	ErrDecodeConfig = errors.New("decode config")
+	ErrOpenConfig       = errors.New("open config")
+	ErrDecodeConfigYAML = errors.New("decode config yaml")
+	ErrEmptyConfigFlag  = errors.New("config flag is empty")
 )
 
 type AppConfig struct {
@@ -19,21 +20,16 @@ type AppConfig struct {
 }
 
 func Load(path string) (AppConfig, error) {
-	var cfg AppConfig
-
 	file, err := os.Open(path)
 	if err != nil {
-		return AppConfig{}, fmt.Errorf("%s: %w", ErrOpenConfig.Error(), err)
+		return AppConfig{}, fmt.Errorf("%w: %s", ErrOpenConfig, err.Error())
 	}
+	defer func() { _ = file.Close() }()
 
-	defer func() {
-		_ = file.Close()
-	}()
-
-	decoder := yaml.NewDecoder(file)
-
-	if err := decoder.Decode(&cfg); err != nil {
-		return AppConfig{}, fmt.Errorf("%s: %w", ErrOpenConfig.Error(), err)
+	var cfg AppConfig
+	dec := yaml.NewDecoder(file)
+	if err := dec.Decode(&cfg); err != nil {
+		return AppConfig{}, fmt.Errorf("%w: %s", ErrDecodeConfigYAML, err.Error())
 	}
 
 	return cfg, nil

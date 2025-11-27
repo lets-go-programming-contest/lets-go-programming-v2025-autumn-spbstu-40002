@@ -12,24 +12,20 @@ import (
 
 var ErrParseValue = errors.New("parse currency value")
 
-func Sort(doc cbr.Document) ([]cbr.Valute, error) {
-	out := make([]cbr.Valute, 0, len(doc.Valutes))
+func ToUnifiedSorted(doc cbr.Document) ([]cbr.Currency, error) {
+	vals := make([]cbr.Currency, 0, len(doc.Valutes))
 
-	for _, val := range doc.Valutes {
-		num := strings.ReplaceAll(val.ValueRaw, ",", ".")
+	for _, cur := range doc.Valutes {
+		num := strings.ReplaceAll(cur.ValueRaw, ",", ".")
 		parsed, err := strconv.ParseFloat(num, 64)
-
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", ErrParseValue, err)
+			return nil, fmt.Errorf("%w: %s", ErrParseValue, err.Error())
 		}
-
-		val.Value = parsed
-		out = append(out, val)
+		cur.Value = parsed
+		vals = append(vals, cur)
 	}
 
-	sort.Slice(out, func(i, j int) bool {
-		return out[i].Value > out[j].Value
-	})
+	sort.Slice(vals, func(i, j int) bool { return vals[i].Value > vals[j].Value })
 
-	return out, nil
+	return vals, nil
 }
