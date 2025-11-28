@@ -18,42 +18,42 @@ const FilePermissions = 0o755
 type outputBank []Currency
 
 func fetchOutput(b *Bank) (outputBank, error) {
-	out := make(outputBank, len(b.Currencies))
+	output := make(outputBank, len(b.Currencies))
 
-	for i, c := range b.Currencies {
-		v, err := strconv.ParseFloat(strings.Replace(c.Value, ",", ".", 1), 64)
+	for index, currency := range b.Currencies {
+		valueFloat, err := strconv.ParseFloat(strings.Replace(currency.Value, ",", ".", 1), 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid type of value: %w", err)
 		}
 
-		out[i] = c
-		out[i].Value = fmt.Sprintf("%.4f", v)
+		output[index] = currency
+		output[index].Value = strconv.FormatFloat(valueFloat, 'f', 4, 64)
 	}
 
-	return out, nil
+	return output, nil
 }
 
 func (b outputBank) sortByValueDown() {
 	sort.Slice(b, func(i, j int) bool {
-		vi, _ := strconv.ParseFloat(b[i].Value, 64)
-		vj, _ := strconv.ParseFloat(b[j].Value, 64)
-		return vi > vj
+		iValue, _ := strconv.ParseFloat(b[i].Value, 64)
+		jValue, _ := strconv.ParseFloat(b[j].Value, 64)
+
+		return iValue > jValue
 	})
 }
 
 func (b *Bank) EncodeJSON(writer io.Writer) error {
-	out, err := fetchOutput(b)
+	output, err := fetchOutput(b)
 	if err != nil {
 		return err
 	}
 
-	out.sortByValueDown()
+	output.sortByValueDown()
 
 	encoder := json.NewEncoder(writer)
-
 	encoder.SetIndent("", "  ")
 
-	if err := encoder.Encode(&out); err != nil {
+	if err := encoder.Encode(&output); err != nil {
 		return fmt.Errorf("encoding bank: %w", err)
 	}
 
