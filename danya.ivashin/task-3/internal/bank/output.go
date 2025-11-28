@@ -24,42 +24,42 @@ type outputCurrency struct {
 type outputBank []outputCurrency
 
 func fetchOutput(b *Bank) (outputBank, error) {
-	out := make(outputBank, len(b.Currencies))
+	output := make(outputBank, len(b.Currencies))
 
-	for i, currency := range b.Currencies {
+	for index, currency := range b.Currencies {
 		valueFloat, err := strconv.ParseFloat(strings.Replace(currency.Value, ",", ".", 1), 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid type of value: %w", err)
 		}
 
-		out[i] = outputCurrency{
+		output[index] = outputCurrency{
 			NumCode:  currency.NumCode,
 			CharCode: currency.CharCode,
 			Value:    valueFloat,
 		}
 	}
 
-	return out, nil
+	return output, nil
 }
 
 func (b outputBank) sortByValueDown() {
-	sort.Slice(b, func(i, j int) bool {
-		return b[i].Value > b[j].Value
+	sort.Slice(b, func(firstIndex, secondIndex int) bool {
+		return b[firstIndex].Value > b[secondIndex].Value
 	})
 }
 
 func (b *Bank) EncodeJSON(writer io.Writer) error {
-	out, err := fetchOutput(b)
+	output, err := fetchOutput(b)
 	if err != nil {
 		return err
 	}
 
-	out.sortByValueDown()
+	output.sortByValueDown()
 
 	encoder := json.NewEncoder(writer)
 	encoder.SetIndent("", "  ")
 
-	if err := encoder.Encode(&out); err != nil {
+	if err := encoder.Encode(&output); err != nil {
 		return fmt.Errorf("encoding bank: %w", err)
 	}
 
