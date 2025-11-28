@@ -14,6 +14,8 @@ var (
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -22,9 +24,11 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(value, "no decorator") {
 				return ErrCantDecorate
 			}
+
 			select {
 			case <-ctx.Done():
 				return nil
@@ -51,13 +55,16 @@ func consumeOne(
 			if !ok {
 				return
 			}
+
 			if strings.Contains(value, "no multiplexer") {
 				select {
 				case errOnce <- ErrNoMultiplexer:
 				default:
 				}
+
 				return
 			}
+
 			select {
 			case <-ctx.Done():
 				return
@@ -74,6 +81,8 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
+	defer close(output)
+
 	var waitGroup sync.WaitGroup
 
 	errOnce := make(chan error, 1)
@@ -82,11 +91,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	waitGroup.Add(len(inputs))
 
 	for _, ch := range inputs {
-		inputCh := ch
+		in := ch
 
 		go func() {
 			defer waitGroup.Done()
-			consumeOne(ctx, inputCh, output, errOnce, stop)
+			consumeOne(ctx, in, output, errOnce, stop)
 		}()
 	}
 
@@ -118,7 +127,13 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	outputIndex := 0
+	defer func() {
+		for _, ch := range outputs {
+			close(ch)
+		}
+	}()
+
+	index := 0
 
 	for {
 		select {
@@ -128,11 +143,12 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(value, "no separator") {
 				return ErrNoSeparator
 			}
 
-			target := outputs[outputIndex]
+			target := outputs[index]
 
 			select {
 			case <-ctx.Done():
@@ -140,9 +156,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			case target <- value:
 			}
 
-			outputIndex++
-			if outputIndex == len(outputs) {
-				outputIndex = 0
+			index++
+			if index == len(outputs) {
+				index = 0
 			}
 		}
 	}
