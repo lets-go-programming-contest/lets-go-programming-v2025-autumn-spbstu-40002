@@ -7,81 +7,41 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/Danya-byte/task-3/pkg/must"
 )
 
-type outputCurrency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+func (b *Bank) SortByValueDesc() {
+	sort.Slice(b.Currencies, func(i, j int) bool {
+		return b.Currencies[i].Value > b.Currencies[j].Value
+	})
 }
 
-type outputBank []outputCurrency
+func (b *Bank) EncodeJSON(w io.Writer) error {
+	b.SortByValueDesc()
 
-func fetchOutput(b *Bank) (outputBank, error) {
-	out := make(outputBank, len(b.Currencies))
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
 
-	for index, currency := range b.Currencies {
-		val, err := strconv.ParseFloat(strings.Replace(currency.Value, ",", ".", 1), 64)
-		if err != nil {
-			return nil, fmt.Errorf("invalid type of value: %w", err)
-		}
-
-		out[index] = outputCurrency{
-			NumCode:  currency.NumCode,
-			CharCode: currency.CharCode,
-			Value:    val,
-		}
-	}
-
-	return out, nil
-}
-
-func (b outputBank) sortByValueDown() {
-	sort.Slice(
-		b,
-		func(i, j int) bool {
-			return b[i].Value > b[j].Value
-		},
-	)
-}
-
-func (b *Bank) EncodeJSON(writer io.Writer) error {
-	out, err := fetchOutput(b)
-	if err != nil {
-		return err
-	}
-
-	out.sortByValueDown()
-
-	encoder := json.NewEncoder(writer)
-
-	encoder.SetIndent("", "  ")
-
-	if err := encoder.Encode(&out); err != nil {
+	if err := enc.Encode(b); err != nil {
 		return fmt.Errorf("encoding bank: %w", err)
 	}
-
 	return nil
 }
 
 func (b *Bank) EncodeFileJSON(path string) error {
-	const permissions = 0o755
+	const perm = 0o755
 
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, permissions); err != nil {
+	if err := os.MkdirAll(dir, perm); err != nil {
 		return fmt.Errorf("create dir: %w", err)
 	}
 
-	file, err := os.Create(path)
+	f, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("create file: %w", err)
 	}
+	defer must.Close(path, f)
 
-	defer must.Close(path, file)
-
-	return b.EncodeJSON(file)
+	return b.EncodeJSON(f)
 }
