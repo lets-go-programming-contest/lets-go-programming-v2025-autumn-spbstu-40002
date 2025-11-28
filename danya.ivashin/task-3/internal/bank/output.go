@@ -13,7 +13,7 @@ import (
 	"github.com/Danya-byte/task-3/pkg/must"
 )
 
-const FilePermissions = 0o755
+const Permissions = 0o755
 
 type outputCurrency struct {
 	NumCode  int     `json:"num_code"`
@@ -69,7 +69,7 @@ func (b *Bank) EncodeJSON(writer io.Writer) error {
 func (b *Bank) EncodeFileJSON(path string) error {
 	dir := filepath.Dir(path)
 
-	if err := os.MkdirAll(dir, FilePermissions); err != nil {
+	if err := os.MkdirAll(dir, Permissions); err != nil {
 		return fmt.Errorf("create dir: %w", err)
 	}
 
