@@ -3,9 +3,12 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 )
+
+var ErrCantBeDecorated = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
@@ -17,14 +20,14 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-input:
-			if !ok {
+			return fmt.Errorf("prefix decorator context error: %w", ctx.Err())
+		case data, okChannel := <-input:
+			if !okChannel {
 				return nil
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrCantBeDecorated
 			}
 
 			if !strings.HasPrefix(data, prefix) {
@@ -33,7 +36,7 @@ func PrefixDecoratorFunc(
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("prefix decorator context error: %w", ctx.Err())
 			case output <- data:
 			}
 		}
@@ -49,33 +52,33 @@ func SeparatorFunc(
 		for {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case _, ok := <-input:
-				if !ok {
+				return fmt.Errorf("separator context error: %w", ctx.Err())
+			case _, okChannel := <-input:
+				if !okChannel {
 					return nil
 				}
 			}
 		}
 	}
 
-	idx := 0
+	index := 0
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-input:
-			if !ok {
+			return fmt.Errorf("separator context error: %w", ctx.Err())
+		case data, okChannel := <-input:
+			if !okChannel {
 				return nil
 			}
 
-			outCh := outputs[idx%len(outputs)]
-			idx++
+			outputChan := outputs[index%len(outputs)]
+			index++
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case outCh <- data:
+				return fmt.Errorf("separator context error: %w", ctx.Err())
+			case outputChan <- data:
 			}
 		}
 	}
@@ -86,20 +89,22 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
+	var waitGroup sync.WaitGroup
 
-	for _, ch := range inputs {
-		inCh := ch
-		go func() {
-			defer wg.Done()
+	waitGroup.Add(len(inputs))
+
+	for _, channelInstance := range inputs {
+		inputChan := channelInstance
+
+		goroutine := func() {
+			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-inCh:
-					if !ok {
+				case data, okChannel := <-inputChan:
+					if !okChannel {
 						return
 					}
 
@@ -114,13 +119,16 @@ func MultiplexerFunc(
 					}
 				}
 			}
-		}()
+		}
+
+		go goroutine()
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 
 	if err := ctx.Err(); err != nil {
-		return err
+		return fmt.Errorf("multiplexer context error: %w", err)
 	}
+
 	return nil
 }
