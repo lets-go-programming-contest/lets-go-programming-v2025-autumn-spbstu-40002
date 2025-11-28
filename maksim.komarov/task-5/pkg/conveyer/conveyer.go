@@ -51,10 +51,10 @@ func (c *conv) ensureChan(chanID string) chan string {
 		return existing
 	}
 
-	newChan := make(chan string)
-	c.chans[chanID] = newChan
+	ch := make(chan string)
+	c.chans[chanID] = ch
 
-	return newChan
+	return ch
 }
 
 func (c *conv) getChan(chanID string) (chan string, bool) {
@@ -71,6 +71,8 @@ func (c *conv) RegisterDecorator(decorator DecoratorFunc, inputID string, output
 	outputChan := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
+		defer close(outputChan)
+
 		return decorator(ctx, inputChan, outputChan)
 	})
 
@@ -82,9 +84,12 @@ func (c *conv) RegisterMultiplexer(multiplexer MultiplexerFunc, inputIDs []strin
 	for _, id := range inputIDs {
 		inputs = append(inputs, c.ensureChan(id))
 	}
+
 	outputChan := c.ensureChan(outputID)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
+		defer close(outputChan)
+
 		return multiplexer(ctx, inputs, outputChan)
 	})
 
@@ -99,6 +104,12 @@ func (c *conv) RegisterSeparator(separator SeparatorFunc, inputID string, output
 	}
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
+		defer func() {
+			for _, ch := range outputs {
+				close(ch)
+			}
+		}()
+
 		return separator(ctx, inputChan, outputs)
 	})
 
@@ -131,9 +142,8 @@ func (c *conv) Recv(chanID string) (string, error) {
 }
 
 func (c *conv) runAll(ctx context.Context) (<-chan struct{}, <-chan error) {
-	var waitGroup sync.WaitGroup
-
-	waitGroup.Add(len(c.runners))
+	wg := &sync.WaitGroup{}
+	wg.Add(len(c.runners))
 
 	errChan := make(chan error, 1)
 
@@ -141,7 +151,7 @@ func (c *conv) runAll(ctx context.Context) (<-chan struct{}, <-chan error) {
 		runFunc := r
 
 		go func() {
-			defer waitGroup.Done()
+			defer wg.Done()
 
 			if err := runFunc(ctx); err != nil {
 				select {
@@ -155,7 +165,7 @@ func (c *conv) runAll(ctx context.Context) (<-chan struct{}, <-chan error) {
 	doneChan := make(chan struct{})
 
 	go func() {
-		waitGroup.Wait()
+		wg.Wait()
 		close(doneChan)
 	}()
 
