@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -12,27 +11,30 @@ var ErrCannotDecorate = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
-	input chan string,
-	output chan string,
+	inputChan chan string,
+	outputChan chan string,
 ) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("prefix decorator context error: %w", ctx.Err())
-		case value, ok := <-input:
+			return ctx.Err()
+		case value, ok := <-inputChan:
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(value, "no decorator") {
 				return ErrCannotDecorate
 			}
+
 			if !strings.HasPrefix(value, "decorated: ") {
 				value = "decorated: " + value
 			}
+
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("prefix decorator context error: %w", ctx.Err())
-			case output <- value:
+				return ctx.Err()
+			case outputChan <- value:
 			}
 		}
 	}
@@ -40,15 +42,15 @@ func PrefixDecoratorFunc(
 
 func SeparatorFunc(
 	ctx context.Context,
-	input chan string,
-	outputs []chan string,
+	inputChan chan string,
+	outputChans []chan string,
 ) error {
-	if len(outputs) == 0 {
+	if len(outputChans) == 0 {
 		for {
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("separator context error: %w", ctx.Err())
-			case _, ok := <-input:
+				return ctx.Err()
+			case _, ok := <-inputChan:
 				if !ok {
 					return nil
 				}
@@ -56,20 +58,22 @@ func SeparatorFunc(
 		}
 	}
 
-	index := 0
+	idx := 0
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("separator context error: %w", ctx.Err())
-		case value, ok := <-input:
+			return ctx.Err()
+		case value, ok := <-inputChan:
 			if !ok {
 				return nil
 			}
-			outputChan := outputs[index%len(outputs)]
-			index++
+
+			outputChan := outputChans[idx%len(outputChans)]
+			idx++
+
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("separator context error: %w", ctx.Err())
+				return ctx.Err()
 			case outputChan <- value:
 			}
 		}
@@ -78,13 +82,14 @@ func SeparatorFunc(
 
 func MultiplexerFunc(
 	ctx context.Context,
-	inputs []chan string,
-	output chan string,
+	inputChans []chan string,
+	outputChan chan string,
 ) error {
 	var waitGroup sync.WaitGroup
-	for _, inputChan := range inputs {
+
+	for _, channel := range inputChans {
 		waitGroup.Add(1)
-		ch := inputChan
+		ch := channel
 		go func() {
 			defer waitGroup.Done()
 			for {
@@ -95,13 +100,15 @@ func MultiplexerFunc(
 					if !ok {
 						return
 					}
+
 					if strings.Contains(value, "no multiplexer") {
 						continue
 					}
+
 					select {
 					case <-ctx.Done():
 						return
-					case output <- value:
+					case outputChan <- value:
 					}
 				}
 			}
