@@ -11,29 +11,17 @@ var ErrAlreadyClosed = errors.New("already closed")
 
 type conveyer interface {
 	RegisterDecorator(
-		fn func(
-		ctx context.Context,
-		input chan string,
-		output chan string,
-	) error,
+		fn func(ctx context.Context, input chan string, output chan string) error,
 		input string,
 		output string,
 	)
 	RegisterMultiplexer(
-		fn func(
-		ctx context.Context,
-		inputs []chan string,
-		output chan string,
-	) error,
+		fn func(ctx context.Context, inputs []chan string, output chan string) error,
 		inputs []string,
 		output string,
 	)
 	RegisterSeparator(
-		fn func(
-		ctx context.Context,
-		input chan string,
-		outputs []chan string,
-	) error,
+		fn func(ctx context.Context, input chan string, outputs []chan string) error,
 		input string,
 		outputs []string,
 	)
@@ -68,7 +56,8 @@ type conveyerImpl struct {
 	decorators   []decoratorReg
 	multiplexers []multiplexerReg
 	separators   []separatorReg
-	closed       bool
+
+	closed bool
 }
 
 func New(size int) conveyer {
@@ -111,6 +100,12 @@ func (c *conveyerImpl) RegisterSeparator(fn func(ctx context.Context, input chan
 	c.separators = append(c.separators, separatorReg{fn: fn, in: input, outs: outputs})
 }
 
+func (c *conveyerImpl) getChan(name string) chan string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.chans[name]
+}
+
 func (c *conveyerImpl) Run(ctx context.Context) error {
 	c.mu.RLock()
 	if c.closed {
@@ -118,11 +113,13 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		return ErrAlreadyClosed
 	}
 	c.mu.RUnlock()
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
 	var wg sync.WaitGroup
 	errCh := make(chan error, 1)
-	doneCh := make(chan struct{})
+
 	launch := func(fn func(context.Context) error) {
 		wg.Add(1)
 		go func() {
@@ -135,6 +132,8 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 			}
 		}()
 	}
+
+	// Launch decorators
 	for _, d := range c.decorators {
 		in := c.getChan(d.in)
 		out := c.getChan(d.out)
@@ -143,81 +142,88 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 			return fn(cctx, in, out)
 		})
 	}
+
+	// Launch multiplexers
 	for _, m := range c.multiplexers {
-		outs := c.getChan(m.out)
+		out := c.getChan(m.out)
 		ins := make([]chan string, 0, len(m.ins))
 		for _, n := range m.ins {
 			ins = append(ins, c.getChan(n))
 		}
 		fn := m.fn
 		launch(func(cctx context.Context) error {
-			return fn(cctx, ins, outs)
+			return fn(cctx, ins, out)
 		})
 	}
+
+	// Launch separators
 	for _, s := range c.separators {
 		in := c.getChan(s.in)
-		outs := make([]chan string, 0, len(s.outs))
-		for _, n := range s.outs {
-			outs = append(outs, c.getChan(n))
+		outs := make([]chan string, len(s.outs))
+		for i, n := range s.outs {
+			outs[i] = c.getChan(n)
 		}
 		fn := s.fn
 		launch(func(cctx context.Context) error {
 			return fn(cctx, in, outs)
 		})
 	}
+
 	go func() {
 		wg.Wait()
-		close(doneCh)
+		close(errCh)
 	}()
+
+	// Wait for result
 	select {
 	case <-ctx.Done():
-		cancel()
 		wg.Wait()
 		c.closeAll()
 		return ctx.Err()
-	case err := <-errCh:
-		cancel()
-		wg.Wait()
-		c.closeAll()
-		return err
-	case <-doneCh:
-		c.closeAll()
-		return nil
-	}
-}
 
-func (c *conveyerImpl) getChan(name string) chan string {
-	c.mu.RLock()
-	ch := c.chans[name]
-	c.mu.RUnlock()
-	return ch
+	case err := <-errCh:
+		if err != nil {
+			cancel()
+			wg.Wait()
+			c.closeAll()
+			return err
+		}
+	}
+
+	c.closeAll()
+	return nil
 }
 
 func (c *conveyerImpl) closeAll() {
 	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.closed {
-		c.mu.Unlock()
 		return
 	}
+
 	for _, ch := range c.chans {
-		close(ch)
+		func() {
+			defer func() { recover() }()
+			close(ch)
+		}()
 	}
+
 	c.closed = true
-	c.mu.Unlock()
 }
 
-func (c *conveyerImpl) Send(input string, data string) (err error) {
+func (c *conveyerImpl) Send(input string, data string) error {
 	c.mu.RLock()
 	ch, ok := c.chans[input]
 	c.mu.RUnlock()
 	if !ok {
 		return ErrChanNotFound
 	}
+
 	defer func() {
-		if r := recover(); r != nil {
-			err = ErrChanNotFound
-		}
+		recover()
 	}()
+
 	ch <- data
 	return nil
 }
@@ -229,6 +235,7 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 	if !ok {
 		return "", ErrChanNotFound
 	}
+
 	v, ok := <-ch
 	if !ok {
 		return "undefined", nil
