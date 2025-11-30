@@ -11,7 +11,7 @@ const undefined = "undefined"
 
 type handlerFunc func(ctx context.Context) error
 
-type conveyer struct {
+type Conveyer struct {
 	size     int
 	mu       sync.RWMutex
 	chans    map[string]chan string
@@ -19,11 +19,11 @@ type conveyer struct {
 }
 
 // New creates a new conveyer instance with specified channel buffer size.
-func New(size int) *conveyer {
+func New(size int) *Conveyer {
 	if size < 0 {
 		size = 0
 	}
-	return &conveyer{
+	return &Conveyer{
 		size:     size,
 		mu:       sync.RWMutex{},
 		chans:    make(map[string]chan string),
@@ -32,7 +32,7 @@ func New(size int) *conveyer {
 }
 
 // ensureChan creates a channel if it doesn't exist.
-func (c *conveyer) ensureChan(chanID string) chan string {
+func (c *Conveyer) ensureChan(chanID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -46,7 +46,7 @@ func (c *conveyer) ensureChan(chanID string) chan string {
 }
 
 // getChan retrieves a channel by ID.
-func (c *conveyer) getChan(chanID string) (chan string, bool) {
+func (c *Conveyer) getChan(chanID string) (chan string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -55,7 +55,7 @@ func (c *conveyer) getChan(chanID string) (chan string, bool) {
 }
 
 // RegisterDecorator registers a data modifier handler.
-func (c *conveyer) RegisterDecorator(
+func (c *Conveyer) RegisterDecorator(
 	handler func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
@@ -69,7 +69,7 @@ func (c *conveyer) RegisterDecorator(
 }
 
 // RegisterMultiplexer registers a multiplexer handler.
-func (c *conveyer) RegisterMultiplexer(
+func (c *Conveyer) RegisterMultiplexer(
 	handler func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
@@ -86,7 +86,7 @@ func (c *conveyer) RegisterMultiplexer(
 }
 
 // RegisterSeparator registers a separator handler.
-func (c *conveyer) RegisterSeparator(
+func (c *Conveyer) RegisterSeparator(
 	handler func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
@@ -103,7 +103,7 @@ func (c *conveyer) RegisterSeparator(
 }
 
 // Run starts the conveyer and runs all handlers in separate goroutines.
-func (c *conveyer) Run(ctx context.Context) error {
+func (c *Conveyer) Run(ctx context.Context) error {
 	if len(c.handlers) == 0 {
 		return nil
 	}
@@ -152,7 +152,7 @@ func (c *conveyer) Run(ctx context.Context) error {
 }
 
 // Send sends data to a channel identified by input ID.
-func (c *conveyer) Send(input string, data string) error {
+func (c *Conveyer) Send(input string, data string) error {
 	channelInstance, exists := c.getChan(input)
 	if !exists {
 		return fmt.Errorf("send failed: %w", ErrChannelNotFound)
@@ -163,7 +163,7 @@ func (c *conveyer) Send(input string, data string) error {
 }
 
 // Recv receives data from a channel identified by output ID.
-func (c *conveyer) Recv(output string) (string, error) {
+func (c *Conveyer) Recv(output string) (string, error) {
 	channelInstance, exists := c.getChan(output)
 	if !exists {
 		return "", fmt.Errorf("recv failed: %w", ErrChannelNotFound)
