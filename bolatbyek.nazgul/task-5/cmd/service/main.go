@@ -14,13 +14,14 @@ import (
 )
 
 const (
-	sleepDuration     = 10 * time.Millisecond
-	timeoutDuration   = 100 * time.Millisecond
+	sleepDuration   = 10 * time.Millisecond
+	timeoutDuration = 100 * time.Millisecond
 )
 
 func readBufferSize() (int, error) {
 	var bufferSize int
 	_, err := fmt.Scan(&bufferSize)
+
 	if err != nil {
 		return 0, fmt.Errorf("failed to read buffer size: %w", err)
 	}
@@ -31,6 +32,7 @@ func readBufferSize() (int, error) {
 func readNumHandlers() (int, error) {
 	var numHandlers int
 	_, err := fmt.Scan(&numHandlers)
+
 	if err != nil {
 		return 0, fmt.Errorf("failed to read number of handlers: %w", err)
 	}
