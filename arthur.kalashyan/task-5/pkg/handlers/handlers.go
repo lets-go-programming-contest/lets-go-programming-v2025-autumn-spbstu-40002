@@ -19,7 +19,6 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 		case v, ok := <-input:
 			if !ok {
-				close(output)
 				return nil
 			}
 
@@ -63,10 +62,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 		case v, ok := <-input:
 			if !ok {
-				// ВАЖНО: закрыть все выходные каналы
-				for _, ch := range outputs {
-					close(ch)
-				}
 				return nil
 			}
 
@@ -115,11 +110,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}(ch)
 	}
 
-	go func() {
-		wg.Wait()
-		close(output)
-	}()
-
-	<-ctx.Done()
-	return ctx.Err()
+	wg.Wait()
+	return nil
 }
