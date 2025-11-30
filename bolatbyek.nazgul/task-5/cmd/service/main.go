@@ -21,6 +21,7 @@ const (
 func readBufferSize() (int, error) {
 	var bufferSize int
 	_, err := fmt.Scan(&bufferSize)
+
 	if err != nil {
 		return 0, fmt.Errorf("failed to read buffer size: %w", err)
 	}
@@ -31,6 +32,7 @@ func readBufferSize() (int, error) {
 func readNumHandlers() (int, error) {
 	var numHandlers int
 	_, err := fmt.Scan(&numHandlers)
+
 	if err != nil {
 		return 0, fmt.Errorf("failed to read number of handlers: %w", err)
 	}
@@ -41,6 +43,7 @@ func readNumHandlers() (int, error) {
 func registerDecorator(conv *conveyer.Conveyer) error {
 	var input, output string
 	_, err := fmt.Scan(&input, &output)
+
 	if err != nil {
 		return fmt.Errorf("failed to read decorator channels: %w", err)
 	}
@@ -61,7 +64,6 @@ func registerMultiplexer(conv *conveyer.Conveyer) error {
 	inputs := make([]string, numInputs)
 	for i := range numInputs {
 		_, err = fmt.Scan(&inputs[i])
-
 		if err != nil {
 			return fmt.Errorf("failed to read multiplexer input: %w", err)
 		}
@@ -69,7 +71,6 @@ func registerMultiplexer(conv *conveyer.Conveyer) error {
 
 	var output string
 	_, err = fmt.Scan(&output)
-
 	if err != nil {
 		return fmt.Errorf("failed to read multiplexer output: %w", err)
 	}
@@ -92,7 +93,6 @@ func registerSeparator(conv *conveyer.Conveyer) error {
 	outputs := make([]string, numOutputs)
 	for i := range numOutputs {
 		_, err = fmt.Scan(&outputs[i])
-
 		if err != nil {
 			return fmt.Errorf("failed to read separator output: %w", err)
 		}
