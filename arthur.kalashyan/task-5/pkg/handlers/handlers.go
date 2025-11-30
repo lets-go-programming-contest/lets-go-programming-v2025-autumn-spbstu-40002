@@ -7,9 +7,7 @@ import (
 	"sync"
 )
 
-var (
-	ErrCannotDecorate = errors.New("can't be decorated")
-)
+var ErrCannotDecorate = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	defer func() {
@@ -21,20 +19,16 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case v, ok := <-input:
 			if !ok {
 				return nil
 			}
-
 			if strings.Contains(v, "no decorator") {
 				return ErrCannotDecorate
 			}
-
 			if !strings.HasPrefix(v, "decorated: ") {
 				v = "decorated: " + v
 			}
-
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -59,11 +53,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	defer func() {
-		for _, out := range outputs {
-			func() {
-				defer func() { recover() }()
-				close(out)
-			}()
+		for _, ch := range outputs {
+			func() { defer func() { recover() }(); close(ch) }()
 		}
 	}()
 
@@ -72,19 +63,16 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case v, ok := <-input:
 			if !ok {
 				return nil
 			}
-
-			outCh := outputs[idx%len(outputs)]
+			out := outputs[idx%len(outputs)]
 			idx++
-
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case outCh <- v:
+			case out <- v:
 			}
 		}
 	}
@@ -92,7 +80,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var wg sync.WaitGroup
-
 	for _, ch := range inputs {
 		wg.Add(1)
 		c := ch
@@ -125,6 +112,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		close(output)
 	}()
 
-	wg.Wait()
-	return nil
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		wg.Wait()
+		return nil
+	}
 }
