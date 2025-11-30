@@ -51,7 +51,7 @@ type separatorReg struct {
 	outputIDs []string
 }
 
-type conveyerImpl struct {
+type ConveyerImpl struct {
 	size         int
 	mu           sync.RWMutex
 	chans        map[string]chan string
@@ -61,8 +61,12 @@ type conveyerImpl struct {
 	closed       bool
 }
 
-func New(size int) Conveyer {
-	return &conveyerImpl{
+func New(size int) *ConveyerImpl {
+	if size < 0 {
+		size = 0
+	}
+
+	return &ConveyerImpl{
 		size:         size,
 		mu:           sync.RWMutex{},
 		chans:        make(map[string]chan string),
@@ -73,27 +77,24 @@ func New(size int) Conveyer {
 	}
 }
 
-func (c *conveyerImpl) ensureChan(name string) chan string {
+func (c *ConveyerImpl) ensureChan(name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if channel, exists := c.chans[name]; exists {
-		return channel
+	if _, exists := c.chans[name]; exists {
+		return
 	}
 
-	channel := make(chan string, c.size)
-	c.chans[name] = channel
-
-	return channel
+	c.chans[name] = make(chan string, c.size)
 }
 
-func (c *conveyerImpl) RegisterDecorator(
+func (c *ConveyerImpl) RegisterDecorator(
 	handler func(ctx context.Context, input chan string, output chan string) error,
 	inputID string,
 	outputID string,
 ) {
-	_ = c.ensureChan(inputID)
-	_ = c.ensureChan(outputID)
+	c.ensureChan(inputID)
+	c.ensureChan(outputID)
 
 	c.decorators = append(
 		c.decorators,
@@ -101,15 +102,16 @@ func (c *conveyerImpl) RegisterDecorator(
 	)
 }
 
-func (c *conveyerImpl) RegisterMultiplexer(
+func (c *ConveyerImpl) RegisterMultiplexer(
 	handler func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputIDs []string,
 	outputID string,
 ) {
 	for _, inputID := range inputIDs {
-		_ = c.ensureChan(inputID)
+		c.ensureChan(inputID)
 	}
-	_ = c.ensureChan(outputID)
+
+	c.ensureChan(outputID)
 
 	c.multiplexers = append(
 		c.multiplexers,
@@ -117,15 +119,15 @@ func (c *conveyerImpl) RegisterMultiplexer(
 	)
 }
 
-func (c *conveyerImpl) RegisterSeparator(
+func (c *ConveyerImpl) RegisterSeparator(
 	handler func(ctx context.Context, input chan string, outputs []chan string) error,
 	inputID string,
 	outputIDs []string,
 ) {
-	_ = c.ensureChan(inputID)
+	c.ensureChan(inputID)
 
 	for _, outputID := range outputIDs {
-		_ = c.ensureChan(outputID)
+		c.ensureChan(outputID)
 	}
 
 	c.separators = append(
@@ -134,7 +136,7 @@ func (c *conveyerImpl) RegisterSeparator(
 	)
 }
 
-func (c *conveyerImpl) runDecorators(
+func (c *ConveyerImpl) runDecorators(
 	launch func(func(context.Context) error),
 ) {
 	for _, decorator := range c.decorators {
@@ -153,7 +155,7 @@ func (c *conveyerImpl) runDecorators(
 	}
 }
 
-func (c *conveyerImpl) runMultiplexers(
+func (c *ConveyerImpl) runMultiplexers(
 	launch func(func(context.Context) error),
 ) {
 	for _, mux := range c.multiplexers {
@@ -177,7 +179,7 @@ func (c *conveyerImpl) runMultiplexers(
 	}
 }
 
-func (c *conveyerImpl) runSeparators(
+func (c *ConveyerImpl) runSeparators(
 	launch func(func(context.Context) error),
 ) {
 	for _, sep := range c.separators {
@@ -189,6 +191,7 @@ func (c *conveyerImpl) runSeparators(
 		}
 
 		handlerFunc := sep.fn
+
 		launch(func(innerCtx context.Context) error {
 			select {
 			case <-innerCtx.Done():
@@ -200,14 +203,14 @@ func (c *conveyerImpl) runSeparators(
 	}
 }
 
-func (c *conveyerImpl) getChan(name string) chan string {
+func (c *ConveyerImpl) getChan(name string) chan string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	return c.chans[name]
 }
 
-func (c *conveyerImpl) Run(ctx context.Context) error {
+func (c *ConveyerImpl) Run(ctx context.Context) error {
 	c.mu.RLock()
 	if c.closed {
 		c.mu.RUnlock()
@@ -220,6 +223,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	defer cancel()
 
 	var waitGroup sync.WaitGroup
+
 	errorChannel := make(chan error, 1)
 
 	launch := func(handler func(context.Context) error) {
@@ -251,6 +255,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 			close(channel)
 		}
 	}
+
 	c.closed = true
 	c.mu.Unlock()
 
@@ -262,7 +267,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	}
 }
 
-func (c *conveyerImpl) Send(input string, data string) error {
+func (c *ConveyerImpl) Send(input string, data string) error {
 	c.mu.RLock()
 	channel, exists := c.chans[input]
 	c.mu.RUnlock()
@@ -272,10 +277,11 @@ func (c *conveyerImpl) Send(input string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
-func (c *conveyerImpl) Recv(output string) (string, error) {
+func (c *ConveyerImpl) Recv(output string) (string, error) {
 	c.mu.RLock()
 	channel, exists := c.chans[output]
 	c.mu.RUnlock()

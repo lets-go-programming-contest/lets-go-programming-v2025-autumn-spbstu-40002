@@ -90,6 +90,7 @@ func MultiplexerFunc(
 
 	for _, channel := range inputChans {
 		channelCopy := channel
+
 		waitGroup.Add(1)
 
 		go func() {
