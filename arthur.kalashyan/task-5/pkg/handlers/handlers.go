@@ -18,23 +18,23 @@ func PrefixDecoratorFunc(
 		select {
 		case <-ctx.Done():
 			return errors.Join(ctx.Err())
-		case val, ok := <-inputChan:
+		case value, ok := <-inputChan:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(val, "no decorator") {
+			if strings.Contains(value, "no decorator") {
 				return ErrCannotDecorate
 			}
 
-			if !strings.HasPrefix(val, "decorated: ") {
-				val = "decorated: " + val
+			if !strings.HasPrefix(value, "decorated: ") {
+				value = "decorated: " + value
 			}
 
 			select {
 			case <-ctx.Done():
 				return errors.Join(ctx.Err())
-			case outputChan <- val:
+			case outputChan <- value:
 			}
 		}
 	}
@@ -58,23 +58,24 @@ func SeparatorFunc(
 		}
 	}
 
-	idx := 0
+	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
 			return errors.Join(ctx.Err())
-		case val, ok := <-inputChan:
+		case value, ok := <-inputChan:
 			if !ok {
 				return nil
 			}
 
-			out := outputChans[idx%len(outputChans)]
-			idx++
+			outputChan := outputChans[index%len(outputChans)]
+			index++
 
 			select {
 			case <-ctx.Done():
 				return errors.Join(ctx.Err())
-			case out <- val:
+			case outputChan <- value:
 			}
 		}
 	}
@@ -85,36 +86,38 @@ func MultiplexerFunc(
 	inputChans []chan string,
 	outputChan chan string,
 ) error {
-	var wg sync.WaitGroup
+	var waitGroup sync.WaitGroup
 
-	for _, ch := range inputChans {
-		chCopy := ch
-		wg.Add(1)
+	for _, channel := range inputChans {
+		channelCopy := channel
+		waitGroup.Add(1)
+
 		go func() {
-			defer wg.Done()
+			defer waitGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case val, ok := <-chCopy:
+				case value, ok := <-channelCopy:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(val, "no multiplexer") {
+					if strings.Contains(value, "no multiplexer") {
 						continue
 					}
 
 					select {
 					case <-ctx.Done():
 						return
-					case outputChan <- val:
+					case outputChan <- value:
 					}
 				}
 			}
 		}()
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 	return nil
 }
