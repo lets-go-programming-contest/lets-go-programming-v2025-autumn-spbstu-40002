@@ -133,7 +133,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		}()
 	}
 
-	// Launch decorators
+	// launch decorators
 	for _, d := range c.decorators {
 		in := c.getChan(d.in)
 		out := c.getChan(d.out)
@@ -143,7 +143,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		})
 	}
 
-	// Launch multiplexers
+	// launch multiplexers
 	for _, m := range c.multiplexers {
 		out := c.getChan(m.out)
 		ins := make([]chan string, 0, len(m.ins))
@@ -156,7 +156,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		})
 	}
 
-	// Launch separators
+	// launch separators
 	for _, s := range c.separators {
 		in := c.getChan(s.in)
 		outs := make([]chan string, len(s.outs))
@@ -174,7 +174,6 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		close(errCh)
 	}()
 
-	// Wait for result
 	select {
 	case <-ctx.Done():
 		wg.Wait()
@@ -212,18 +211,18 @@ func (c *conveyerImpl) closeAll() {
 	c.closed = true
 }
 
-func (c *conveyerImpl) Send(input string, data string) error {
+func (c *conveyerImpl) Send(input string, data string) (err error) {
 	c.mu.RLock()
 	ch, ok := c.chans[input]
 	c.mu.RUnlock()
 	if !ok {
 		return ErrChanNotFound
 	}
-
 	defer func() {
-		recover()
+		if r := recover(); r != nil {
+			err = ErrChanNotFound
+		}
 	}()
-
 	ch <- data
 	return nil
 }
@@ -235,7 +234,6 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 	if !ok {
 		return "", ErrChanNotFound
 	}
-
 	v, ok := <-ch
 	if !ok {
 		return "undefined", nil
