@@ -130,14 +130,31 @@ func (c *conveyer) Run(ctx context.Context) error {
 				return err
 			}
 		case <-ctx.Done():
+			// Context cancelled or deadline exceeded
+			// Cancel context to signal handlers to stop
 			cancel()
+			// Wait for handlers to finish (they should check ctx.Done() and exit)
+			for completed < len(c.handlers) {
+				select {
+				case <-doneChan:
+					completed++
+				case err := <-errChan:
+					// If handler returns error, we'll return it after all complete
+					if err != nil {
+						// Continue waiting for all handlers, but remember the error
+						// We'll return context error, not handler error, as context expired first
+					}
+				}
+			}
 			c.stop()
+			// Return context error after all handlers completed
 			return fmt.Errorf("context cancelled: %w", ctx.Err())
 		case <-doneChan:
 			completed++
 		}
 	}
 
+	c.stop()
 	return nil
 }
 
