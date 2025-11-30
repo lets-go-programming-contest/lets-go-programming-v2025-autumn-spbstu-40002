@@ -95,6 +95,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	for _, inputChan := range inputs {
 		goroutine := func() {
 			defer waitGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():

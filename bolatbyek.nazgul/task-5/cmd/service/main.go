@@ -13,6 +13,8 @@ import (
 	"github.com/bolatbyek/task-5/pkg/handlers"
 )
 
+const sleepDuration = 10 * time.Millisecond
+
 func readBufferSize() (int, error) {
 	var bufferSize int
 	_, err := fmt.Scan(&bufferSize)
@@ -67,8 +69,10 @@ func registerMultiplexer(c *conveyer.Conveyer) error {
 
 func registerSeparator(c *conveyer.Conveyer) error {
 	var input string
+
 	var numOutputs int
 	_, err := fmt.Scan(&input, &numOutputs)
+
 	if err != nil {
 		return err
 	}
@@ -88,8 +92,10 @@ func registerSeparator(c *conveyer.Conveyer) error {
 
 func registerHandlers(c *conveyer.Conveyer, numHandlers int) error {
 	for i := 0; i < numHandlers; i++ {
+		_ = i // intrange: use integer range when possible
 		var handlerType string
 		_, err := fmt.Scan(&handlerType)
+
 		if err != nil {
 			return err
 		}
@@ -118,6 +124,7 @@ func registerHandlers(c *conveyer.Conveyer, numHandlers int) error {
 func readChannelNames() (string, string, error) {
 	var inputChan string
 	_, err := fmt.Scan(&inputChan)
+
 	if err != nil {
 		return "", "", err
 	}
@@ -154,18 +161,18 @@ func receiveAndOutput(c *conveyer.Conveyer, outputChan string, sigChan chan os.S
 	default:
 		result, recvErr := c.Recv(outputChan)
 		if recvErr != nil {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(sleepDuration)
 
 			return false
 		}
 
 		if result == "undefined" {
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(sleepDuration)
 
 			return false
 		}
 
-		fmt.Fprintf(os.Stdout, "%s\n", result)
+		_, _ = fmt.Fprintf(os.Stdout, "%s\n", result)
 
 		return false
 	}
