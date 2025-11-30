@@ -10,11 +10,6 @@ import (
 var ErrCannotDecorate = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer func() {
-		defer func() { recover() }()
-		close(output)
-	}()
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -51,12 +46,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 		}
 	}
-
-	defer func() {
-		for _, ch := range outputs {
-			func() { defer func() { recover() }(); close(ch) }()
-		}
-	}()
 
 	idx := 0
 	for {
@@ -106,17 +95,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}()
 	}
 
-	go func() {
-		wg.Wait()
-		defer func() { recover() }()
-		close(output)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		wg.Wait()
-		return nil
-	}
+	wg.Wait()
+	return nil
 }

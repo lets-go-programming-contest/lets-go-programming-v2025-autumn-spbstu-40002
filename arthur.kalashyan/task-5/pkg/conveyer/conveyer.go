@@ -124,7 +124,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := fn(ctx); err != nil {
+			if err := fn(ctx); err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 				select {
 				case errCh <- err:
 				default:
@@ -133,30 +133,37 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		}()
 	}
 
-	// launch decorators
 	for _, d := range c.decorators {
 		in := c.getChan(d.in)
 		out := c.getChan(d.out)
 		fn := d.fn
 		launch(func(cctx context.Context) error {
-			return fn(cctx, in, out)
+			select {
+			case <-cctx.Done():
+				return cctx.Err()
+			default:
+				return fn(cctx, in, out)
+			}
 		})
 	}
 
-	// launch multiplexers
 	for _, m := range c.multiplexers {
 		out := c.getChan(m.out)
-		ins := make([]chan string, 0, len(m.ins))
-		for _, n := range m.ins {
-			ins = append(ins, c.getChan(n))
+		ins := make([]chan string, len(m.ins))
+		for i, n := range m.ins {
+			ins[i] = c.getChan(n)
 		}
 		fn := m.fn
 		launch(func(cctx context.Context) error {
-			return fn(cctx, ins, out)
+			select {
+			case <-cctx.Done():
+				return cctx.Err()
+			default:
+				return fn(cctx, ins, out)
+			}
 		})
 	}
 
-	// launch separators
 	for _, s := range c.separators {
 		in := c.getChan(s.in)
 		outs := make([]chan string, len(s.outs))
@@ -165,32 +172,32 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		}
 		fn := s.fn
 		launch(func(cctx context.Context) error {
-			return fn(cctx, in, outs)
+			select {
+			case <-cctx.Done():
+				return cctx.Err()
+			default:
+				return fn(cctx, in, outs)
+			}
 		})
 	}
 
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
+	wg.Wait()
+
+	c.mu.Lock()
+	if !c.closed {
+		for _, ch := range c.chans {
+			close(ch)
+		}
+		c.closed = true
+	}
+	c.mu.Unlock()
 
 	select {
-	case <-ctx.Done():
-		wg.Wait()
-		c.closeAll()
-		return ctx.Err()
-
 	case err := <-errCh:
-		if err != nil {
-			cancel()
-			wg.Wait()
-			c.closeAll()
-			return err
-		}
+		return err
+	default:
+		return nil
 	}
-
-	c.closeAll()
-	return nil
 }
 
 func (c *conveyerImpl) closeAll() {
