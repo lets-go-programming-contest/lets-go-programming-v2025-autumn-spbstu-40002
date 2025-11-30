@@ -119,5 +119,6 @@ func MultiplexerFunc(
 	}
 
 	waitGroup.Wait()
+
 	return nil
 }
