@@ -53,6 +53,7 @@ func registerDecorator(conv *conveyer.Conveyer) error {
 func registerMultiplexer(conv *conveyer.Conveyer) error {
 	var numInputs int
 	_, err := fmt.Scan(&numInputs)
+
 	if err != nil {
 		return fmt.Errorf("failed to read multiplexer inputs count: %w", err)
 	}
@@ -67,6 +68,7 @@ func registerMultiplexer(conv *conveyer.Conveyer) error {
 
 	var output string
 	_, err = fmt.Scan(&output)
+
 	if err != nil {
 		return fmt.Errorf("failed to read multiplexer output: %w", err)
 	}
@@ -138,6 +140,7 @@ func readChannelNames() (string, string, error) {
 
 	var outputChan string
 	_, err = fmt.Scan(&outputChan)
+
 	if err != nil {
 		return "", "", fmt.Errorf("failed to read output channel: %w", err)
 	}
