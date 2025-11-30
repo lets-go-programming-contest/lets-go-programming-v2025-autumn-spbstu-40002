@@ -6,10 +6,8 @@ import (
 	"sync"
 )
 
-var (
-	ErrChanNotFound  = errors.New("chan not found")
-	ErrAlreadyClosed = errors.New("already closed")
-)
+var ErrChanNotFound = errors.New("chan not found")
+var ErrAlreadyClosed = errors.New("already closed")
 
 type Conveyer interface {
 	RegisterDecorator(
@@ -62,6 +60,13 @@ type conveyerImpl struct {
 	closed bool
 }
 
+func New(size int) Conveyer {
+	return &conveyerImpl{
+		size:  size,
+		chans: make(map[string]chan string),
+	}
+}
+
 func (c *conveyerImpl) ensureChan(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -78,44 +83,44 @@ func (c *conveyerImpl) ensureChan(name string) chan string {
 
 func (c *conveyerImpl) RegisterDecorator(
 	handler func(ctx context.Context, input chan string, output chan string) error,
-	inputID string,
-	outputID string,
+	input string,
+	output string,
 ) {
-	c.ensureChan(inputID)
-	c.ensureChan(outputID)
+	c.ensureChan(input)
+	c.ensureChan(output)
 	c.decorators = append(
 		c.decorators,
-		decoratorReg{fn: handler, inputID: inputID, outputID: outputID},
+		decoratorReg{fn: handler, inputID: input, outputID: output},
 	)
 }
 
 func (c *conveyerImpl) RegisterMultiplexer(
 	handler func(ctx context.Context, inputs []chan string, output chan string) error,
-	inputIDs []string,
-	outputID string,
+	inputs []string,
+	output string,
 ) {
-	for _, id := range inputIDs {
-		c.ensureChan(id)
+	for _, n := range inputs {
+		c.ensureChan(n)
 	}
-	c.ensureChan(outputID)
+	c.ensureChan(output)
 	c.multiplexers = append(
 		c.multiplexers,
-		multiplexerReg{fn: handler, inputIDs: inputIDs, outputID: outputID},
+		multiplexerReg{fn: handler, inputIDs: inputs, outputID: output},
 	)
 }
 
 func (c *conveyerImpl) RegisterSeparator(
 	handler func(ctx context.Context, input chan string, outputs []chan string) error,
-	inputID string,
-	outputIDs []string,
+	input string,
+	outputs []string,
 ) {
-	c.ensureChan(inputID)
-	for _, id := range outputIDs {
-		c.ensureChan(id)
+	c.ensureChan(input)
+	for _, n := range outputs {
+		c.ensureChan(n)
 	}
 	c.separators = append(
 		c.separators,
-		separatorReg{fn: handler, inputID: inputID, outputIDs: outputIDs},
+		separatorReg{fn: handler, inputID: input, outputIDs: outputs},
 	)
 }
 
@@ -155,15 +160,15 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	}
 
 	for _, decorator := range c.decorators {
-		inputChan := c.getChan(decorator.inputID)
-		outputChan := c.getChan(decorator.outputID)
+		in := c.getChan(decorator.inputID)
+		out := c.getChan(decorator.outputID)
 		handlerFunc := decorator.fn
 		launch(func(innerCtx context.Context) error {
 			select {
 			case <-innerCtx.Done():
 				return innerCtx.Err()
 			default:
-				return handlerFunc(innerCtx, inputChan, outputChan)
+				return handlerFunc(innerCtx, in, out)
 			}
 		})
 	}
@@ -221,21 +226,44 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	}
 }
 
-func (c *conveyerImpl) Send(inputID string, data string) error {
+func (c *conveyerImpl) closeAll() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.closed {
+		return
+	}
+
+	for _, channel := range c.chans {
+		func() {
+			defer func() { recover() }()
+			close(channel)
+		}()
+	}
+	c.closed = true
+}
+
+func (c *conveyerImpl) Send(input string, data string) (err error) {
 	c.mu.RLock()
-	channel, ok := c.chans[inputID]
+	channel, ok := c.chans[input]
 	c.mu.RUnlock()
 	if !ok {
 		return ErrChanNotFound
 	}
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = ErrChanNotFound
+		}
+	}()
 
 	channel <- data
 	return nil
 }
 
-func (c *conveyerImpl) Recv(outputID string) (string, error) {
+func (c *conveyerImpl) Recv(output string) (string, error) {
 	c.mu.RLock()
-	channel, ok := c.chans[outputID]
+	channel, ok := c.chans[output]
 	c.mu.RUnlock()
 	if !ok {
 		return "", ErrChanNotFound
