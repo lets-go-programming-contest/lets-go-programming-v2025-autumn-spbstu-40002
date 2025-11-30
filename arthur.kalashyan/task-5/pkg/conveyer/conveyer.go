@@ -6,8 +6,10 @@ import (
 	"sync"
 )
 
-var ErrChanNotFound = errors.New("chan not found")
-var ErrAlreadyClosed = errors.New("already closed")
+var (
+	ErrChanNotFound  = errors.New("chan not found")
+	ErrAlreadyClosed = errors.New("already closed")
+)
 
 type Conveyer interface {
 	RegisterDecorator(
@@ -64,9 +66,9 @@ func New(size int) Conveyer {
 		size:         size,
 		mu:           sync.RWMutex{},
 		chans:        make(map[string]chan string),
-		decorators:   []decoratorReg{},
-		multiplexers: []multiplexerReg{},
-		separators:   []separatorReg{},
+		decorators:   nil,
+		multiplexers: nil,
+		separators:   nil,
 		closed:       false,
 	}
 }
@@ -90,8 +92,8 @@ func (c *conveyerImpl) RegisterDecorator(
 	inputID string,
 	outputID string,
 ) {
-	c.ensureChan(inputID)
-	c.ensureChan(outputID)
+	_ = c.ensureChan(inputID)
+	_ = c.ensureChan(outputID)
 
 	c.decorators = append(
 		c.decorators,
@@ -105,9 +107,9 @@ func (c *conveyerImpl) RegisterMultiplexer(
 	outputID string,
 ) {
 	for _, inputID := range inputIDs {
-		c.ensureChan(inputID)
+		_ = c.ensureChan(inputID)
 	}
-	c.ensureChan(outputID)
+	_ = c.ensureChan(outputID)
 
 	c.multiplexers = append(
 		c.multiplexers,
@@ -120,10 +122,10 @@ func (c *conveyerImpl) RegisterSeparator(
 	inputID string,
 	outputIDs []string,
 ) {
-	c.ensureChan(inputID)
+	_ = c.ensureChan(inputID)
 
 	for _, outputID := range outputIDs {
-		c.ensureChan(outputID)
+		_ = c.ensureChan(outputID)
 	}
 
 	c.separators = append(
@@ -163,6 +165,7 @@ func (c *conveyerImpl) runMultiplexers(
 		}
 
 		handlerFunc := mux.fn
+
 		launch(func(innerCtx context.Context) error {
 			select {
 			case <-innerCtx.Done():
@@ -208,6 +211,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	c.mu.RLock()
 	if c.closed {
 		c.mu.RUnlock()
+
 		return ErrAlreadyClosed
 	}
 	c.mu.RUnlock()
@@ -246,8 +250,8 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		for _, channel := range c.chans {
 			close(channel)
 		}
-		c.closed = true
 	}
+	c.closed = true
 	c.mu.Unlock()
 
 	select {
