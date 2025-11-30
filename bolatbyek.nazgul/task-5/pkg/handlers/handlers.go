@@ -3,15 +3,11 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
+	"sync"
 )
 
-const decoratorPrefix = "decorated: "
-
-const noDecoratorMsg = "по decorator"
-
-const multiplexerFilter = "по multiplexer"
+const prefix = "decorated: "
 
 // PrefixDecoratorFunc is a data modifier that adds prefix "decorated: <original data>"
 // to input data, but only if this prefix hasn't been added before.
@@ -21,34 +17,64 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
-		case data, ok := <-input:
-			if !ok {
+			return fmt.Errorf("prefix decorator context error: %w", ctx.Err())
+		case data, okChannel := <-input:
+			if !okChannel {
 				return nil
 			}
 
-			// Check if data contains "по decorator"
-			if strings.Contains(data, noDecoratorMsg) {
+			if strings.Contains(data, "no decorator") {
 				return ErrCantBeDecorated
 			}
 
-			// Check if prefix already exists
-			if strings.HasPrefix(data, decoratorPrefix) {
-				// Prefix already exists, send as is
-				select {
-				case <-ctx.Done():
-					return fmt.Errorf("context cancelled: %w", ctx.Err())
-				case output <- data:
-				}
-			} else {
-				// Add prefix
-				decorated := decoratorPrefix + data
+			if !strings.HasPrefix(data, prefix) {
+				data = prefix + data
+			}
 
-				select {
-				case <-ctx.Done():
-					return fmt.Errorf("context cancelled: %w", ctx.Err())
-				case output <- decorated:
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("prefix decorator context error: %w", ctx.Err())
+			case output <- data:
+			}
+		}
+	}
+}
+
+// SeparatorFunc is a separator that distributes data from input channel to output channels
+// based on sequential reception number. For example, for two output channels:
+// first value goes to first channel, second to second, third to first, etc.
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	if len(outputs) == 0 {
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("separator context error: %w", ctx.Err())
+			case _, okChannel := <-input:
+				if !okChannel {
+					return nil
 				}
+			}
+		}
+	}
+
+	index := 0
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("separator context error: %w", ctx.Err())
+		case data, okChannel := <-input:
+			if !okChannel {
+				return nil
+			}
+
+			outputChan := outputs[index%len(outputs)]
+			index++
+
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("separator context error: %w", ctx.Err())
+			case outputChan <- data:
 			}
 		}
 	}
@@ -62,90 +88,42 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	// Build dynamic select cases for all input channels
-	selectCases := make([]reflect.SelectCase, 0, len(inputs)+1)
-	selectCases = append(selectCases, reflect.SelectCase{
-		Dir:  reflect.SelectRecv,
-		Chan: reflect.ValueOf(ctx.Done()),
-		Send: reflect.Value{},
-	})
+	var waitGroup sync.WaitGroup
 
-	for _, input := range inputs {
-		selectCases = append(selectCases, reflect.SelectCase{
-			Dir:  reflect.SelectRecv,
-			Chan: reflect.ValueOf(input),
-			Send: reflect.Value{},
-		})
-	}
+	waitGroup.Add(len(inputs))
 
-	for {
-		chosen, value, channelOpen := reflect.Select(selectCases)
-		if chosen == 0 {
-			// Context cancelled
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
-		}
+	for _, inputChan := range inputs {
+		goroutine := func() {
+			defer waitGroup.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case data, okChannel := <-inputChan:
+					if !okChannel {
+						return
+					}
 
-		if !channelOpen {
-			// Channel closed, rebuild select cases without this channel
-			newCases := make([]reflect.SelectCase, 0, len(selectCases))
-			newCases = append(newCases, selectCases[0]) // Keep context case
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
 
-			for i := 1; i < len(selectCases); i++ {
-				if i != chosen {
-					newCases = append(newCases, selectCases[i])
+					select {
+					case <-ctx.Done():
+						return
+					case output <- data:
+					}
 				}
 			}
-
-			selectCases = newCases
-
-			// If no input channels left, return
-			if len(selectCases) == 1 {
-				return nil
-			}
-
-			continue
 		}
-
-		data := value.String()
-		// Filter data containing "по multiplexer"
-		if strings.Contains(data, multiplexerFilter) {
-			continue
-		}
-
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
-		case output <- data:
-		}
-	}
-}
-
-// SeparatorFunc is a separator that distributes data from input channel to output channels
-// based on sequential reception number. For example, for two output channels:
-// first value goes to first channel, second to second, third to first, etc.
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	if len(outputs) == 0 {
-		return nil
+		go goroutine()
 	}
 
-	index := 0
+	waitGroup.Wait()
 
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
-		case data, ok := <-input:
-			if !ok {
-				return nil
-			}
-
-			// Distribute to next output channel in round-robin fashion
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context cancelled: %w", ctx.Err())
-			case outputs[index] <- data:
-				index = (index + 1) % len(outputs)
-			}
-		}
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("multiplexer context error: %w", err)
 	}
+
+	return nil
 }

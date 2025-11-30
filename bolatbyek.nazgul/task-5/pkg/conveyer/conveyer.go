@@ -2,87 +2,103 @@ package conveyer
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
 )
 
 const undefined = "undefined"
 
-type conveyer struct {
-	channels map[string]chan string
-	size     int
-	handlers []handler
-}
+type handlerFunc func(ctx context.Context) error
 
-type handler struct {
-	handlerType string
-	fn          interface{}
-	inputs      []string
-	outputs     []string
+type conveyer struct {
+	size     int
+	mu       sync.RWMutex
+	chans    map[string]chan string
+	handlers []handlerFunc
 }
 
 // New creates a new conveyer instance with specified channel buffer size.
 func New(size int) *conveyer {
-	return &conveyer{
-		channels: make(map[string]chan string),
-		size:     size,
-		handlers: make([]handler, 0),
+	if size < 0 {
+		size = 0
 	}
+	return &conveyer{
+		size:     size,
+		mu:       sync.RWMutex{},
+		chans:    make(map[string]chan string),
+		handlers: nil,
+	}
+}
+
+// ensureChan creates a channel if it doesn't exist.
+func (c *conveyer) ensureChan(chanID string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if existingChan, exists := c.chans[chanID]; exists {
+		return existingChan
+	}
+
+	createdChan := make(chan string, c.size)
+	c.chans[chanID] = createdChan
+	return createdChan
+}
+
+// getChan retrieves a channel by ID.
+func (c *conveyer) getChan(chanID string) (chan string, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	ch, exists := c.chans[chanID]
+	return ch, exists
 }
 
 // RegisterDecorator registers a data modifier handler.
 func (c *conveyer) RegisterDecorator(
-	handlerFn func(ctx context.Context, input chan string, output chan string) error,
+	handler func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
-	c.ensureChannel(input)
-	c.ensureChannel(output)
+	inputChan := c.ensureChan(input)
+	outputChan := c.ensureChan(output)
 
-	c.handlers = append(c.handlers, handler{
-		handlerType: "decorator",
-		fn:          handlerFn,
-		inputs:      []string{input},
-		outputs:     []string{output},
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return handler(ctx, inputChan, outputChan)
 	})
 }
 
 // RegisterMultiplexer registers a multiplexer handler.
 func (c *conveyer) RegisterMultiplexer(
-	handlerFn func(ctx context.Context, inputs []chan string, output chan string) error,
+	handler func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
-	for _, input := range inputs {
-		c.ensureChannel(input)
+	inputChans := make([]chan string, 0, len(inputs))
+	for _, chanID := range inputs {
+		inputChans = append(inputChans, c.ensureChan(chanID))
 	}
+	outputChan := c.ensureChan(output)
 
-	c.ensureChannel(output)
-
-	c.handlers = append(c.handlers, handler{
-		handlerType: "multiplexer",
-		fn:          handlerFn,
-		inputs:      inputs,
-		outputs:     []string{output},
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return handler(ctx, inputChans, outputChan)
 	})
 }
 
 // RegisterSeparator registers a separator handler.
 func (c *conveyer) RegisterSeparator(
-	handlerFn func(ctx context.Context, input chan string, outputs []chan string) error,
+	handler func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
-	c.ensureChannel(input)
-
-	for _, output := range outputs {
-		c.ensureChannel(output)
+	inputChan := c.ensureChan(input)
+	outputChans := make([]chan string, 0, len(outputs))
+	for _, chanID := range outputs {
+		outputChans = append(outputChans, c.ensureChan(chanID))
 	}
 
-	c.handlers = append(c.handlers, handler{
-		handlerType: "separator",
-		fn:          handlerFn,
-		inputs:      []string{input},
-		outputs:     outputs,
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return handler(ctx, inputChan, outputChans)
 	})
 }
 
@@ -92,162 +108,71 @@ func (c *conveyer) Run(ctx context.Context) error {
 		return nil
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
+	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	errChan := make(chan error, len(c.handlers))
-	doneChan := make(chan struct{}, len(c.handlers))
+	var waitGroup sync.WaitGroup
 
-	// Start all handlers
-	for _, handlerItem := range c.handlers {
-		go func(handlerItem handler) {
-			err := c.runHandler(ctx, handlerItem)
-			if err != nil {
-				errChan <- err
-			}
-			doneChan <- struct{}{}
-		}(handlerItem)
-	}
+	errorChan := make(chan error, 1)
 
-	// Wait for all handlers to complete or error/context cancellation
-	completed := 0
-	for completed < len(c.handlers) {
-		select {
-		case err := <-errChan:
-			if err != nil {
-				cancel()
-				c.stop()
-				// Wait for remaining handlers to finish
-				for completed < len(c.handlers) {
-					select {
-					case <-doneChan:
-						completed++
-					case <-errChan:
-						// Ignore additional errors
-					}
-				}
-
-				return err
-			}
-		case <-ctx.Done():
-			// Context cancelled or deadline exceeded
-			// Cancel context to signal handlers to stop
-			cancel()
-			// Wait for handlers to finish (they should check ctx.Done() and exit)
-			for completed < len(c.handlers) {
+	for _, registeredHandler := range c.handlers {
+		handlerCopy := registeredHandler
+		waitGroup.Add(1)
+		runHandler := func() {
+			defer waitGroup.Done()
+			if err := handlerCopy(runCtx); err != nil &&
+				!errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 				select {
-				case <-doneChan:
-					completed++
-				case err := <-errChan:
-					// If handler returns error, we'll return it after all complete
-					if err != nil {
-						// Continue waiting for all handlers, but remember the error
-						// We'll return context error, not handler error, as context expired first
-					}
+				case errorChan <- err:
+				default:
 				}
 			}
-			c.stop()
-			// Return context error after all handlers completed
-			return fmt.Errorf("context cancelled: %w", ctx.Err())
-		case <-doneChan:
-			completed++
 		}
+		go runHandler()
 	}
 
-	c.stop()
-	return nil
+	var runError error
+	select {
+	case <-ctx.Done():
+		runError = nil
+	case err := <-errorChan:
+		runError = err
+	}
+
+	cancel()
+	waitGroup.Wait()
+
+	c.mu.Lock()
+	for _, channelInstance := range c.chans {
+		close(channelInstance)
+	}
+	c.mu.Unlock()
+
+	return runError
 }
 
 // Send sends data to a channel identified by input ID.
 func (c *conveyer) Send(input string, data string) error {
-	channel, exists := c.channels[input]
+	channelInstance, exists := c.getChan(input)
 	if !exists {
-		return ErrChanNotFound
+		return fmt.Errorf("send failed: %w", ErrChannelNotFound)
 	}
 
-	select {
-	case channel <- data:
-		return nil
-	default:
-		return ErrChanNotFound
-	}
+	channelInstance <- data
+	return nil
 }
 
 // Recv receives data from a channel identified by output ID.
 func (c *conveyer) Recv(output string) (string, error) {
-	channel, exists := c.channels[output]
+	channelInstance, exists := c.getChan(output)
 	if !exists {
-		return "", ErrChanNotFound
+		return "", fmt.Errorf("recv failed: %w", ErrChannelNotFound)
 	}
 
-	data, ok := <-channel
-	if !ok {
+	value, okChannel := <-channelInstance
+	if !okChannel {
 		return undefined, nil
 	}
 
-	return data, nil
-}
-
-// ensureChannel creates a channel if it doesn't exist.
-func (c *conveyer) ensureChannel(name string) {
-	if _, exists := c.channels[name]; !exists {
-		c.channels[name] = make(chan string, c.size)
-	}
-}
-
-// runHandler executes a single handler based on its type.
-func (c *conveyer) runHandler(ctx context.Context, handlerItem handler) error {
-	switch handlerItem.handlerType {
-	case "decorator":
-		handlerFn, ok := handlerItem.fn.(func(ctx context.Context, input chan string, output chan string) error)
-		if !ok {
-			return nil
-		}
-
-		inputChan := c.channels[handlerItem.inputs[0]]
-		outputChan := c.channels[handlerItem.outputs[0]]
-
-		return handlerFn(ctx, inputChan, outputChan)
-
-	case "multiplexer":
-		handlerFn, ok := handlerItem.fn.(func(ctx context.Context, inputs []chan string, output chan string) error)
-		if !ok {
-			return nil
-		}
-
-		inputChans := make([]chan string, len(handlerItem.inputs))
-
-		for i, input := range handlerItem.inputs {
-			inputChans[i] = c.channels[input]
-		}
-
-		outputChan := c.channels[handlerItem.outputs[0]]
-
-		return handlerFn(ctx, inputChans, outputChan)
-
-	case "separator":
-		handlerFn, ok := handlerItem.fn.(func(ctx context.Context, input chan string, outputs []chan string) error)
-		if !ok {
-			return nil
-		}
-
-		inputChan := c.channels[handlerItem.inputs[0]]
-		outputChans := make([]chan string, len(handlerItem.outputs))
-
-		for i, output := range handlerItem.outputs {
-			outputChans[i] = c.channels[output]
-		}
-
-		return handlerFn(ctx, inputChan, outputChans)
-
-	default:
-		return nil
-	}
-}
-
-// stop closes all channels and stops all handlers.
-func (c *conveyer) stop() {
-	for _, channel := range c.channels {
-		close(channel)
-	}
+	return value, nil
 }
