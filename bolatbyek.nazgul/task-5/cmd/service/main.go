@@ -13,106 +13,121 @@ import (
 	"github.com/bolatbyek/task-5/pkg/handlers"
 )
 
-const sleepDuration = 10 * time.Millisecond
+const (
+	sleepDuration     = 10 * time.Millisecond
+	timeoutDuration   = 100 * time.Millisecond
+)
 
 func readBufferSize() (int, error) {
 	var bufferSize int
 	_, err := fmt.Scan(&bufferSize)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read buffer size: %w", err)
+	}
 
-	return bufferSize, err
+	return bufferSize, nil
 }
 
 func readNumHandlers() (int, error) {
 	var numHandlers int
 	_, err := fmt.Scan(&numHandlers)
-
-	return numHandlers, err
-}
-
-func registerDecorator(c *conveyer.Conveyer) error {
-	var input, output string
-	_, err := fmt.Scan(&input, &output)
 	if err != nil {
-		return err
+		return 0, fmt.Errorf("failed to read number of handlers: %w", err)
 	}
 
-	c.RegisterDecorator(handlers.PrefixDecoratorFunc, input, output)
+	return numHandlers, nil
+}
+
+func registerDecorator(conv *conveyer.Conveyer) error {
+	var input, output string
+	_, err := fmt.Scan(&input, &output)
+
+	if err != nil {
+		return fmt.Errorf("failed to read decorator channels: %w", err)
+	}
+
+	conv.RegisterDecorator(handlers.PrefixDecoratorFunc, input, output)
 
 	return nil
 }
 
-func registerMultiplexer(c *conveyer.Conveyer) error {
+func registerMultiplexer(conv *conveyer.Conveyer) error {
 	var numInputs int
 	_, err := fmt.Scan(&numInputs)
+
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read multiplexer inputs count: %w", err)
 	}
 
 	inputs := make([]string, numInputs)
-	for i := 0; i < numInputs; i++ {
+	for i := range numInputs {
 		_, err = fmt.Scan(&inputs[i])
+
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read multiplexer input: %w", err)
 		}
 	}
 
 	var output string
 	_, err = fmt.Scan(&output)
+
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read multiplexer output: %w", err)
 	}
 
-	c.RegisterMultiplexer(handlers.MultiplexerFunc, inputs, output)
+	conv.RegisterMultiplexer(handlers.MultiplexerFunc, inputs, output)
 
 	return nil
 }
 
-func registerSeparator(c *conveyer.Conveyer) error {
+func registerSeparator(conv *conveyer.Conveyer) error {
 	var input string
 
 	var numOutputs int
 	_, err := fmt.Scan(&input, &numOutputs)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read separator channels: %w", err)
 	}
 
 	outputs := make([]string, numOutputs)
-	for i := 0; i < numOutputs; i++ {
+	for i := range numOutputs {
 		_, err = fmt.Scan(&outputs[i])
+
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read separator output: %w", err)
 		}
 	}
 
-	c.RegisterSeparator(handlers.SeparatorFunc, input, outputs)
+	conv.RegisterSeparator(handlers.SeparatorFunc, input, outputs)
 
 	return nil
 }
 
-func registerHandlers(c *conveyer.Conveyer, numHandlers int) error {
-	for i := 0; i < numHandlers; i++ {
+func registerHandlers(conv *conveyer.Conveyer, numHandlers int) error {
+	for i := range numHandlers {
 		_ = i // intrange: use integer range when possible
+
 		var handlerType string
 		_, err := fmt.Scan(&handlerType)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read handler type: %w", err)
 		}
 
 		switch handlerType {
 		case "decorator":
-			if err := registerDecorator(c); err != nil {
+			if err := registerDecorator(conv); err != nil {
 				return err
 			}
 
 		case "multiplexer":
-			if err := registerMultiplexer(c); err != nil {
+			if err := registerMultiplexer(conv); err != nil {
 				return err
 			}
 
 		case "separator":
-			if err := registerSeparator(c); err != nil {
+			if err := registerSeparator(conv); err != nil {
 				return err
 			}
 		}
@@ -126,29 +141,30 @@ func readChannelNames() (string, string, error) {
 	_, err := fmt.Scan(&inputChan)
 
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("failed to read input channel: %w", err)
 	}
 
 	var outputChan string
 	_, err = fmt.Scan(&outputChan)
+
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("failed to read output channel: %w", err)
 	}
 
 	return inputChan, outputChan, nil
 }
 
-func sendData(c *conveyer.Conveyer, inputChan string) {
+func sendData(conv *conveyer.Conveyer, inputChan string) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		data := scanner.Text()
-		if sendErr := c.Send(inputChan, data); sendErr != nil {
+		if sendErr := conv.Send(inputChan, data); sendErr != nil {
 			break
 		}
 	}
 }
 
-func receiveAndOutput(c *conveyer.Conveyer, outputChan string, sigChan chan os.Signal, errChan chan error) bool {
+func receiveAndOutput(conv *conveyer.Conveyer, outputChan string, sigChan chan os.Signal, errChan chan error) bool {
 	select {
 	case <-sigChan:
 		return true
@@ -159,7 +175,7 @@ func receiveAndOutput(c *conveyer.Conveyer, outputChan string, sigChan chan os.S
 
 		return true
 	default:
-		result, recvErr := c.Recv(outputChan)
+		result, recvErr := conv.Recv(outputChan)
 		if recvErr != nil {
 			time.Sleep(sleepDuration)
 
@@ -184,14 +200,14 @@ func main() {
 		return
 	}
 
-	c := conveyer.New(bufferSize)
+	conv := conveyer.New(bufferSize)
 
 	numHandlers, err := readNumHandlers()
 	if err != nil {
 		return
 	}
 
-	err = registerHandlers(c, numHandlers)
+	err = registerHandlers(conv, numHandlers)
 	if err != nil {
 		return
 	}
@@ -204,7 +220,7 @@ func main() {
 
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- c.Run(ctx)
+		errChan <- conv.Run(ctx)
 	}()
 
 	inputChan, outputChan, err := readChannelNames()
@@ -215,11 +231,11 @@ func main() {
 		return
 	}
 
-	go sendData(c, inputChan)
+	go sendData(conv, inputChan)
 
 	done := false
 	for !done {
-		done = receiveAndOutput(c, outputChan, sigChan, errChan)
+		done = receiveAndOutput(conv, outputChan, sigChan, errChan)
 	}
 
 	select {
@@ -227,6 +243,7 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		}
-	case <-time.After(100 * time.Millisecond):
+
+	case <-time.After(timeoutDuration):
 	}
 }

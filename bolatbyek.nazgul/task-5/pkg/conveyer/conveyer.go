@@ -23,6 +23,7 @@ func New(size int) *Conveyer {
 	if size < 0 {
 		size = 0
 	}
+
 	return &Conveyer{
 		size:     size,
 		mu:       sync.RWMutex{},
@@ -42,6 +43,7 @@ func (c *Conveyer) ensureChan(chanID string) chan string {
 
 	createdChan := make(chan string, c.size)
 	c.chans[chanID] = createdChan
+
 	return createdChan
 }
 
@@ -51,6 +53,7 @@ func (c *Conveyer) getChan(chanID string) (chan string, bool) {
 	defer c.mu.RUnlock()
 
 	ch, exists := c.chans[chanID]
+
 	return ch, exists
 }
 
@@ -78,6 +81,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, chanID := range inputs {
 		inputChans = append(inputChans, c.ensureChan(chanID))
 	}
+
 	outputChan := c.ensureChan(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -93,6 +97,7 @@ func (c *Conveyer) RegisterSeparator(
 ) {
 	inputChan := c.ensureChan(input)
 	outputChans := make([]chan string, 0, len(outputs))
+
 	for _, chanID := range outputs {
 		outputChans = append(outputChans, c.ensureChan(chanID))
 	}
@@ -117,9 +122,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, registeredHandler := range c.handlers {
 		handlerCopy := registeredHandler
+
 		waitGroup.Add(1)
+
 		runHandler := func() {
 			defer waitGroup.Done()
+
 			if err := handlerCopy(runCtx); err != nil &&
 				!errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 				select {
@@ -160,6 +168,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channelInstance <- data
+
 	return nil
 }
 
