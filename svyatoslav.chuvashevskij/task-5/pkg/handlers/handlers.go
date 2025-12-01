@@ -91,12 +91,14 @@ func MultiplexerFunc(
 					return
 				}
 
-				if !strings.Contains(str, "no multiplexer") {
-					select {
-					case <-ctx.Done():
-						return
-					case output <- str:
-					}
+				if strings.Contains(str, "no multiplexer") {
+					return
+				}
+
+				select {
+				case <-ctx.Done():
+					return
+				case output <- str:
 				}
 			}
 		}(chanel)
