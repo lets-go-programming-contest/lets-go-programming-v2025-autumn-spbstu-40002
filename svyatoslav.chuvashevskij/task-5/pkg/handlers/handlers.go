@@ -83,22 +83,24 @@ func MultiplexerFunc(
 		go func(chanel chan string) {
 			defer waitGroup.Done()
 
-			select {
-			case <-ctx.Done():
-				return
-			case str, ok := <-chanel:
-				if !ok {
-					return
-				}
-
-				if strings.Contains(str, "no multiplexer") {
-					return
-				}
-
+			for {
 				select {
 				case <-ctx.Done():
 					return
-				case output <- str:
+				case str, ok := <-chanel:
+					if !ok {
+						return
+					}
+
+					if strings.Contains(str, "no multiplexer") {
+						continue
+					}
+
+					select {
+					case <-ctx.Done():
+						return
+					case output <- str:
+					}
 				}
 			}
 		}(chanel)
