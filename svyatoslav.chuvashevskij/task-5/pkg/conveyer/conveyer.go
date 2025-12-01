@@ -8,7 +8,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-const handlersNumber int = 3
 const undefined = "undefined"
 
 var ErrChanNotFound = errors.New("chan not found")
@@ -23,7 +22,7 @@ func New(size int) Conveyer {
 	return Conveyer{
 		size:     size,
 		channels: make(map[string]chan string),
-		handlers: make([]func(ctx context.Context) error, handlersNumber),
+		handlers: []func(ctx context.Context) error{},
 	}
 }
 
@@ -101,12 +100,12 @@ func (c *Conveyer) RegisterMultiplexer(
 	output string,
 ) {
 	inputChannels := make([]chan string, c.size)
-	for _, input := range inputs {
+	for i, input := range inputs {
 		_, exists := c.channels[input]
 		if !exists {
 			c.channels[input] = make(chan string, c.size)
 		}
-		inputChannels = append(inputChannels, c.channels[input])
+		inputChannels[i] = c.channels[input]
 	}
 
 	_, exist := c.channels[output]
@@ -134,12 +133,12 @@ func (c *Conveyer) RegisterSeparator(
 	}
 
 	outputChannels := make([]chan string, c.size)
-	for _, output := range outputs {
+	for i, output := range outputs {
 		_, exists := c.channels[output]
 		if !exists {
 			c.channels[output] = make(chan string, c.size)
 		}
-		outputChannels = append(outputChannels, c.channels[output])
+		outputChannels[i] = c.channels[output]
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
