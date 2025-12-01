@@ -129,10 +129,10 @@ func (c *Conveyer) RegisterSeparator(
 ) {
 	_, exist := c.channels[input]
 	if !exist {
-		c.channels[input] = make(chan string, len(outputs))
+		c.channels[input] = make(chan string, c.size)
 	}
 
-	outputChannels := make([]chan string, c.size)
+	outputChannels := make([]chan string, len(outputs))
 	for i, output := range outputs {
 		_, exists := c.channels[output]
 		if !exists {
