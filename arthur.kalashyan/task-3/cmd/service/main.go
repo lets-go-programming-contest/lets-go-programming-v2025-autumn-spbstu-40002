@@ -7,12 +7,8 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "", "path to YAML config file")
+	configPath := flag.String("config", "config.yaml", "path to YAML config file")
 	flag.Parse()
-
-	if *configPath == "" {
-		panic("config path not provided")
-	}
 
 	cfg, err := utils.LoadConfig(*configPath)
 	if err != nil {
