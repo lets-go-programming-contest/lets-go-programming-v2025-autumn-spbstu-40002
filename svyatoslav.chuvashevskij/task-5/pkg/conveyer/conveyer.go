@@ -39,7 +39,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		group.Go(func() error { return handler(ctx) })
 	}
 
-	return group.Wait()
+	err := group.Wait()
+	if err != nil {
+		return fmt.Errorf("pipline failed: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -80,6 +85,7 @@ func (c *Conveyer) RegisterDecorator(
 	if !exist {
 		c.channels[input] = make(chan string, c.size)
 	}
+
 	_, exist = c.channels[output]
 	if !exist {
 		c.channels[output] = make(chan string, c.size)
@@ -100,11 +106,13 @@ func (c *Conveyer) RegisterMultiplexer(
 	output string,
 ) {
 	inputChannels := make([]chan string, len(inputs))
+
 	for i, input := range inputs {
 		_, exists := c.channels[input]
 		if !exists {
 			c.channels[input] = make(chan string, c.size)
 		}
+
 		inputChannels[i] = c.channels[input]
 	}
 
@@ -133,11 +141,13 @@ func (c *Conveyer) RegisterSeparator(
 	}
 
 	outputChannels := make([]chan string, len(outputs))
+
 	for i, output := range outputs {
 		_, exists := c.channels[output]
 		if !exists {
 			c.channels[output] = make(chan string, c.size)
 		}
+
 		outputChannels[i] = c.channels[output]
 	}
 
