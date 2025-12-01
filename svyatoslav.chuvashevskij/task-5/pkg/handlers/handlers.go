@@ -29,7 +29,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if !strings.HasPrefix(str, "decorated:") {
-				str = "decorated:" + str
+				str = "decorated: " + str
 			}
 
 			select {
