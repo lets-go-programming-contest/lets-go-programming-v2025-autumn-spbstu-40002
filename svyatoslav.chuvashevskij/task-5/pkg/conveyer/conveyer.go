@@ -37,7 +37,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
-		group.Go(handler(ctx))
+		group.Go(func() error { return handler(ctx) })
 	}
 
 	return group.Wait()
