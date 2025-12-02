@@ -103,7 +103,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 
 func (conveyer *Conveyer) Send(input string, data string) error {
 	if _, ok := conveyer.mapChannels[input]; !ok {
-		return errNonExistingСhannel
+		return errNonExistingChannel
 	} else {
 		conveyer.mapChannels[input] <- data
 		
@@ -114,12 +114,12 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 func (c *Conveyer) Recv(output string) (string, error) {
 	channel, okChan := c.mapChannels[output]
 	if !okChan {
-		return "", errNonExistingСhannel
+		return "", errNonExistingChannel
 	} else {
 		var outputString string
 		
-		outputString, ok = <-channel
-		if ok {
+		outputString, okChan := <-channel
+		if okChan {
 			return outputString, nil
 		} else {
 			return "", errUndefinedChannel
