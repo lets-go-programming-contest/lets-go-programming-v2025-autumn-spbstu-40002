@@ -12,6 +12,7 @@ import (
 )
 
 type outputCurrency struct {
+	NumCode  int     `json:"num_code"
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
@@ -31,6 +32,7 @@ func buildOutput(bankData *Bank) (outputBank, error) {
 		}
 
 		result = append(result, outputCurrency{
+			NumCode:  curr.NumCode,
 			CharCode: curr.CharCode,
 			Value:    parsedVal,
 		})
