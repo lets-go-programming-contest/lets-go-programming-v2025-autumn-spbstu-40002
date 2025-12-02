@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-var errUndefinedChannel = errors.New("undefined")
+var errUndefinedChannel = errors.New("channel is undefined")
 var errNonExistingChannel = errors.New("chan not found")
 var errContextIsCanceled = errors.New("the context is canceled")
 
@@ -81,24 +81,23 @@ func (conveyer *Conveyer) RegisterSeparator(
 		for _, ch := range outputs {
 			outputsCh = append(outputsCh, conveyer.mapChannels[ch])
 		}
-		
+
 		return fnSeparator(ctx, conveyer.mapChannels[input], outputsCh)
 	})
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
-	if err := ctx.Err(); err != nil {
-		for _, channel := range conveyer.mapChannels {
-			close(channel)
-		}
-		
-		return errContextIsCanceled
+	groupHendlers, gctx := errgroup.WithContext(ctx)
+
+	for _, hendler := range c.handlersPool {
+		h := hendler
+
+		groupHendlers.Go(func() error {
+			return h(gctx)
+		})
 	}
-	for _, fn := range conveyer.handlersPool {
-		go fn(ctx)
-	}
-	
-	return nil
+
+	return groupHendlers.Wait()
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
