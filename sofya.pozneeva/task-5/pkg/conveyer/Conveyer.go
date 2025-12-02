@@ -5,9 +5,9 @@ import (
 	"errors"
 )
 
-var undefinedChannel = errors.New("undefined")
-var nonExistingСhannel = errors.New("chan not found")
-var contextIsCanceled = errors.New("the context is canceled")
+var errUndefinedChannel   = errors.New("undefined")
+var errNonExistingСhannel = errors.New("chan not found")
+var errContextIsCanceled  = errors.New("the context is canceled")
 
 func (conveyer *Conveyer) makeChannel(name string) {
 	if _, ok := conveyer.mapChannels[name]; !ok {
@@ -28,7 +28,7 @@ type Conveyer struct {
 }
 
 func (conveyer *Conveyer) RegisterDecorator(
-	fn func(
+	fnDecorator func(
 		ctx context.Context,
 		input chan string,
 		output chan string,
@@ -39,12 +39,12 @@ func (conveyer *Conveyer) RegisterDecorator(
 	conveyer.makeChannel(input)
 	conveyer.makeChannel(output)
 	conveyer.handlersPool = append(conveyer.handlersPool, func(ctx context.Context) error {
-		return fn(ctx, conveyer.mapChannels[input], conveyer.mapChannels[output])
+		return fnDecorator(ctx, conveyer.mapChannels[input], conveyer.mapChannels[output])
 	})
 }
 
 func (conveyer *Conveyer) RegisterMultiplexer(
-	fn func(
+	fnMultiplexer func(
 		ctx context.Context,
 		inputs []chan string,
 		output chan string,
@@ -61,12 +61,12 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 			inputsCh = append(inputsCh, conveyer.mapChannels[ch])
 		}
 
-		return fn(ctx, inputsCh, conveyer.mapChannels[output])
+		return fnMultiplexer(ctx, inputsCh, conveyer.mapChannels[output])
 	})
 }
 
 func (conveyer *Conveyer) RegisterSeparator(
-	fn func(
+	fnSeparator func(
 		ctx context.Context,
 		input chan string,
 		outputs []chan string,
@@ -81,7 +81,8 @@ func (conveyer *Conveyer) RegisterSeparator(
 		for _, ch := range outputs {
 			outputsCh = append(outputsCh, conveyer.mapChannels[ch])
 		}
-		return fn(ctx, conveyer.mapChannels[input], outputsCh)
+		
+		return fnSeparator(ctx, conveyer.mapChannels[input], outputsCh)
 	})
 }
 
@@ -90,19 +91,22 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 		for _, channel := range conveyer.mapChannels {
 			close(channel)
 		}
-		return contextIsCanceled
+		
+		return errContextIsCanceled
 	}
 	for _, fn := range conveyer.handlersPool {
 		go fn(ctx)
 	}
+	
 	return nil
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
 	if _, ok := conveyer.mapChannels[input]; !ok {
-		return nonExistingСhannel
+		return errNonExistingСhannel
 	} else {
 		conveyer.mapChannels[input] <- data
+		
 		return nil
 	}
 }
@@ -110,14 +114,15 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 func (conveyer *Conveyer) Recv(output string) (string, error) {
 	channel, ok := conveyer.mapChannels[output]
 	if !ok {
-		return "", nonExistingСhannel
+		return "", errNonExistingСhannel
 	} else {
 		var outputString string
+		
 		outputString, ok = <-channel
 		if ok {
 			return outputString, nil
 		} else {
-			return "", undefinedChannel
+			return "", errUndefinedChannel
 		}
 	}
 }
