@@ -2,6 +2,7 @@ package conveyer
 
 import (
 	"context"
+	"golang.org/x/sync/errgroup"
 	"errors"
 )
 
@@ -89,7 +90,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 func (conveyer *Conveyer) Run(ctx context.Context) error {
 	groupHendlers, gctx := errgroup.WithContext(ctx)
 
-	for _, hendler := range c.handlersPool {
+	for _, hendler := range conveyer.handlersPool {
 		h := hendler
 
 		groupHendlers.Go(func() error {
