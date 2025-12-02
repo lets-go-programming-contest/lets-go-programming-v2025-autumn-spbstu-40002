@@ -40,20 +40,17 @@ func DecodeXML(reader io.Reader) (*Bank, error) {
 	return bankData, nil
 }
 
-func LoadFromXML(path string) (out *Bank, err error) {
-	var fileHandle *os.File
-	fileHandle, err = os.Open(path)
+func LoadFromXML(path string) (*Bank, error) {
+	fileHandle, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open input XML file: %w", err)
 	}
 
-	defer func() {
-		if closeErr := fileHandle.Close(); closeErr != nil {
-			if err == nil {
-				err = fmt.Errorf("failed to close input XML file: %w", closeErr)
-			}
-		}
-	}()
+	bankData, decodeErr := DecodeXML(fileHandle)
 
-	return DecodeXML(fileHandle)
+	if closeErr := fileHandle.Close(); closeErr != nil && decodeErr == nil {
+		return nil, fmt.Errorf("failed to close input XML file: %w", closeErr)
+	}
+
+	return bankData, decodeErr
 }
