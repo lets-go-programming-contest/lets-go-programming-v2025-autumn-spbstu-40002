@@ -5,9 +5,9 @@ import (
 	"errors"
 )
 
-var errUndefinedChannel   = errors.New("undefined")
-var errNonExistingСhannel = errors.New("chan not found")
-var errContextIsCanceled  = errors.New("the context is canceled")
+var errUndefinedChannel = errors.New("undefined")
+var errNonExistingChannel = errors.New("chan not found")
+var errContextIsCanceled = errors.New("the context is canceled")
 
 func (conveyer *Conveyer) makeChannel(name string) {
 	if _, ok := conveyer.mapChannels[name]; !ok {
@@ -111,9 +111,9 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 	}
 }
 
-func (conveyer *Conveyer) Recv(output string) (string, error) {
-	channel, ok := conveyer.mapChannels[output]
-	if !ok {
+func (c *Conveyer) Recv(output string) (string, error) {
+	channel, okChan := c.mapChannels[output]
+	if !okChan {
 		return "", errNonExistingСhannel
 	} else {
 		var outputString string
