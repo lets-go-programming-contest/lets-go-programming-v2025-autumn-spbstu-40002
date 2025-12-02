@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errCantBeDecorated = errors.New("chan not found")
+	errCantBeDecorated = errors.New("can't be decorated")
 	errEmptyOutputs    = errors.New("empty output")
 )
 
@@ -62,7 +62,7 @@ func SeparatorFunc(
 		}
 	})()
 
-	if len(input) == 0 {
+	if len(outputs) == 0 {
 		return errEmptyOutputs
 	}
 
@@ -83,7 +83,7 @@ func SeparatorFunc(
 			}
 
 			index++
-			if index >= len(input) {
+			if index >= len(outputs) {
 				index = 0
 			}
 		}
@@ -124,7 +124,7 @@ func MultiplexerFunc(
 						return
 					}
 
-					if strings.Contains(data, noDecorator) {
+					if strings.Contains(data, noMultiplexer) {
 						continue
 					}
 
