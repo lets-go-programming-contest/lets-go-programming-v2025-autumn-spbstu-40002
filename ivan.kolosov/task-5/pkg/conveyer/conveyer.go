@@ -1,0 +1,135 @@
+package conveyer
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"golang.org/x/sync/errgroup"
+)
+
+var ErrNoChannel = errors.New("no channel")
+
+const undef = "undefined"
+
+type Conveyer struct {
+	size     int
+	channels map[string]chan string
+	handlers []func(context.Context) error
+}
+
+func New(size int) Conveyer {
+	return Conveyer{
+		size:     size,
+		channels: make(map[string]chan string),
+		handlers: []func(context.Context) error{},
+	}
+}
+
+func (c *Conveyer) Run(ctx context.Context) error {
+	defer func() {
+		for _, channel := range c.channels {
+			close(channel)
+		}
+	}()
+
+	group, ctx := errgroup.WithContext(ctx)
+
+	for _, handler := range c.handlers {
+		group.Go(func() error {
+			return handler(ctx)
+		})
+	}
+
+	err := group.Wait()
+	if err != nil {
+		return fmt.Errorf("conveyer failes due to: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Conveyer) Send(input string, data string) error {
+	channel, exists := c.channels[input]
+	if !exists {
+		return ErrNoChannel
+	}
+
+	channel <- data
+
+	return nil
+}
+
+func (c *Conveyer) Recv(output string) (string, error) {
+	channel, exists := c.channels[output]
+	if !exists {
+		return "", ErrNoChannel
+	}
+
+	data, isOpen := <-channel
+	if !isOpen {
+		return undef, nil
+	}
+
+	return data, nil
+}
+
+func (c *Conveyer) RegisterDecorator(
+	handler func(
+		ctx context.Context,
+		input chan string,
+		output chan string,
+	) error,
+	input string,
+	output string,
+) {
+	c.makeChannels(input)
+	c.makeChannels(output)
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return handler(ctx, c.channels[input], c.channels[output])
+	})
+}
+
+func (c *Conveyer) RegisterMultiplexer(
+	handler func(
+		ctx context.Context,
+		inputs []chan string,
+		output chan string,
+	) error,
+	inputs []string,
+	output string,
+) {
+	c.makeChannels(inputs...)
+	c.makeChannels(output)
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		inputsCh := make([]chan string, 0, len(inputs))
+
+		for _, channel := range inputs {
+			inputsCh = append(inputsCh, c.channels[channel])
+		}
+
+		return handler(ctx, inputsCh, c.channels[output])
+	})
+}
+
+func (c *Conveyer) RegisterSeparator(
+	handler func(
+		ctx context.Context,
+		input chan string,
+		outputs []chan string,
+	) error,
+	input string,
+	outputs []string,
+) {
+	c.makeChannels(input)
+	c.makeChannels(outputs...)
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		outputsCh := make([]chan string, 0, len(outputs))
+
+		for _, channel := range outputs {
+			outputsCh = append(outputsCh, c.channels[channel])
+		}
+
+		return handler(ctx, c.channels[input], outputsCh)
+	})
+}
