@@ -2,13 +2,13 @@ package conveyer
 
 import (
 	"context"
-	"golang.org/x/sync/errgroup"
 	"errors"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var errUndefinedChannel = errors.New("channel is undefined")
 var errNonExistingChannel = errors.New("chan not found")
-var errContextIsCanceled = errors.New("the context is canceled")
 
 func (conveyer *Conveyer) makeChannel(name string) {
 	if _, ok := conveyer.mapChannels[name]; !ok {
@@ -98,7 +98,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return groupHendlers.Wait()
+	return groupHendlers.Wait() //nolint:wrapcheck
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
