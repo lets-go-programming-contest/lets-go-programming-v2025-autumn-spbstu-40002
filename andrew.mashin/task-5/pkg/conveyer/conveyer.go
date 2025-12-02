@@ -7,10 +7,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	errChannel   = errors.New("chan not found")
-	errUndefined = errors.New("undefined")
-)
+var errChannel = errors.New("chan not found")
+
+const undefined = "undefined"
 
 type Conveyer struct {
 	channelSize int
@@ -129,7 +128,7 @@ func (conv *Conveyer) Recv(output string) (string, error) {
 
 	data, ok2 := <-channel
 	if !ok2 {
-		return "", errUndefined
+		return undefined, nil
 	}
 
 	return data, nil
