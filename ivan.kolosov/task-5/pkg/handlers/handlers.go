@@ -52,7 +52,7 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	counter := 0
-	
+
 	for {
 		select {
 		case <-ctx.Done():
