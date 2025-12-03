@@ -7,8 +7,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var errUndefinedChannel = errors.New("channel is undefined")
-var errNonExistingChannel = errors.New("chan not found")
+var(
+	errUndefinedChannel   = errors.New("channel is undefined")
+	errNonExistingChannel = errors.New("chan not found")
+)
 
 func (conveyer *Conveyer) makeChannel(name string) {
 	if _, ok := conveyer.mapChannels[name]; !ok {
@@ -16,9 +18,9 @@ func (conveyer *Conveyer) makeChannel(name string) {
 	}
 }
 
-func (c *Conveyer) makeChannels(names ...string) {
+func (conveyer *Conveyer) makeChannels(names ...string) {
 	for _, name := range names {
-		c.makeChannel(name)
+		conveyer.makeChannel(name)
 	}
 }
 
@@ -26,6 +28,14 @@ type Conveyer struct {
 	channelSize  int
 	mapChannels  map[string]chan string
 	handlersPool []func(context.Context) error
+}
+
+func New(channelSize int) *Conveyer {
+	return &Conveyer{
+		channelSize:  channelSize,
+		channels:     make(map[string]chan string),
+		handlersPool: make([]func(context.Context) error, 0),
+	}
 }
 
 func (conveyer *Conveyer) RegisterDecorator(
@@ -111,8 +121,8 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 	}
 }
 
-func (c *Conveyer) Recv(output string) (string, error) {
-	channel, okChan := c.mapChannels[output]
+func (conveyer *Conveyer) Recv(output string) (string, error) {
+	channel, okChan := conveyer.mapChannels[output]
 	if !okChan {
 		return "", errNonExistingChannel
 	} else {
