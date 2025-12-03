@@ -106,7 +106,7 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 		return errNonExistingChannel
 	} else {
 		conveyer.mapChannels[input] <- data
-		
+
 		return nil
 	}
 }
@@ -117,7 +117,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 		return "", errNonExistingChannel
 	} else {
 		var outputString string
-		
+
 		outputString, okChan := <-channel
 		if okChan {
 			return outputString, nil
