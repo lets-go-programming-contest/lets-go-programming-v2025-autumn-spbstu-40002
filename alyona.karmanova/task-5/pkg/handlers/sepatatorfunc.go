@@ -1,6 +1,9 @@
 package handlers
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type Separator func(
 	context.Context,
@@ -14,7 +17,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context done: %w", ctx.Err())
 
 		case val, ok := <-input:
 			if !ok {
@@ -25,7 +28,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context done: %w", ctx.Err())
 
 			case out <- val:
 			}
