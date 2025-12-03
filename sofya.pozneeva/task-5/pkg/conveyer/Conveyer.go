@@ -7,7 +7,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var(
+var (
 	errUndefinedChannel   = errors.New("channel is undefined")
 	errNonExistingChannel = errors.New("chan not found")
 )
