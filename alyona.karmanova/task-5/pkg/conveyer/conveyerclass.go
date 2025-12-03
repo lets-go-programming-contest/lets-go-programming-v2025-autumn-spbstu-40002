@@ -52,6 +52,7 @@ func (c *conveyerImpl) RegisterMultiplexer(
 
 	outCh := c.getOrCreateChannel(output)
 	inChs := make([]chan string, len(inputs))
+
 	for i, name := range inputs {
 		inChs[i] = c.getOrCreateChannel(name)
 	}
@@ -70,6 +71,7 @@ func (c *conveyerImpl) RegisterSeparator(
 
 	inCh := c.getOrCreateChannel(input)
 	outChs := make([]chan string, len(outputs))
+
 	for i, name := range outputs {
 		outChs[i] = c.getOrCreateChannel(name)
 	}
@@ -85,7 +87,6 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	errgr, ctx := errgroup.WithContext(ctx)
 
 	for _, h := range c.handlers {
-		h := h
 		errgr.Go(func() error {
 			return h(ctx)
 		})
@@ -108,6 +109,7 @@ func (c *conveyerImpl) Send(input, data string) error {
 	}
 
 	ch <- data
+
 	return nil
 }
 
@@ -128,21 +130,20 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 }
 
 func (c *conveyerImpl) getOrCreateChannel(name string) chan string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if ch, ok := c.channels[name]; ok {
-		return ch
+	if channel, ok := c.channels[name]; ok {
+		return channel
 	}
 
-	ch := make(chan string, c.size)
-	c.channels[name] = ch
-	return ch
+	channel := make(chan string, c.size)
+	c.channels[name] = channel
+
+	return channel
 }
 
 func (c *conveyerImpl) closeAllChannels() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	for _, ch := range c.channels {
 		close(ch)
 	}

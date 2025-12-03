@@ -18,79 +18,93 @@ const (
 	noMultiplexer = "no multiplexer"
 )
 
-// Добавляет префикс к строкам из input и пишет в output
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	for data := range input {
+	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
-		}
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
 
-		if strings.Contains(data, noDecorator) {
-			return ErrDecorator
-		}
+			if strings.Contains(data, noDecorator) {
+				return ErrDecorator
+			}
 
-		if !strings.HasPrefix(data, prefix) {
-			data = prefix + data
-		}
+			if !strings.HasPrefix(data, prefix) {
+				data = prefix + data
+			}
 
-		select {
-		case <-ctx.Done():
-			return nil
-		case output <- data:
+			select {
+			case output <- data:
+			case <-ctx.Done():
+				return nil
+			}
 		}
 	}
-	return nil
 }
 
-// Разбивает входной канал на несколько выходных по кругу
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
 		return ErrOutputsEmpty
 	}
 
 	index := 0
-	for data := range input {
+	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		default:
-		}
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
 
-		outCh := outputs[index%len(outputs)]
-		index++
+			outCh := outputs[index%len(outputs)]
+			index++
 
-		select {
-		case <-ctx.Done():
-			return nil
-		case outCh <- data:
+			select {
+			case outCh <- data:
+			case <-ctx.Done():
+				return nil
+			}
 		}
 	}
-	return nil
 }
 
-// Объединяет несколько входных каналов в один выходной
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wg sync.WaitGroup
+	var waitg sync.WaitGroup
 
-	for _, in := range inputs {
-		wg.Add(1)
-		go func(ch chan string) {
-			defer wg.Done()
-			for data := range ch {
-				if strings.Contains(data, noMultiplexer) {
-					continue
-				}
+	for _, inputCh := range inputs {
+		waitg.Add(1)
+
+		go func(channel chan string) {
+			defer waitg.Done()
+
+			for {
 				select {
 				case <-ctx.Done():
 					return
-				case output <- data:
+				case data, ok := <-channel:
+					if !ok {
+						return
+					}
+
+					if strings.Contains(data, noMultiplexer) {
+						continue
+					}
+
+					select {
+					case output <- data:
+					case <-ctx.Done():
+						return
+					}
 				}
 			}
-		}(in)
+		}(inputCh)
 	}
 
-	wg.Wait()
+	waitg.Wait()
+
 	return nil
 }
