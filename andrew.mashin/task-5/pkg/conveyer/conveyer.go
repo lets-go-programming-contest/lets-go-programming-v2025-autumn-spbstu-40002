@@ -41,10 +41,10 @@ func New(size int) *Conveyer {
 
 func (conv *Conveyer) RegisterDecorator(
 	callback func(
-		ctx context.Context,
-		input chan string,
-		output chan string,
-	) error,
+	ctx context.Context,
+	input chan string,
+	output chan string,
+) error,
 	input string,
 	output string,
 ) {
@@ -57,10 +57,10 @@ func (conv *Conveyer) RegisterDecorator(
 
 func (conv *Conveyer) RegisterMultiplexer(
 	callback func(
-		ctx context.Context,
-		inputs []chan string,
-		output chan string,
-	) error,
+	ctx context.Context,
+	inputs []chan string,
+	output chan string,
+) error,
 	inputs []string,
 	output string,
 ) {
@@ -74,15 +74,14 @@ func (conv *Conveyer) RegisterMultiplexer(
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return callback(ctx, inputChannels, outputCh)
 	})
-
 }
 
 func (conv *Conveyer) RegisterSeparator(
 	callback func(
-		ctx context.Context,
-		input chan string,
-		outputs []chan string,
-	) error,
+	ctx context.Context,
+	input chan string,
+	outputs []chan string,
+) error,
 	input string,
 	outputs []string,
 ) {
@@ -107,7 +106,10 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return group.Wait()
+	if err := group.Wait(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (conv *Conveyer) Send(input string, data string) error {

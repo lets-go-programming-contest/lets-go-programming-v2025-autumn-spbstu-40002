@@ -102,28 +102,25 @@ func MultiplexerFunc(
 		return nil
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
+	var workersWaitGroup sync.WaitGroup
+	workersWaitGroup.Add(len(inputs))
 
 	done := make(chan struct{})
 
 	go func() {
-		wg.Wait()
+		workersWaitGroup.Wait()
 		close(done)
 	}()
 
-	workersCount := len(inputs)
-	for idx := 0; idx < workersCount; idx++ {
-		inputChan := inputs[idx]
-
-		go func(in <-chan string) {
-			defer wg.Done()
+	for _, inputChannel := range inputs {
+		go func(inputChan <-chan string) {
+			defer workersWaitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, channelOpen := <-in:
+				case data, channelOpen := <-inputChan:
 					if !channelOpen {
 						return
 					}
@@ -139,7 +136,7 @@ func MultiplexerFunc(
 					}
 				}
 			}
-		}(inputChan)
+		}(inputChannel)
 	}
 
 	select {
