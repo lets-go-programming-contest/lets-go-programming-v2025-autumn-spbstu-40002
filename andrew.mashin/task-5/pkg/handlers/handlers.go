@@ -68,6 +68,7 @@ func SeparatorFunc(
 	}
 
 	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -103,8 +104,8 @@ func MultiplexerFunc(
 	}
 
 	var workersWaitGroup sync.WaitGroup
-	workersWaitGroup.Add(len(inputs))
 
+	workersWaitGroup.Add(len(inputs))
 	done := make(chan struct{})
 
 	go func() {
