@@ -24,6 +24,7 @@ func (conv *Conveyer) getOrCreateChannel(name string) chan string {
 
 	ch := make(chan string, conv.channelSize)
 	conv.channels[name] = ch
+
 	return ch
 }
 
@@ -109,6 +110,7 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 	if err := group.Wait(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -119,6 +121,7 @@ func (conv *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
