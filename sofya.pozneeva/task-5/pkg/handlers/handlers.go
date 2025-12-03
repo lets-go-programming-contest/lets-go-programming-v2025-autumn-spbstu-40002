@@ -6,11 +6,10 @@ import (
 	"strings"
 )
 
-var(
+var (
 	errStringNotDecorated = errors.New("can’t be decorated")
 	errStringDecorated    = errors.New("string was decorated earlier")
 	errInvalidChan        = errors.New("don't read value from chan")
-	errCancelledContext   = errors.New("context is cancelled")
 )
 
 const (
@@ -27,7 +26,7 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return errCancelledContext
+			return nil
 
 		case inputString, ok := <-input:
 			if !ok {
@@ -42,13 +41,13 @@ func PrefixDecoratorFunc(
 				return errStringNotDecorated
 			}
 
-			decorated := "decorator:" + inputString
+			decorated := stringForDecorate + inputString
 
 			select {
 			case output <- decorated:
 				return nil
 			case <-ctx.Done():
-				return errCancelledContext
+				return nil
 			}
 		}
 	}
@@ -59,9 +58,11 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
+	defer close(output)
+
 	for {
 		if err := ctx.Err(); err != nil {
-			return errCancelledContext
+			return
 		}
 
 		for _, channel := range inputs {
@@ -76,11 +77,11 @@ func MultiplexerFunc(
 				}
 				select {
 				case <-ctx.Done():
-					return errCancelledContext
+					return
 				case output <- value:
 				}
 			case <-ctx.Done():
-				return errCancelledContext
+				return nil
 			default:
 				continue
 			}
@@ -94,7 +95,7 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	if ctx.Err() != nil {
-		return errCancelledContext
+		return nil
 	}
 
 	for _, channel := range outputs {
@@ -107,11 +108,11 @@ func SeparatorFunc(
 			case channel <- value:
 				continue
 			case <-ctx.Done():
-				return errCancelledContext
+				return nil
 			}
 
 		case <-ctx.Done():
-			return errCancelledContext
+			return nil
 		}
 	}
 
