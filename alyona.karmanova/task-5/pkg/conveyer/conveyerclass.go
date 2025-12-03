@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -82,17 +83,20 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	return errGroup.Wait()
 }
 
-func (c *conveyerImpl) Send(input string, data string) error {
+func (c *conveyerImpl) Send(input, data string) error {
 	c.mu.RLock()
 	ch, ok := c.channels[input]
 	c.mu.RUnlock()
-
 	if !ok {
 		return ErrChanNotFound
 	}
 
-	ch <- data
-	return nil
+	select {
+	case ch <- data:
+		return nil
+	case <-time.After(time.Second):
+		return errors.New("send timeout")
+	}
 }
 
 func (c *conveyerImpl) Recv(output string) (string, error) {
