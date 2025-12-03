@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var (
 	errSendChanNotFound = errors.New("chan not found")
 	errRecvChanNotFound = errors.New("chan not found")
 	errNoHandlers       = errors.New("conveyer has no handlers")
-	undefined           = "undefined"
 )
 
 type Conveyer struct {
@@ -25,6 +26,7 @@ func New(channelSize int) *Conveyer {
 		channelSize:  channelSize,
 		channels:     make(map[string]chan string),
 		handlersPool: make([]func(context.Context) error, 0),
+		mu:           sync.RWMutex{},
 	}
 }
 
@@ -44,6 +46,7 @@ func (c *Conveyer) addToPool(function func(context.Context) error) {
 func (c *Conveyer) closeAllChannels() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	for name, ch := range c.channels {
 		close(ch)
 		delete(c.channels, name)
@@ -77,6 +80,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, input := range inputs {
 		c.makeChannel(input)
 	}
+
 	c.makeChannel(output)
 
 	c.addToPool(func(context context.Context) error {
@@ -104,6 +108,7 @@ func (c *Conveyer) RegisterSeparator(
 	outputs []string,
 ) {
 	c.makeChannel(input)
+
 	for _, output := range outputs {
 		c.makeChannel(output)
 	}
@@ -132,42 +137,21 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return errNoHandlers
 	}
 
-	errChan := make(chan error, len(c.handlersPool))
-	var wg sync.WaitGroup
+	handlerGroup, hCtx := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlersPool {
-		wg.Add(1)
-		go func(h func(context.Context) error) {
-			defer wg.Done()
-			if err := h(ctx); err != nil {
-				errChan <- err
-			}
-		}(handler)
+		handlerGroup.Go(func() error {
+			return handler(hCtx)
+		})
 	}
 
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-ctx.Done():
+	if err := handlerGroup.Wait(); err != nil {
 		c.closeAllChannels()
-
-		return ctx.Err()
-	case err, ok := <-errChan:
-		if ok {
-			c.closeAllChannels()
-			<-done
-
-			return err
-		}
-		c.closeAllChannels()
-		<-done
-
-		return nil
+		return err
 	}
+
+	c.closeAllChannels()
+	return nil
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -195,7 +179,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 
 	data, ok := <-ch
 	if !ok {
-		return undefined, nil
+		return "undefined", nil
 	}
 
 	return data, nil
