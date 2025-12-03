@@ -1,4 +1,4 @@
-module task-5
+module github.com/Exam-Play/task-5
 
 go 1.22.7
 
