@@ -62,7 +62,7 @@ func MultiplexerFunc(
 
 	for {
 		if err := ctx.Err(); err != nil {
-			return
+			return nil
 		}
 
 		for _, channel := range inputs {
@@ -77,7 +77,7 @@ func MultiplexerFunc(
 				}
 				select {
 				case <-ctx.Done():
-					return
+					return nil
 				case output <- value:
 				}
 			case <-ctx.Done():
