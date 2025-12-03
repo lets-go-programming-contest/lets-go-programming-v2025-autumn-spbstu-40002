@@ -47,9 +47,8 @@ func (c *Conveyer) closeAllChannels() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for name, ch := range c.channels {
-		close(ch)
-		delete(c.channels, name)
+	for _, channel := range c.channels {
+		close(channel)
 	}
 }
 
@@ -158,28 +157,28 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 func (c *Conveyer) Send(input string, data string) error {
 	c.mu.RLock()
-	ch, exists := c.channels[input]
+	channel, exists := c.channels[input]
 	c.mu.RUnlock()
 
 	if !exists {
 		return errChanNotFound
 	}
 
-	ch <- data
+	channel <- data
 
 	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
-	ch, exists := c.channels[output]
+	channel, exists := c.channels[output]
 	c.mu.RUnlock()
 
 	if !exists {
 		return "", errChanNotFound
 	}
 
-	data, ok := <-ch
+	data, ok := <-channel
 	if !ok {
 		return "undefined", nil
 	}
