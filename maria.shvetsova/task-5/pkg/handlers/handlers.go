@@ -50,7 +50,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -106,7 +106,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	done := make(chan struct{})
 	go func() {
 		waitGroup.Wait()
-		close(output)
 		close(done)
 	}()
 
