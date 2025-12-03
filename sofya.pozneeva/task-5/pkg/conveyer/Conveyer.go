@@ -33,7 +33,7 @@ type Conveyer struct {
 func New(channelSize int) *Conveyer {
 	return &Conveyer{
 		channelSize:  channelSize,
-		channels:     make(map[string]chan string),
+		mapChannels:  make(map[string]chan string),
 		handlersPool: make([]func(context.Context) error, 0),
 	}
 }
