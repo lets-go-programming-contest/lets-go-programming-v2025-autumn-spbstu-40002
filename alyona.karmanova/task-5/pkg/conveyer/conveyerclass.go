@@ -3,8 +3,8 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
-	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -24,30 +24,36 @@ func New(size int) *conveyerImpl {
 	return &conveyerImpl{
 		size:     size,
 		channels: make(map[string]chan string),
-		handlers: make([]func(ctx context.Context) error, 0),
+		handlers: []func(ctx context.Context) error{},
 	}
 }
 
-func (c *conveyerImpl) RegisterDecorator(fn func(ctx context.Context, input, output chan string) error, input, output string) {
+func (c *conveyerImpl) RegisterDecorator(
+	fn func(ctx context.Context, input, output chan string) error,
+	input, output string,
+) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	inCh := c.reservedchannel(input)
-	outCh := c.reservedchannel(output)
+	inCh := c.getOrCreateChannel(input)
+	outCh := c.getOrCreateChannel(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		return fn(ctx, inCh, outCh)
 	})
 }
 
-func (c *conveyerImpl) RegisterMultiplexer(fn func(ctx context.Context, inputs []chan string, output chan string) error, inputs []string, output string) {
+func (c *conveyerImpl) RegisterMultiplexer(
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string, output string,
+) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	outCh := c.reservedchannel(output)
+	outCh := c.getOrCreateChannel(output)
 	inChs := make([]chan string, len(inputs))
 	for i, name := range inputs {
-		inChs[i] = c.reservedchannel(name)
+		inChs[i] = c.getOrCreateChannel(name)
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -55,14 +61,17 @@ func (c *conveyerImpl) RegisterMultiplexer(fn func(ctx context.Context, inputs [
 	})
 }
 
-func (c *conveyerImpl) RegisterSeparator(fn func(ctx context.Context, input chan string, outputs []chan string) error, input string, outputs []string) {
+func (c *conveyerImpl) RegisterSeparator(
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string, outputs []string,
+) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	inCh := c.reservedchannel(input)
+	inCh := c.getOrCreateChannel(input)
 	outChs := make([]chan string, len(outputs))
 	for i, name := range outputs {
-		outChs[i] = c.reservedchannel(name)
+		outChs[i] = c.getOrCreateChannel(name)
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -71,32 +80,35 @@ func (c *conveyerImpl) RegisterSeparator(fn func(ctx context.Context, input chan
 }
 
 func (c *conveyerImpl) Run(ctx context.Context) error {
-	errGroup, ctx := errgroup.WithContext(ctx)
+	defer c.closeAllChannels()
+
+	errgr, ctx := errgroup.WithContext(ctx)
 
 	for _, h := range c.handlers {
 		h := h
-		errGroup.Go(func() error {
+		errgr.Go(func() error {
 			return h(ctx)
 		})
 	}
 
-	return errGroup.Wait()
+	if err := errgr.Wait(); err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return nil
 }
 
 func (c *conveyerImpl) Send(input, data string) error {
 	c.mu.RLock()
 	ch, ok := c.channels[input]
 	c.mu.RUnlock()
+
 	if !ok {
 		return ErrChanNotFound
 	}
 
-	select {
-	case ch <- data:
-		return nil
-	case <-time.After(time.Second):
-		return errors.New("send timeout")
-	}
+	ch <- data
+	return nil
 }
 
 func (c *conveyerImpl) Recv(output string) (string, error) {
@@ -112,11 +124,13 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 	if !ok {
 		return undefined, nil
 	}
-
 	return val, nil
 }
 
-func (c *conveyerImpl) reservedchannel(name string) chan string {
+func (c *conveyerImpl) getOrCreateChannel(name string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if ch, ok := c.channels[name]; ok {
 		return ch
 	}
@@ -124,4 +138,12 @@ func (c *conveyerImpl) reservedchannel(name string) chan string {
 	ch := make(chan string, c.size)
 	c.channels[name] = ch
 	return ch
+}
+
+func (c *conveyerImpl) closeAllChannels() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, ch := range c.channels {
+		close(ch)
+	}
 }
