@@ -3,86 +3,94 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 )
 
-var errPrefixDecorator = errors.New("handlers.PrefixDecoratorFunc: can't be decorated")
+var (
+	ErrDecorator    = errors.New("can't be decorated")
+	ErrOutputsEmpty = errors.New("outputs must not be empty")
+)
 
+const (
+	noDecorator   = "no decorator"
+	prefix        = "decorated: "
+	noMultiplexer = "no multiplexer"
+)
+
+// Добавляет префикс к строкам из input и пишет в output
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer close(output)
-
-	for {
+	for data := range input {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context done: %w", ctx.Err())
-		case val, ok := <-input:
-			if !ok {
-				return nil
-			}
+			return nil
+		default:
+		}
 
-			if strings.Contains(val, "no decorator") {
-				return errPrefixDecorator
-			}
+		if strings.Contains(data, noDecorator) {
+			return ErrDecorator
+		}
 
-			if !strings.HasPrefix(val, "decorated: ") {
-				val = "decorated:" + val
-			}
+		if !strings.HasPrefix(data, prefix) {
+			data = prefix + data
+		}
 
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("context done: %w", ctx.Err())
-			case output <- val:
-			}
+		select {
+		case <-ctx.Done():
+			return nil
+		case output <- data:
 		}
 	}
+	return nil
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	defer close(output)
+// Разбивает входной канал на несколько выходных по кругу
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	if len(outputs) == 0 {
+		return ErrOutputsEmpty
+	}
 
+	index := 0
+	for data := range input {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+
+		outCh := outputs[index%len(outputs)]
+		index++
+
+		select {
+		case <-ctx.Done():
+			return nil
+		case outCh <- data:
+		}
+	}
+	return nil
+}
+
+// Объединяет несколько входных каналов в один выходной
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var wg sync.WaitGroup
-	wg.Add(len(inputs))
 
 	for _, in := range inputs {
-		in := in
-		go func() {
+		wg.Add(1)
+		go func(ch chan string) {
 			defer wg.Done()
-			for val := range in {
-				if strings.Contains(val, "no multiplexer") {
+			for data := range ch {
+				if strings.Contains(data, noMultiplexer) {
 					continue
 				}
 				select {
 				case <-ctx.Done():
 					return
-				case output <- val:
+				case output <- data:
 				}
 			}
-		}()
+		}(in)
 	}
 
 	wg.Wait()
-	return nil
-}
-
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	defer func() {
-		for _, ch := range outputs {
-			close(ch)
-		}
-	}()
-
-	i := 0
-	for val := range input {
-		out := outputs[i%len(outputs)]
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case out <- val:
-		}
-		i++
-	}
-
 	return nil
 }
