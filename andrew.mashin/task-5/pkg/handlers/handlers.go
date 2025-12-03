@@ -106,6 +106,7 @@ func MultiplexerFunc(
 	var workersWaitGroup sync.WaitGroup
 
 	workersWaitGroup.Add(len(inputs))
+
 	done := make(chan struct{})
 
 	go func() {
