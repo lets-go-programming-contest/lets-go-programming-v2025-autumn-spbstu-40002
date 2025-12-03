@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var ErrChanNotFound = errors.New("chan not found")
@@ -78,32 +80,18 @@ func (c *Conveyer) RegisterSeparator(fn func(ctx context.Context, input chan str
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	var wg sync.WaitGroup
-	errCh := make(chan error, 1)
-
-	launch := func(handler func(ctx context.Context) error) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := handler(ctx); err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-				select {
-				case errCh <- err:
-				default:
-				}
-			}
-		}()
-	}
+	group, ctx := errgroup.WithContext(ctx)
 
 	c.mutex.RLock()
-	for _, h := range c.handlers {
-		launch(h)
+	for _, handler := range c.handlers {
+		h := handler // обязательно копируем переменную, чтобы замыкание работало правильно
+		group.Go(func() error {
+			return h(ctx)
+		})
 	}
 	c.mutex.RUnlock()
 
-	wg.Wait()
+	err := group.Wait()
 
 	c.mutex.Lock()
 	for _, ch := range c.channels {
@@ -111,12 +99,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 	c.mutex.Unlock()
 
-	select {
-	case err := <-errCh:
-		return err
-	default:
-		return nil
-	}
+	return err
 }
 
 func (c *Conveyer) Send(input string, data string) error {
