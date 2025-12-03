@@ -3,15 +3,15 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
 
 var (
-	errSendChanNotFound = errors.New("chan not found")
-	errRecvChanNotFound = errors.New("chan not found")
-	errNoHandlers       = errors.New("conveyer has no handlers")
+	errChanNotFound = errors.New("chan not found")
+	errNoHandlers   = errors.New("conveyer has no handlers")
 )
 
 type Conveyer struct {
@@ -148,7 +148,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	if err := handlerGroup.Wait(); err != nil {
 		c.closeAllChannels()
 
-		return err
+		return fmt.Errorf("conveyer handlers failed: %w", err)
 	}
 
 	c.closeAllChannels()
@@ -158,11 +158,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 func (c *Conveyer) Send(input string, data string) error {
 	c.mu.RLock()
-	defer c.mu.RUnlock()
-
 	ch, exists := c.channels[input]
+	c.mu.RUnlock()
+
 	if !exists {
-		return errSendChanNotFound
+		return errChanNotFound
 	}
 
 	ch <- data
@@ -172,11 +172,11 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
-	defer c.mu.RUnlock()
-
 	ch, exists := c.channels[output]
+	c.mu.RUnlock()
+
 	if !exists {
-		return "", errRecvChanNotFound
+		return "", errChanNotFound
 	}
 
 	data, ok := <-ch
