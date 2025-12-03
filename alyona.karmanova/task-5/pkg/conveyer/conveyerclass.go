@@ -18,6 +18,7 @@ type Conveyer struct {
 	channels map[string]chan string
 	handlers []func(ctx context.Context) error
 	mutex    sync.RWMutex
+	once     sync.Once
 }
 
 func New(size int) *Conveyer {
@@ -136,9 +137,11 @@ func (c *Conveyer) Recv(output string) (string, error) {
 }
 
 func (c *Conveyer) closeAllChannels() {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	for _, ch := range c.channels {
-		close(ch)
-	}
+	c.once.Do(func() {
+		c.mutex.Lock()
+		defer c.mutex.Unlock()
+		for _, ch := range c.channels {
+			close(ch)
+		}
+	})
 }
