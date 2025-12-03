@@ -82,6 +82,20 @@ func (c *conveyer) RegisterSeparator(
 	})
 }
 
+func (c *conveyer) Send(input, data string) error {
+	c.mu.RLock()
+	chanel, ok := c.channels[input]
+	c.mu.RUnlock()
+
+	if !ok {
+		return ErrChanNotFound
+	}
+
+	chanel <- data
+
+	return nil
+}
+
 func (c *conveyer) Run(ctx context.Context) error {
 	defer c.channelsClose()
 
@@ -96,20 +110,6 @@ func (c *conveyer) Run(ctx context.Context) error {
 	if err := errctx.Wait(); err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
-	return nil
-}
-
-func (c *conveyer) Send(input, data string) error {
-	c.mu.RLock()
-	chanel, ok := c.channels[input]
-	c.mu.RUnlock()
-
-	if !ok {
-		return ErrChanNotFound
-	}
-
-	chanel <- data
 
 	return nil
 }
