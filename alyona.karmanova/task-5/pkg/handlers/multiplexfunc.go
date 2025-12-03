@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -19,38 +20,39 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
+	var waitg sync.WaitGroup
 
-	for _, in := range inputs {
+	waitg.Add(len(inputs))
 
+	for _, inputit := range inputs {
 		go func() {
-			defer wg.Done()
+			defer waitg.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case v, ok := <-in:
+				case value, ok := <-inputit:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(v, "no multiplexer") {
+					if strings.Contains(value, "no multiplexer") {
 						continue
 					}
 
 					select {
 					case <-ctx.Done():
 						return
-					case output <- v:
+					case output <- value:
 					}
 				}
 			}
 		}()
 	}
 
-	wg.Wait()
+	waitg.Wait()
 
-	return ctx.Err()
+	return fmt.Errorf("multiplexer finished: %w", ctx.Err())
+
 }
