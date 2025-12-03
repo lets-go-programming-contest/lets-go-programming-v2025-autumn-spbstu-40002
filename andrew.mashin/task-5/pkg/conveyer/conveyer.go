@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -107,11 +108,7 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	if err := group.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return fmt.Errorf("group wait: %w", group.Wait())
 }
 
 func (conv *Conveyer) Send(input string, data string) error {
