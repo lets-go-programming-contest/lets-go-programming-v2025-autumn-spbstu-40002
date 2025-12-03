@@ -30,7 +30,7 @@ func New(size int) *conveyer {
 }
 
 func (c *conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input, output chan string) error,
+	funktion func(ctx context.Context, input, output chan string) error,
 	input, output string,
 ) {
 	c.mu.Lock()
@@ -40,12 +40,12 @@ func (c *conveyer) RegisterDecorator(
 	outCh := c.reservedChannel(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inCh, outCh)
+		return funktion(ctx, inCh, outCh)
 	})
 }
 
 func (c *conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	funktion func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string, output string,
 ) {
 	c.mu.Lock()
@@ -59,12 +59,12 @@ func (c *conveyer) RegisterMultiplexer(
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChan, outputChan)
+		return funktion(ctx, inputChan, outputChan)
 	})
 }
 
 func (c *conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	funktion func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string, outputs []string,
 ) {
 	c.mu.Lock()
@@ -78,7 +78,7 @@ func (c *conveyer) RegisterSeparator(
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChan, outputChan)
+		return funktion(ctx, inputChan, outputChan)
 	})
 }
 
@@ -116,17 +116,18 @@ func (c *conveyer) Send(input, data string) error {
 
 func (c *conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
-	chanel, ok := c.channels[output]
+	chanel, noErr := c.channels[output]
 	c.mu.RUnlock()
 
-	if !ok {
+	if !noErr {
 		return "", ErrChanNotFound
 	}
 
-	value, ok := <-chanel
-	if !ok {
+	value, noErr := <-chanel
+	if !noErr {
 		return undefined, nil
 	}
+
 	return value, nil
 }
 
