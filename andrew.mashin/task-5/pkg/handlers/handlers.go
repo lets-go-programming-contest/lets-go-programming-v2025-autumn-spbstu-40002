@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 )
 
 var (
@@ -27,7 +28,7 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -44,7 +45,7 @@ func PrefixDecoratorFunc(
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case output <- result:
 			}
 		}
@@ -101,19 +102,22 @@ func MultiplexerFunc(
 		return nil
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(len(inputs))
+
 	done := make(chan struct{})
+
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
 
 	workersCount := len(inputs)
 	for idx := 0; idx < workersCount; idx++ {
 		inputChan := inputs[idx]
 
 		go func(in <-chan string) {
-			defer func() {
-				workersCount--
-				if workersCount == 0 {
-					close(done)
-				}
-			}()
+			defer wg.Done()
 
 			for {
 				select {
