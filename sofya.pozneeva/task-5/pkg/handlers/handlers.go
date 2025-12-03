@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
-var errStringNotDecorated = errors.New("can’t be decorated")
-var errStringDecorated = errors.New("string was decorated earlier")
-var errInvalidChan = errors.New("don't read value from chan")
-var errCancelledContext = errors.New("context is cancelled")
+var(
+	errStringNotDecorated = errors.New("can’t be decorated")
+	errStringDecorated    = errors.New("string was decorated earlier")
+	errInvalidChan        = errors.New("don't read value from chan")
+	errCancelledContext   = errors.New("context is cancelled")
+)
 
 const (
 	noMultiplexerData = "no multiplexer"
@@ -94,6 +96,7 @@ func SeparatorFunc(
 	if ctx.Err() != nil {
 		return errCancelledContext
 	}
+
 	for _, channel := range outputs {
 		select {
 		case value, ok := <-input:
