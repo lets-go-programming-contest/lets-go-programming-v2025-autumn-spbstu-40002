@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -20,7 +21,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context done: %w", ctx.Err())
 		case val, ok := <-input:
 			if !ok {
 				return nil
@@ -29,16 +30,16 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			if strings.Contains(val, "no decorator") {
 				return errPrefixDecorator
 			}
+
 			if !strings.HasPrefix(val, "decorated: ") {
 				val = "decorated:" + val
 			}
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context done: %w", ctx.Err())
 			case output <- val:
 			}
-
 		}
 	}
 }

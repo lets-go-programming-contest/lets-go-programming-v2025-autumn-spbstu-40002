@@ -10,6 +10,7 @@ type Separator func(
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	cnt := 0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -32,5 +33,4 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			cnt++
 		}
 	}
-
 }

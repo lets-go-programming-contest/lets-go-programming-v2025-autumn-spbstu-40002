@@ -80,26 +80,30 @@ func (c *Conveyer) RegisterSeparator(fn func(ctx context.Context, input chan str
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	var closeOnce sync.Once
+	defer closeOnce.Do(func() {
+		c.mutex.Lock()
+		defer c.mutex.Unlock()
+		for _, ch := range c.channels {
+			close(ch)
+		}
+	})
+
 	group, ctx := errgroup.WithContext(ctx)
 
 	c.mutex.RLock()
 	for _, handler := range c.handlers {
-		h := handler // обязательно копируем переменную, чтобы замыкание работало правильно
 		group.Go(func() error {
-			return h(ctx)
+			return handler(ctx)
 		})
 	}
 	c.mutex.RUnlock()
 
-	err := group.Wait()
-
-	c.mutex.Lock()
-	for _, ch := range c.channels {
-		close(ch)
+	if err := group.Wait(); err != nil {
+		return err
 	}
-	c.mutex.Unlock()
 
-	return err
+	return nil
 }
 
 func (c *Conveyer) Send(input string, data string) error {
