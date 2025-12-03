@@ -8,14 +8,14 @@ import (
 )
 
 var (
-	ErrDecorator    = errors.New("can't be decorated")
-	ErrOutputsEmpty = errors.New("outputs must not be empty")
+	ErrNoOutput    = errors.New("outputs must not be empty")
+	ErrNoDecoretor = errors.New("can't be decorated")
 )
 
 const (
 	noDecorator   = "no decorator"
-	prefix        = "decorated: "
 	noMultiplexer = "no multiplexer"
+	addedPrefix   = "decorated: "
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -29,11 +29,11 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if strings.Contains(data, noDecorator) {
-				return ErrDecorator
+				return ErrNoDecoretor
 			}
 
-			if !strings.HasPrefix(data, prefix) {
-				data = prefix + data
+			if !strings.HasPrefix(data, addedPrefix) {
+				data = addedPrefix + data
 			}
 
 			select {
@@ -47,24 +47,25 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
-		return ErrOutputsEmpty
+		return ErrNoOutput
 	}
 
-	index := 0
+	position := 0
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
+		case valut, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			outCh := outputs[index%len(outputs)]
-			index++
+			outChanel := outputs[position%len(outputs)]
+			position++
 
 			select {
-			case outCh <- data:
+			case outChanel <- valut:
 			case <-ctx.Done():
 				return nil
 			}
@@ -73,13 +74,13 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var waitg sync.WaitGroup
+	var waitGroup sync.WaitGroup
 
-	for _, inputCh := range inputs {
-		waitg.Add(1)
+	for _, inputChanel := range inputs {
+		waitGroup.Add(1)
 
 		go func(channel chan string) {
-			defer waitg.Done()
+			defer waitGroup.Done()
 
 			for {
 				select {
@@ -101,10 +102,10 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(inputCh)
+		}(inputChanel)
 	}
 
-	waitg.Wait()
+	waitGroup.Wait()
 
 	return nil
 }
