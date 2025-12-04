@@ -113,8 +113,6 @@ func (c *Conveyer) Recv(out string) (string, error) {
 	return val, nil
 }
 
-// Функции обработчиков (твои оригинальные)
-
 var (
 	ErrCantBeDecorated = errors.New("can't be decorated")
 )
