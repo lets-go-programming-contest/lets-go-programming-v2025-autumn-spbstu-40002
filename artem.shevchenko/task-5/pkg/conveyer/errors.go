@@ -4,5 +4,4 @@ import "errors"
 
 var (
 	ErrChanNotFound = errors.New("chan not found")
-	ErrConvNotRun   = errors.New("conveyer not running")
 )
