@@ -2,7 +2,6 @@ package conveyer
 
 import (
     "context"
-    "errors"
     "sync"
 
     "golang.org/x/sync/errgroup"
