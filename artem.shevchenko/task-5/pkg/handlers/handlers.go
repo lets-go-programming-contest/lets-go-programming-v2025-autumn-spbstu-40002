@@ -8,7 +8,6 @@ import (
 
 var ErrCantBeDecorated = errors.New("can’t be decorated")
 
-// PrefixDecoratorFunc — модификатор по ТЗ
 func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	const prefix = "decorated: "
 	for {
@@ -17,7 +16,7 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
-				return nil // вход закрыт — завершаемся
+				return nil
 			}
 			if strings.Contains(data, "no decorator") {
 				return ErrCantBeDecorated
@@ -34,7 +33,7 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	}
 }
 
-// SeparatorFunc — round-robin по ТЗ
+
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
 		return nil
@@ -59,7 +58,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
-// MultiplexerFunc — объединяет + фильтрует по ТЗ
+
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
 		return nil
@@ -68,7 +67,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// Запускаем чтение из всех входов параллельно
+
 	for _, ch := range inputs {
 		ch := ch
 		go func() {
@@ -78,10 +77,10 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					return
 				case data, ok := <-ch:
 					if !ok {
-						return // канал закрыт
+						return
 					}
 					if strings.Contains(data, "no multiplexer") {
-						continue // пропускаем
+						continue
 					}
 					select {
 					case output <- data:
@@ -93,7 +92,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}()
 	}
 
-	// Блокируем текущую горутину до отмены
 	<-ctx.Done()
 	return ctx.Err()
 }
