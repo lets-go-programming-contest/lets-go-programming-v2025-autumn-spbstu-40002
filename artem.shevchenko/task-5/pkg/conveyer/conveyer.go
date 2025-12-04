@@ -30,18 +30,18 @@ func (conveyer *Conveyer) makeChannels(names ...string) {
 }
 
 func (conveyer *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	task func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
 	conveyer.makeChannels(input, output)
 	conveyer.handlersPool = append(conveyer.handlersPool, func(ctx context.Context) error {
-		return fn(ctx, conveyer.channels[input], conveyer.channels[output])
+		return task(ctx, conveyer.channels[input], conveyer.channels[output])
 	})
 }
 
 func (conveyer *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	task func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
@@ -53,12 +53,12 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 			inputChannels[index] = conveyer.channels[input]
 		}
 
-		return fn(ctx, inputChannels, conveyer.channels[output])
+		return task(ctx, inputChannels, conveyer.channels[output])
 	})
 }
 
 func (conveyer *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	task func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
@@ -70,7 +70,7 @@ func (conveyer *Conveyer) RegisterSeparator(
 			outputChannels[index] = conveyer.channels[output]
 		}
 
-		return fn(ctx, conveyer.channels[input], outputChannels)
+		return task(ctx, conveyer.channels[input], outputChannels)
 	})
 }
 
