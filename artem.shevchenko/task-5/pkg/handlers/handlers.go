@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"strings"
+
+	"golang.org/x/sync/errgroup"
 )
 
-var ErrCantBeDecorated = errors.New("can’t be decorated")
+var ErrCantBeDecorated = errors.New("can't be decorated") // ← ASCII '
 
+// PrefixDecoratorFunc — по ТЗ
 func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	const prefix = "decorated: "
 	for {
@@ -16,6 +19,7 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
+				// Входной канал закрыт → завершаемся
 				return nil
 			}
 			if strings.Contains(data, "no decorator") {
@@ -33,32 +37,33 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	}
 }
 
-
+// SeparatorFunc — round-robin, завершается при закрытии input
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
 		return nil
 	}
-	idx := 0
+	index := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
+				// input закрыт → завершаемся
 				return nil
 			}
-			target := outputs[idx%len(outputs)]
+			target := outputs[index%len(outputs)]
 			select {
 			case target <- data:
 			case <-ctx.Done():
 				return ctx.Err()
 			}
-			idx++
+			index++
 		}
 	}
 }
 
-
+// MultiplexerFunc — параллельно читает из всех inputs, завершается при ctx.Done()
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
 		return nil
@@ -67,17 +72,19 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-
+	// Запускаем N горутин по чтению
+	group, ctx := errgroup.Group{}
 	for _, ch := range inputs {
 		ch := ch
-		go func() {
+		group.Go(func() error {
 			for {
 				select {
 				case <-ctx.Done():
-					return
+					return nil
 				case data, ok := <-ch:
 					if !ok {
-						return
+						// этот канал закрыт — выходим из этой горутины
+						return nil
 					}
 					if strings.Contains(data, "no multiplexer") {
 						continue
@@ -85,13 +92,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					select {
 					case output <- data:
 					case <-ctx.Done():
-						return
+						return nil
 					}
 				}
 			}
-		}()
+		})
 	}
 
-	<-ctx.Done()
-	return ctx.Err()
+	// Ждём, пока все входы закроются ИЛИ отмена
+	return group.Wait()
 }
