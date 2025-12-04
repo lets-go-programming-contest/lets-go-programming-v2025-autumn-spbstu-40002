@@ -11,7 +11,7 @@ var	errStringNotDecorated = errors.New("can't be decorated")
 const (
 	noMultiplexerData = "no multiplexer"
 	noDecorated       = "no decorator"
-	stringForDecorate = "decorator: "
+	stringForDecorate = "decorator9: "
 )
 
 func PrefixDecoratorFunc(
