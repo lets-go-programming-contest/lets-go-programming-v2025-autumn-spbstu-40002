@@ -14,16 +14,16 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
         select {
         case <-ctx.Done():
             return ctx.Err()
-        case data, ok := <-input:
-            if !ok {
+        case data, channelOpen := <-input:
+            if !channelOpen {
                 return nil
             }
             
-            out := outputs[chanIndex]
+            outputChannel := outputs[chanIndex]
             select {
             case <-ctx.Done():
                 return ctx.Err()
-            case out <- data:
+            case outputChannel <- data:
             }
             
             chanIndex = (chanIndex + 1) % len(outputs)
