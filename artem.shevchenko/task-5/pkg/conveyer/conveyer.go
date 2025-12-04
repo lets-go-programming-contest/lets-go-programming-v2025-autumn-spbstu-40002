@@ -2,40 +2,30 @@ package conveyer
 
 import (
     "context"
-    "errors"
-    "sync"
+    
+    "golang.org/x/sync/errgroup"
 )
 
 type Conveyer struct {
-    mutex           sync.RWMutex
-    channelSize     int
-    channels        map[string]chan string
-    handlersPool    []func(context.Context) error
-    ctx             context.Context
-    cancel          context.CancelFunc
-    running         bool
+    channelSize  int
+    channels     map[string]chan string
+    handlersPool []func(context.Context) error
 }
 
-func New(size int) *Conveyer {
+func New(channelSize int) *Conveyer {
     return &Conveyer{
-        channelSize:  size,
+        channelSize:  channelSize,
         channels:     make(map[string]chan string),
         handlersPool: make([]func(context.Context) error, 0),
-        running:      false,
     }
 }
 
-func (conveyer *Conveyer) getOrCreateChannel(name string) chan string {
-    conveyer.mutex.Lock()
-    defer conveyer.mutex.Unlock()
-    
-    if channel, exists := conveyer.channels[name]; exists {
-        return channel
+func (conveyer *Conveyer) makeChannels(names ...string) {
+    for _, name := range names {
+        if _, channelExists := conveyer.channels[name]; !channelExists {
+            conveyer.channels[name] = make(chan string, conveyer.channelSize)
+        }
     }
-    
-    channel := make(chan string, conveyer.channelSize)
-    conveyer.channels[name] = channel
-    return channel
 }
 
 func (conveyer *Conveyer) RegisterDecorator(
@@ -43,14 +33,10 @@ func (conveyer *Conveyer) RegisterDecorator(
     input string,
     output string,
 ) {
-    inputChannel := conveyer.getOrCreateChannel(input)
-    outputChannel := conveyer.getOrCreateChannel(output)
-    
-    conveyer.mutex.Lock()
+    conveyer.makeChannels(input, output)
     conveyer.handlersPool = append(conveyer.handlersPool, func(ctx context.Context) error {
-        return fn(ctx, inputChannel, outputChannel)
+        return fn(ctx, conveyer.channels[input], conveyer.channels[output])
     })
-    conveyer.mutex.Unlock()
 }
 
 func (conveyer *Conveyer) RegisterMultiplexer(
@@ -58,17 +44,15 @@ func (conveyer *Conveyer) RegisterMultiplexer(
     inputs []string,
     output string,
 ) {
-    inputChannels := make([]chan string, len(inputs))
-    for index, input := range inputs {
-        inputChannels[index] = conveyer.getOrCreateChannel(input)
-    }
-    outputChannel := conveyer.getOrCreateChannel(output)
-    
-    conveyer.mutex.Lock()
+    conveyer.makeChannels(inputs...)
+    conveyer.makeChannels(output)
     conveyer.handlersPool = append(conveyer.handlersPool, func(ctx context.Context) error {
-        return fn(ctx, inputChannels, outputChannel)
+        inputChannels := make([]chan string, len(inputs))
+        for index, input := range inputs {
+            inputChannels[index] = conveyer.channels[input]
+        }
+        return fn(ctx, inputChannels, conveyer.channels[output])
     })
-    conveyer.mutex.Unlock()
 }
 
 func (conveyer *Conveyer) RegisterSeparator(
@@ -76,88 +60,32 @@ func (conveyer *Conveyer) RegisterSeparator(
     input string,
     outputs []string,
 ) {
-    inputChannel := conveyer.getOrCreateChannel(input)
-    outputChannels := make([]chan string, len(outputs))
-    for index, output := range outputs {
-        outputChannels[index] = conveyer.getOrCreateChannel(output)
-    }
-    
-    conveyer.mutex.Lock()
+    conveyer.makeChannels(input)
+    conveyer.makeChannels(outputs...)
     conveyer.handlersPool = append(conveyer.handlersPool, func(ctx context.Context) error {
-        return fn(ctx, inputChannel, outputChannels)
+        outputChannels := make([]chan string, len(outputs))
+        for index, output := range outputs {
+            outputChannels[index] = conveyer.channels[output]
+        }
+        return fn(ctx, conveyer.channels[input], outputChannels)
     })
-    conveyer.mutex.Unlock()
 }
 
 func (conveyer *Conveyer) Run(ctx context.Context) error {
-    conveyer.mutex.Lock()
-    if conveyer.running {
-        conveyer.mutex.Unlock()
-        return errors.New("conveyer already running")
-    }
-    conveyer.ctx, conveyer.cancel = context.WithCancel(ctx)
-    conveyer.running = true
-    conveyer.mutex.Unlock()
-
-    defer func() {
-        conveyer.mutex.Lock()
-        conveyer.running = false
-        conveyer.cancel()
-        conveyer.closeAllChannels()
-        conveyer.mutex.Unlock()
-    }()
-
-    if len(conveyer.handlersPool) == 0 {
-        return nil
-    }
-
-    errorChannel := make(chan error, len(conveyer.handlersPool))
-    var waitGroup sync.WaitGroup
-
+    handlersGroup, handlersContext := errgroup.WithContext(ctx)
+    
     for _, handler := range conveyer.handlersPool {
-        waitGroup.Add(1)
-        go func(currentHandler func(context.Context) error) {
-            defer waitGroup.Done()
-            if handlerError := currentHandler(conveyer.ctx); handlerError != nil {
-                select {
-                case errorChannel <- handlerError:
-                default:
-                }
-            }
-        }(handler)
+        currentHandler := handler
+        handlersGroup.Go(func() error {
+            return currentHandler(handlersContext)
+        })
     }
-
-    go func() {
-        waitGroup.Wait()
-        close(errorChannel)
-    }()
-
-    select {
-    case <-conveyer.ctx.Done():
-        waitGroup.Wait()
-        return conveyer.ctx.Err()
-    case handlerError, channelOpen := <-errorChannel:
-        if channelOpen && handlerError != nil {
-            conveyer.cancel()
-            waitGroup.Wait()
-            return handlerError
-        }
-        return nil
-    }
-}
-
-func (conveyer *Conveyer) closeAllChannels() {
-    for channelName, channel := range conveyer.channels {
-        close(channel)
-        delete(conveyer.channels, channelName)
-    }
+    
+    return handlersGroup.Wait()
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
-    conveyer.mutex.RLock()
     channel, channelExists := conveyer.channels[input]
-    conveyer.mutex.RUnlock()
-    
     if !channelExists {
         return ErrChanNotFound
     }
@@ -167,10 +95,7 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 }
 
 func (conveyer *Conveyer) Recv(output string) (string, error) {
-    conveyer.mutex.RLock()
     channel, channelExists := conveyer.channels[output]
-    conveyer.mutex.RUnlock()
-    
     if !channelExists {
         return "", ErrChanNotFound
     }
