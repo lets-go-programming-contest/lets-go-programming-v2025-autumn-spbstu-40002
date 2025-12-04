@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -16,150 +15,72 @@ var (
 const undefined = "undefined"
 
 type Conveyer struct {
-	channels map[string]chan string
-	handlers []func(ctx context.Context) error
-	size     int
-	mu       sync.Mutex
-	running  bool
+	chans map[string]chan string
+	funcs []func(context.Context) error
 }
 
 func New(size int) *Conveyer {
-	if size < 0 {
-		size = 0
-	}
 	return &Conveyer{
-		channels: make(map[string]chan string),
-		size:     size,
+		chans: make(map[string]chan string),
 	}
 }
 
-func (c *Conveyer) getChannel(name string) chan string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if ch, ok := c.channels[name]; ok {
+func (c *Conveyer) getChan(name string) chan string {
+	if ch, ok := c.chans[name]; ok {
 		return ch
 	}
-	ch := make(chan string, c.size)
-	c.channels[name] = ch
+	ch := make(chan string, 100)
+	c.chans[name] = ch
 	return ch
 }
 
-func (c *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, in chan string, out chan string) error,
-	in string,
-	out string,
-) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	inCh := c.getChannel(in)
-	outCh := c.getChannel(out)
-	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inCh, outCh)
-	})
+func (c *Conveyer) RegisterDecorator(fn func(context.Context, chan string, chan string) error, in, out string) {
+	inCh := c.getChan(in)
+	outCh := c.getChan(out)
+	c.funcs = append(c.funcs, func(ctx context.Context) error { return fn(ctx, inCh, outCh) })
 }
 
-func (c *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, ins []chan string, out chan string) error,
-	ins []string,
-	out string,
-) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
+func (c *Conveyer) RegisterMultiplexer(fn func(context.Context, []chan string, chan string) error, ins []string, out string) {
 	inChs := make([]chan string, len(ins))
 	for i, name := range ins {
-		inChs[i] = c.getChannel(name)
+		inChs[i] = c.getChan(name)
 	}
-	outCh := c.getChannel(out)
-	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inChs, outCh)
-	})
+	outCh := c.getChan(out)
+	c.funcs = append(c.funcs, func(ctx context.Context) error { return fn(ctx, inChs, outCh) })
 }
 
-func (c *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, in chan string, outs []chan string) error,
-	in string,
-	outs []string,
-) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	inCh := c.getChannel(in)
+func (c *Conveyer) RegisterSeparator(fn func(context.Context, chan string, []chan string) error, in string, outs []string) {
+	inCh := c.getChan(in)
 	outChs := make([]chan string, len(outs))
 	for i, name := range outs {
-		outChs[i] = c.getChannel(name)
+		outChs[i] = c.getChan(name)
 	}
-	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inCh, outChs)
-	})
+	c.funcs = append(c.funcs, func(ctx context.Context) error { return fn(ctx, inCh, outChs) })
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	c.mu.Lock()
-	if c.running {
-		c.mu.Unlock()
-		return errors.New("already running")
+	gr, ctx := errgroup.WithContext(ctx)
+	for _, f := range c.funcs {
+		f := f
+		gr.Go(func() error { return f(ctx) })
 	}
-	c.running = true
-	c.mu.Unlock()
-
-	defer func() {
-		c.mu.Lock()
-		c.running = false
-		// Закрываем все каналы после завершения
-		for name, ch := range c.channels {
-			close(ch)
-			delete(c.channels, name)
-		}
-		c.mu.Unlock()
-	}()
-
-	g, ctx := errgroup.WithContext(ctx)
-	for _, h := range c.handlers {
-		h := h
-		g.Go(func() error {
-			return h(ctx)
-		})
-	}
-	return g.Wait()
+	return gr.Wait()
 }
 
 func (c *Conveyer) Send(in string, data string) error {
-	c.mu.Lock()
-	ch, ok := c.channels[in]
-	running := c.running
-	c.mu.Unlock()
-
-	if !running {
-		return errors.New("conveyer not running")
-	}
+	ch, ok := c.chans[in]
 	if !ok {
 		return ErrChanNotFound
 	}
-
-	select {
-	case ch <- data:
-		return nil
-	default:
-		return errors.New("channel full")
-	}
+	ch <- data
+	return nil
 }
 
 func (c *Conveyer) Recv(out string) (string, error) {
-	c.mu.Lock()
-	ch, ok := c.channels[out]
-	running := c.running
-	c.mu.Unlock()
-
-	if !running {
-		return "", errors.New("conveyer not running")
-	}
+	ch, ok := c.chans[out]
 	if !ok {
 		return "", ErrChanNotFound
 	}
-
 	val, ok := <-ch
 	if !ok {
 		return undefined, nil
@@ -167,32 +88,25 @@ func (c *Conveyer) Recv(out string) (string, error) {
 	return val, nil
 }
 
-// Функции обработчиков с исправлениями
-
-var (
-	ErrCantBeDecorated = errors.New("can't be decorated")
-)
-
 func PrefixDecoratorFunc(ctx context.Context, in chan string, out chan string) error {
 	const prefix = "decorated: "
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-in:
 			if !ok {
-				close(out)
 				return nil
 			}
 			if strings.Contains(data, "no decorator") {
-				return ErrCantBeDecorated
+				return errors.New("can't be decorated")
 			}
 			if !strings.HasPrefix(data, prefix) {
 				data = prefix + data
 			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case out <- data:
 			}
 		}
@@ -203,25 +117,18 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 	if len(outs) == 0 {
 		return nil
 	}
-
-	defer func() {
-		for _, out := range outs {
-			close(out)
-		}
-	}()
-
 	i := 0
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-in:
 			if !ok {
 				return nil
 			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case outs[i%len(outs)] <- data:
 				i++
 			}
@@ -231,12 +138,8 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 
 func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) error {
 	if len(ins) == 0 {
-		close(out)
 		return nil
 	}
-
-	defer close(out)
-
 	done := make(chan struct{})
 	defer close(done)
 
@@ -275,7 +178,7 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 	for alive > 0 {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case it := <-merged:
 			if !it.ok {
 				alive--
@@ -286,7 +189,7 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 			}
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case out <- it.data:
 			}
 		}
