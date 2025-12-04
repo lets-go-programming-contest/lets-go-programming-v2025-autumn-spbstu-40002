@@ -7,10 +7,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var (
-	errUndefinedChannel   = errors.New("channel is undefined")
-	errNonExistingChannel = errors.New("chan not found")
-)
+var errNonExistingChannel = errors.New("chan not found")
 
 func (conveyer *Conveyer) makeChannel(name string) {
 	if _, ok := conveyer.mapChannels[name]; !ok {
@@ -132,7 +129,7 @@ func (conveyer *Conveyer) Recv(output string) (string, error) {
 		if okChan {
 			return outputString, nil
 		} else {
-			return "", errUndefinedChannel
+			return "", errNonExistingChannel
 		}
 	}
 }
