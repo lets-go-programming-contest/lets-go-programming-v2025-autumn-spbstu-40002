@@ -34,7 +34,8 @@ func PrefixDecoratorFunc(
 				return errStringNotDecorated
 			}
 
-			if !strings.Contains(outputString, stringForDecorate) {
+			flag := strings.Contains(line, stringForDecorate)
+			if !flag {
 				outputString = stringForDecorate + outputString
 			}
 
