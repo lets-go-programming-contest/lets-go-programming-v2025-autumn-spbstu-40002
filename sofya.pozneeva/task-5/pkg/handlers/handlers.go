@@ -40,9 +40,9 @@ func PrefixDecoratorFunc(
 			}
 
 			select {
-			case output <- outputString:
 			case <-ctx.Done():
 				return nil
+			case output <- outputString:
 			}
 		}
 	}
@@ -62,6 +62,8 @@ func MultiplexerFunc(
 
 		for _, channel := range inputs {
 			select {
+			case <-ctx.Done():
+				return nil
 			case value, ok := <-channel:
 				if !ok {
 					return nil
@@ -76,8 +78,6 @@ func MultiplexerFunc(
 					return nil
 				case output <- value:
 				}
-			case <-ctx.Done():
-				return nil
 			}
 		}
 	}
@@ -109,10 +109,10 @@ func SeparatorFunc(
             }
             
             select {
-            case outputs[cnt] <- value:
-                cnt = (cnt + 1) % cntOut 
             case <-ctx.Done():
                 return nil
+            case outputs[cnt] <- value:
+                cnt = (cnt + 1) % cntOut 
             }
         }
     }
