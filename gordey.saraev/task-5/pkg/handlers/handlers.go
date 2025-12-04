@@ -25,7 +25,6 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if strings.Contains(data, noDecoratorMsg) {
-
 				return &DecorationError{"can't be decorated"}
 			}
 
@@ -54,6 +53,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -80,13 +80,14 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	var wg sync.WaitGroup
-	merged := make(chan string, len(inputs))
+	var waitGroup sync.WaitGroup
+	mergedChannel := make(chan string, len(inputs))
 
 	for _, inputChan := range inputs {
-		wg.Add(1)
+		waitGroup.Add(1)
+
 		go func(in <-chan string) {
-			defer wg.Done()
+			defer waitGroup.Done()
 
 			for {
 				select {
@@ -102,7 +103,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 
 					select {
-					case merged <- data:
+					case mergedChannel <- data:
 					case <-ctx.Done():
 						return
 					}
@@ -112,15 +113,15 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	go func() {
-		wg.Wait()
-		close(merged)
+		waitGroup.Wait()
+		close(mergedChannel)
 	}()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-merged:
+		case data, ok := <-mergedChannel:
 			if !ok {
 				return nil
 			}

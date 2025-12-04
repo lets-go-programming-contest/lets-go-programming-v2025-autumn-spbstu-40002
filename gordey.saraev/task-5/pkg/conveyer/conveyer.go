@@ -2,6 +2,7 @@ package conveyer
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -27,6 +28,7 @@ func New(bufferSize int) *Conveyer {
 		bufferSize: bufferSize,
 		channels:   make(map[string]chan string),
 		handlers:   make([]func(ctx context.Context) error, 0),
+		mu:         sync.RWMutex{},
 	}
 }
 
@@ -40,6 +42,7 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 
 	ch := make(chan string, c.bufferSize)
 	c.channels[name] = ch
+
 	return ch
 }
 
@@ -48,6 +51,7 @@ func (c *Conveyer) getChannel(name string) (chan string, bool) {
 	defer c.mu.RUnlock()
 
 	ch, exists := c.channels[name]
+
 	return ch, exists
 }
 
@@ -60,27 +64,28 @@ func (c *Conveyer) RegisterDecorator(fn DecoratorFunc, input, output string) {
 	})
 }
 
-func (c *Conveyer) RegisterMultiplexer(fn MultiplexerFunc, inputs []string, output string) {
-	inputChans := make([]chan string, len(inputs))
+func (c *Conveyer) RegisterMultiplexer(callback MultiplexerFunc, inputs []string, output string) {
+	inputChannels := make([]chan string, len(inputs))
 	for i, input := range inputs {
-		inputChans[i] = c.getOrCreateChannel(input)
+		inputChannels[i] = c.getOrCreateChannel(input)
 	}
-	outputChan := c.getOrCreateChannel(output)
+	outputChannel := c.getOrCreateChannel(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChans, outputChan)
+		return callback(ctx, inputChannels, outputChannel)
 	})
 }
 
-func (c *Conveyer) RegisterSeparator(fn SeparatorFunc, input string, outputs []string) {
-	inputChan := c.getOrCreateChannel(input)
-	outputChans := make([]chan string, len(outputs))
+func (c *Conveyer) RegisterSeparator(callback SeparatorFunc, input string, outputs []string) {
+	inputChannel := c.getOrCreateChannel(input)
+	outputChannels := make([]chan string, len(outputs))
+
 	for i, output := range outputs {
-		outputChans[i] = c.getOrCreateChannel(output)
+		outputChannels[i] = c.getOrCreateChannel(output)
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChan, outputChans)
+		return callback(ctx, inputChannel, outputChannels)
 	})
 }
 
@@ -89,26 +94,30 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return nil
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
+	errorGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
 		handler := handler
-		g.Go(func() error {
+		errorGroup.Go(func() error {
 			return handler(ctx)
 		})
 	}
 
-	return g.Wait()
+	if err := errorGroup.Wait(); err != nil {
+		return fmt.Errorf("conveyer run: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Conveyer) Send(input string, data string) error {
-	ch, exists := c.getChannel(input)
+	channel, exists := c.getChannel(input)
 	if !exists {
 		return ErrChanNotFound
 	}
 
 	select {
-	case ch <- data:
+	case channel <- data:
 		return nil
 	default:
 		return ErrChanFull
@@ -116,16 +125,17 @@ func (c *Conveyer) Send(input string, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
-	ch, exists := c.getChannel(output)
+	channel, exists := c.getChannel(output)
 	if !exists {
 		return "", ErrChanNotFound
 	}
 
 	select {
-	case data, ok := <-ch:
+	case data, ok := <-channel:
 		if !ok {
 			return "undefined", nil
 		}
+
 		return data, nil
 	default:
 		return "", ErrNoData
