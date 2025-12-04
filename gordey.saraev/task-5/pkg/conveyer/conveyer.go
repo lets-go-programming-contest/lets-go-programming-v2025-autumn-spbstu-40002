@@ -17,6 +17,7 @@ type Conveyer struct {
 	mu          sync.RWMutex
 	bufferSize  int
 	channelLock sync.RWMutex
+	closed      bool
 }
 
 type handler struct {
@@ -30,6 +31,7 @@ func New(bufferSize int) *Conveyer {
 	return &Conveyer{
 		channels:   make(map[string]chan string),
 		bufferSize: bufferSize,
+		closed:     false,
 	}
 }
 
@@ -125,6 +127,13 @@ func (c *Conveyer) RegisterSeparator(fn SeparatorFunc, input string, outputs []s
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	c.mu.Lock()
+	if c.closed {
+		c.mu.Unlock()
+		return nil // или можно вернуть ошибку
+	}
+	c.mu.Unlock()
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	c.mu.RLock()
@@ -182,17 +191,32 @@ func (c *Conveyer) closeAllChannels() {
 	c.channelLock.Lock()
 	defer c.channelLock.Unlock()
 
+	// Помечаем как закрытый
+	c.mu.Lock()
+	c.closed = true
+	c.mu.Unlock()
+
 	for name, ch := range c.channels {
-		go func(ch chan string) {
-			for range ch {
-			}
-		}(ch)
-		close(ch)
+		// Безопасное закрытие канала
+		func() {
+			defer func() {
+				// Восстанавливаемся если канал уже закрыт
+				recover()
+			}()
+			close(ch)
+		}()
 		delete(c.channels, name)
 	}
 }
 
 func (c *Conveyer) Send(input string, data string) error {
+	c.mu.Lock()
+	if c.closed {
+		c.mu.Unlock()
+		return ErrChanNotFound
+	}
+	c.mu.Unlock()
+
 	ch, exists := c.getChannel(input)
 	if !exists {
 		return ErrChanNotFound
@@ -207,6 +231,13 @@ func (c *Conveyer) Send(input string, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
+	c.mu.Lock()
+	if c.closed {
+		c.mu.Unlock()
+		return "", ErrChanNotFound
+	}
+	c.mu.Unlock()
+
 	ch, exists := c.getChannel(output)
 	if !exists {
 		return "", ErrChanNotFound
@@ -224,6 +255,13 @@ func (c *Conveyer) Recv(output string) (string, error) {
 }
 
 func (c *Conveyer) HasChannel(name string) bool {
+	c.mu.Lock()
+	if c.closed {
+		c.mu.Unlock()
+		return false
+	}
+	c.mu.Unlock()
+
 	_, exists := c.getChannel(name)
 	return exists
 }
