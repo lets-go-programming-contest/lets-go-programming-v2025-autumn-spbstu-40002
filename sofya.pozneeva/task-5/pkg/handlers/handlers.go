@@ -6,10 +6,7 @@ import (
 	"strings"
 )
 
-var (
-	errStringNotDecorated = errors.New("can’t be decorated")
-	errStringDecorated    = errors.New("string was decorated earlier")
-)
+var	errStringNotDecorated = errors.New("can’t be decorated")
 
 const (
 	noMultiplexerData = "no multiplexer"
@@ -28,7 +25,6 @@ func PrefixDecoratorFunc(
 		select {
 		case <-ctx.Done():
 			return nil
-
 		case outputString, ok := <-input:
 			if !ok {
 				return nil
@@ -73,6 +69,7 @@ func MultiplexerFunc(
 				if strings.Contains(value, noMultiplexerData) {
 					continue
 				}
+
 				select {
 				case <-ctx.Done():
 					return nil
@@ -97,24 +94,22 @@ func SeparatorFunc(
 	})()
 
 	var (
-		i      = 0
+		cnt    = 0
 		cntOut = len(outputs)
 	)
-    
+
     for {
         select {
         case <-ctx.Done():
             return nil
-            
         case value, ok := <-input:
             if !ok {
                 return nil
             }
             
             select {
-            case outputs[i] <- value:
-                i = (i + 1) % cntOut
-                
+            case outputs[cnt] <- value:
+                cnt = (cnt + 1) % cntOut 
             case <-ctx.Done():
                 return nil
             }
