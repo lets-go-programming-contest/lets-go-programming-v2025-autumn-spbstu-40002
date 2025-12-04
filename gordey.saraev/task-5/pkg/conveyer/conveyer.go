@@ -12,23 +12,21 @@ type MultiplexerFunc func(ctx context.Context, inputs []chan string, output chan
 type SeparatorFunc func(ctx context.Context, input chan string, outputs []chan string) error
 
 type Conveyer struct {
-	channels   map[string]chan string
-	handlers   []handler
-	mu         sync.RWMutex
 	bufferSize int
-}
-
-type handler struct {
-	handlerType string
-	fn          interface{}
-	inputs      []string
-	outputs     []string
+	channels   map[string]chan string
+	handlers   []func(ctx context.Context) error
+	mu         sync.RWMutex
 }
 
 func New(bufferSize int) *Conveyer {
+	if bufferSize < 0 {
+		bufferSize = 0
+	}
+
 	return &Conveyer{
-		channels:   make(map[string]chan string),
 		bufferSize: bufferSize,
+		channels:   make(map[string]chan string),
+		handlers:   make([]func(ctx context.Context) error, 0),
 	}
 }
 
@@ -54,105 +52,50 @@ func (c *Conveyer) getChannel(name string) (chan string, bool) {
 }
 
 func (c *Conveyer) RegisterDecorator(fn DecoratorFunc, input, output string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	inputChan := c.getOrCreateChannel(input)
+	outputChan := c.getOrCreateChannel(output)
 
-	c.getOrCreateChannel(input)
-	c.getOrCreateChannel(output)
-
-	c.handlers = append(c.handlers, handler{
-		handlerType: "decorator",
-		fn:          fn,
-		inputs:      []string{input},
-		outputs:     []string{output},
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return fn(ctx, inputChan, outputChan)
 	})
 }
 
 func (c *Conveyer) RegisterMultiplexer(fn MultiplexerFunc, inputs []string, output string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for _, input := range inputs {
-		c.getOrCreateChannel(input)
+	inputChans := make([]chan string, len(inputs))
+	for i, input := range inputs {
+		inputChans[i] = c.getOrCreateChannel(input)
 	}
-	c.getOrCreateChannel(output)
+	outputChan := c.getOrCreateChannel(output)
 
-	c.handlers = append(c.handlers, handler{
-		handlerType: "multiplexer",
-		fn:          fn,
-		inputs:      inputs,
-		outputs:     []string{output},
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return fn(ctx, inputChans, outputChan)
 	})
 }
 
 func (c *Conveyer) RegisterSeparator(fn SeparatorFunc, input string, outputs []string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	c.getOrCreateChannel(input)
-	for _, output := range outputs {
-		c.getOrCreateChannel(output)
+	inputChan := c.getOrCreateChannel(input)
+	outputChans := make([]chan string, len(outputs))
+	for i, output := range outputs {
+		outputChans[i] = c.getOrCreateChannel(output)
 	}
 
-	c.handlers = append(c.handlers, handler{
-		handlerType: "separator",
-		fn:          fn,
-		inputs:      []string{input},
-		outputs:     outputs,
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return fn(ctx, inputChan, outputChans)
 	})
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	if len(c.handlers) == 0 {
+		return nil
+	}
+
 	g, ctx := errgroup.WithContext(ctx)
 
-	c.mu.RLock()
-	handlers := make([]handler, len(c.handlers))
-	copy(handlers, c.handlers)
-
-	// Создаём копию каналов для использования в горутинах
-	channelsCopy := make(map[string]chan string)
-	for k, v := range c.channels {
-		channelsCopy[k] = v
-	}
-	c.mu.RUnlock()
-
-	for _, h := range handlers {
-		h := h
-
-		switch h.handlerType {
-		case "decorator":
-			if fn, ok := h.fn.(DecoratorFunc); ok {
-				g.Go(func() error {
-					inputChan := channelsCopy[h.inputs[0]]
-					outputChan := channelsCopy[h.outputs[0]]
-					return fn(ctx, inputChan, outputChan)
-				})
-			}
-
-		case "multiplexer":
-			if fn, ok := h.fn.(MultiplexerFunc); ok {
-				g.Go(func() error {
-					inputChans := make([]chan string, len(h.inputs))
-					for i, input := range h.inputs {
-						inputChans[i] = channelsCopy[input]
-					}
-					outputChan := channelsCopy[h.outputs[0]]
-					return fn(ctx, inputChans, outputChan)
-				})
-			}
-
-		case "separator":
-			if fn, ok := h.fn.(SeparatorFunc); ok {
-				g.Go(func() error {
-					inputChan := channelsCopy[h.inputs[0]]
-					outputChans := make([]chan string, len(h.outputs))
-					for i, output := range h.outputs {
-						outputChans[i] = channelsCopy[output]
-					}
-					return fn(ctx, inputChan, outputChans)
-				})
-			}
-		}
+	for _, handler := range c.handlers {
+		handler := handler
+		g.Go(func() error {
+			return handler(ctx)
+		})
 	}
 
 	return g.Wait()
