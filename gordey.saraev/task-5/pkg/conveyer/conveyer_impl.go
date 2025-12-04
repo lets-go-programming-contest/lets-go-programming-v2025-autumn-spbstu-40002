@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -18,6 +19,8 @@ type Conveyer struct {
 	channels map[string]chan string
 	handlers []func(ctx context.Context) error
 	size     int
+	mu       sync.Mutex
+	running  bool
 }
 
 func New(size int) *Conveyer {
@@ -31,6 +34,9 @@ func New(size int) *Conveyer {
 }
 
 func (c *Conveyer) getChannel(name string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if ch, ok := c.channels[name]; ok {
 		return ch
 	}
@@ -44,6 +50,9 @@ func (c *Conveyer) RegisterDecorator(
 	in string,
 	out string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	inCh := c.getChannel(in)
 	outCh := c.getChannel(out)
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -56,6 +65,9 @@ func (c *Conveyer) RegisterMultiplexer(
 	ins []string,
 	out string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	inChs := make([]chan string, len(ins))
 	for i, name := range ins {
 		inChs[i] = c.getChannel(name)
@@ -71,6 +83,9 @@ func (c *Conveyer) RegisterSeparator(
 	in string,
 	outs []string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	inCh := c.getChannel(in)
 	outChs := make([]chan string, len(outs))
 	for i, name := range outs {
@@ -82,6 +97,25 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	c.mu.Lock()
+	if c.running {
+		c.mu.Unlock()
+		return errors.New("already running")
+	}
+	c.running = true
+	c.mu.Unlock()
+
+	defer func() {
+		c.mu.Lock()
+		c.running = false
+		// Закрываем все каналы после завершения
+		for name, ch := range c.channels {
+			close(ch)
+			delete(c.channels, name)
+		}
+		c.mu.Unlock()
+	}()
+
 	g, ctx := errgroup.WithContext(ctx)
 	for _, h := range c.handlers {
 		h := h
@@ -93,25 +127,47 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) Send(in string, data string) error {
+	c.mu.Lock()
 	ch, ok := c.channels[in]
+	running := c.running
+	c.mu.Unlock()
+
+	if !running {
+		return errors.New("conveyer not running")
+	}
 	if !ok {
 		return ErrChanNotFound
 	}
-	ch <- data
-	return nil
+
+	select {
+	case ch <- data:
+		return nil
+	default:
+		return errors.New("channel full")
+	}
 }
 
 func (c *Conveyer) Recv(out string) (string, error) {
+	c.mu.Lock()
 	ch, ok := c.channels[out]
+	running := c.running
+	c.mu.Unlock()
+
+	if !running {
+		return "", errors.New("conveyer not running")
+	}
 	if !ok {
 		return "", ErrChanNotFound
 	}
+
 	val, ok := <-ch
 	if !ok {
 		return undefined, nil
 	}
 	return val, nil
 }
+
+// Функции обработчиков с исправлениями
 
 var (
 	ErrCantBeDecorated = errors.New("can't be decorated")
@@ -122,9 +178,10 @@ func PrefixDecoratorFunc(ctx context.Context, in chan string, out chan string) e
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case data, ok := <-in:
 			if !ok {
+				close(out)
 				return nil
 			}
 			if strings.Contains(data, "no decorator") {
@@ -135,7 +192,7 @@ func PrefixDecoratorFunc(ctx context.Context, in chan string, out chan string) e
 			}
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case out <- data:
 			}
 		}
@@ -146,18 +203,25 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 	if len(outs) == 0 {
 		return nil
 	}
+
+	defer func() {
+		for _, out := range outs {
+			close(out)
+		}
+	}()
+
 	i := 0
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case data, ok := <-in:
 			if !ok {
 				return nil
 			}
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case outs[i%len(outs)] <- data:
 				i++
 			}
@@ -167,15 +231,21 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 
 func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) error {
 	if len(ins) == 0 {
+		close(out)
 		return nil
 	}
+
+	defer close(out)
+
 	done := make(chan struct{})
 	defer close(done)
+
 	type item struct {
 		data string
 		ok   bool
 	}
 	merged := make(chan item)
+
 	for _, ch := range ins {
 		ch := ch
 		go func() {
@@ -200,11 +270,12 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 			}
 		}()
 	}
+
 	alive := len(ins)
 	for alive > 0 {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case it := <-merged:
 			if !it.ok {
 				alive--
@@ -215,7 +286,7 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 			}
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case out <- it.data:
 			}
 		}
