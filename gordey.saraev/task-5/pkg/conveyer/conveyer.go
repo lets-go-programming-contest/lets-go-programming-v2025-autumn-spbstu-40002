@@ -12,11 +12,10 @@ type MultiplexerFunc func(ctx context.Context, inputs []chan string, output chan
 type SeparatorFunc func(ctx context.Context, input chan string, outputs []chan string) error
 
 type Conveyer struct {
-	channels    map[string]chan string
-	handlers    []handler
-	mu          sync.RWMutex
-	bufferSize  int
-	channelLock sync.RWMutex
+	channels   map[string]chan string
+	handlers   []handler
+	mu         sync.RWMutex
+	bufferSize int
 }
 
 type handler struct {
@@ -34,8 +33,8 @@ func New(bufferSize int) *Conveyer {
 }
 
 func (c *Conveyer) getOrCreateChannel(name string) chan string {
-	c.channelLock.Lock()
-	defer c.channelLock.Unlock()
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
 	if ch, exists := c.channels[name]; exists {
 		return ch
@@ -47,8 +46,8 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 }
 
 func (c *Conveyer) getChannel(name string) (chan string, bool) {
-	c.channelLock.RLock()
-	defer c.channelLock.RUnlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	ch, exists := c.channels[name]
 	return ch, exists
@@ -109,6 +108,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.mu.RLock()
 	handlers := make([]handler, len(c.handlers))
 	copy(handlers, c.handlers)
+
+	// Создаём копию каналов для использования в горутинах
+	channelsCopy := make(map[string]chan string)
+	for k, v := range c.channels {
+		channelsCopy[k] = v
+	}
 	c.mu.RUnlock()
 
 	for _, h := range handlers {
@@ -118,8 +123,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		case "decorator":
 			if fn, ok := h.fn.(DecoratorFunc); ok {
 				g.Go(func() error {
-					inputChan, _ := c.getChannel(h.inputs[0])
-					outputChan, _ := c.getChannel(h.outputs[0])
+					inputChan := channelsCopy[h.inputs[0]]
+					outputChan := channelsCopy[h.outputs[0]]
 					return fn(ctx, inputChan, outputChan)
 				})
 			}
@@ -129,9 +134,9 @@ func (c *Conveyer) Run(ctx context.Context) error {
 				g.Go(func() error {
 					inputChans := make([]chan string, len(h.inputs))
 					for i, input := range h.inputs {
-						inputChans[i], _ = c.getChannel(input)
+						inputChans[i] = channelsCopy[input]
 					}
-					outputChan, _ := c.getChannel(h.outputs[0])
+					outputChan := channelsCopy[h.outputs[0]]
 					return fn(ctx, inputChans, outputChan)
 				})
 			}
@@ -139,10 +144,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		case "separator":
 			if fn, ok := h.fn.(SeparatorFunc); ok {
 				g.Go(func() error {
-					inputChan, _ := c.getChannel(h.inputs[0])
+					inputChan := channelsCopy[h.inputs[0]]
 					outputChans := make([]chan string, len(h.outputs))
 					for i, output := range h.outputs {
-						outputChans[i], _ = c.getChannel(output)
+						outputChans[i] = channelsCopy[output]
 					}
 					return fn(ctx, inputChan, outputChans)
 				})
@@ -151,7 +156,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	return g.Wait()
-	// НЕ закрываем каналы здесь - их закроют обработчики
 }
 
 func (c *Conveyer) Send(input string, data string) error {
