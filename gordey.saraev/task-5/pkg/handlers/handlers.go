@@ -85,6 +85,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 func runMultiplexer(ctx context.Context, inputs []chan string, output chan string) error {
 	var waitGroup sync.WaitGroup
+
 	mergedChannel := make(chan string, len(inputs))
 
 	startReaders(ctx, inputs, mergedChannel, &waitGroup)
