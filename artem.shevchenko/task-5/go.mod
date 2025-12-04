@@ -1,0 +1,3 @@
+module github.com/slendycs/go-lab-5
+
+go 1.22.7
