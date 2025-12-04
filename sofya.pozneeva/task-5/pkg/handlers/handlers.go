@@ -34,17 +34,16 @@ func PrefixDecoratorFunc(
 				return nil
 			}
 
-			if strings.Contains(inputString, noDecorated) {
+			if strings.Contains(outputString, noDecorated) {
 				return errStringNotDecorated
 			}
 
-			if !strings.Contains(inputString, stringForDecorate) {
+			if !strings.Contains(outputString, stringForDecorate) {
 				outputString = stringForDecorate + outputString
 			}
 
 			select {
-			case output <- decorated:
-				return nil
+			case output <- outputString:
 			case <-ctx.Done():
 				return nil
 			}
