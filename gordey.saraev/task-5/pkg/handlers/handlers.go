@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"strings"
 )
 
@@ -17,7 +18,9 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				return nil
 			}
 			if strings.Contains(data, "no decorator") {
-				return context.Canceled
+				// ВОТ ЗДЕСЬ ИСПРАВЛЕНИЕ:
+				// Нужно вернуть ошибку с текстом "can't be decorated"
+				return errors.New("can't be decorated")
 			}
 			if !strings.HasPrefix(data, prefix) {
 				data = prefix + data
