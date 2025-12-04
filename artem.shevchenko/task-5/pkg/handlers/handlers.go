@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 	"strings"
-
-	"golang.org/x/sync/errgroup"
+	"sync"
 )
 
 var ErrCantBeDecorated = errors.New("can't be decorated")
-
 
 func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	const prefix = "decorated: "
@@ -65,31 +63,44 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	group, childCtx := errgroup.WithContext(ctx)
+	var wg sync.WaitGroup
+	wg.Add(len(inputs))
 
 	for _, ch := range inputs {
 		ch := ch
-		group.Go(func() error {
+		go func() {
+			defer wg.Done()
 			for {
 				select {
-				case <-childCtx.Done():
-					return nil
+				case <-ctx.Done():
+					return
 				case data, ok := <-ch:
 					if !ok {
-						return nil
+						return
 					}
 					if strings.Contains(data, "no multiplexer") {
 						continue
 					}
 					select {
 					case output <- data:
-					case <-childCtx.Done():
-						return nil
+					case <-ctx.Done():
+						return
 					}
 				}
 			}
-		})
+		}()
 	}
 
-	return group.Wait()
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-done:
+		return nil
+	}
 }
