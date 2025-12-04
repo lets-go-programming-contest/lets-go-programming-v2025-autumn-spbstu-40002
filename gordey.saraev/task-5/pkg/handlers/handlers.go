@@ -80,48 +80,64 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
+	return runMultiplexer(ctx, inputs, output)
+}
+
+func runMultiplexer(ctx context.Context, inputs []chan string, output chan string) error {
 	var waitGroup sync.WaitGroup
 	mergedChannel := make(chan string, len(inputs))
 
+	startReaders(ctx, inputs, mergedChannel, &waitGroup)
+
+	go closeMergedChannel(&waitGroup, mergedChannel)
+
+	return writeToOutput(ctx, mergedChannel, output)
+}
+
+func startReaders(ctx context.Context, inputs []chan string, merged chan string, wg *sync.WaitGroup) {
 	for _, inputChan := range inputs {
-		waitGroup.Add(1)
+		wg.Add(1)
 
-		go func(in <-chan string) {
-			defer waitGroup.Done()
-
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case data, ok := <-in:
-					if !ok {
-						return
-					}
-
-					if strings.Contains(data, noMultiplexerMsg) {
-						continue
-					}
-
-					select {
-					case mergedChannel <- data:
-					case <-ctx.Done():
-						return
-					}
-				}
-			}
-		}(inputChan)
+		go readFromChannel(ctx, inputChan, merged, wg)
 	}
+}
 
-	go func() {
-		waitGroup.Wait()
-		close(mergedChannel)
-	}()
+func readFromChannel(ctx context.Context, inputChan <-chan string, merged chan<- string, wg *sync.WaitGroup) {
+	defer wg.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
+			return
+		case data, ok := <-inputChan:
+			if !ok {
+				return
+			}
+
+			if strings.Contains(data, noMultiplexerMsg) {
+				continue
+			}
+
+			select {
+			case merged <- data:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+}
+
+func closeMergedChannel(wg *sync.WaitGroup, merged chan string) {
+	wg.Wait()
+	close(merged)
+}
+
+func writeToOutput(ctx context.Context, merged <-chan string, output chan<- string) error {
+	for {
+		select {
+		case <-ctx.Done():
 			return nil
-		case data, ok := <-mergedChannel:
+		case data, ok := <-merged:
 			if !ok {
 				return nil
 			}
