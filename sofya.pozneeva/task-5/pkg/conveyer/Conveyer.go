@@ -9,6 +9,10 @@ import (
 
 var errNonExistingChannel = errors.New("chan not found")
 
+const (
+	undefinedData = "undefined"
+)
+
 func (conveyer *Conveyer) makeChannel(name string) {
 	if _, ok := conveyer.mapChannels[name]; !ok {
 		conveyer.mapChannels[name] = make(chan string, conveyer.channelSize)
@@ -129,7 +133,7 @@ func (conveyer *Conveyer) Recv(output string) (string, error) {
 		if okChan {
 			return outputString, nil
 		} else {
-			return "", errNonExistingChannel
+			return undefinedData, nil
 		}
 	}
 }
