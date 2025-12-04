@@ -23,6 +23,8 @@ func PrefixDecoratorFunc(
 	input chan string,
 	output chan string,
 ) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -94,27 +96,34 @@ func SeparatorFunc(
 	input chan string,
 	outputs []chan string,
 ) error {
-	if ctx.Err() != nil {
-		return nil
-	}
-
-	for _, channel := range outputs {
-		select {
-		case value, ok := <-input:
-			if !ok {
-				return errInvalidChan
-			}
-			select {
-			case channel <- value:
-				continue
-			case <-ctx.Done():
-				return nil
-			}
-
-		case <-ctx.Done():
-			return nil
+	defer (func() {
+		for _, ch := range outputs {
+			close(ch)
 		}
-	}
+	})()
 
-	return nil
+	var (
+		i   = 0
+		cntOut = len(outputs)
+	)
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+            
+        case value, ok := <-input:
+            if !ok {
+                return nil
+            }
+            
+            select {
+            case outputs[i] <- value:
+                i = (i + 1) % cntOut
+                
+            case <-ctx.Done():
+                return ctx.Err()
+            }
+        }
+    }
 }
