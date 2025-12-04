@@ -9,7 +9,6 @@ import (
 var (
 	errStringNotDecorated = errors.New("can’t be decorated")
 	errStringDecorated    = errors.New("string was decorated earlier")
-	errInvalidChan        = errors.New("don't read value from chan")
 )
 
 const (
@@ -30,20 +29,18 @@ func PrefixDecoratorFunc(
 		case <-ctx.Done():
 			return nil
 
-		case inputString, ok := <-input:
+		case outputString, ok := <-input:
 			if !ok {
-				return errInvalidChan
-			}
-
-			if strings.Contains(inputString, stringForDecorate) {
-				return errStringDecorated
+				return nil
 			}
 
 			if strings.Contains(inputString, noDecorated) {
 				return errStringNotDecorated
 			}
 
-			decorated := stringForDecorate + inputString
+			if !strings.Contains(inputString, stringForDecorate) {
+				outputString = stringForDecorate + outputString
+			}
 
 			select {
 			case output <- decorated:
@@ -71,7 +68,7 @@ func MultiplexerFunc(
 			select {
 			case value, ok := <-channel:
 				if !ok {
-					continue
+					return nil
 				}
 
 				if strings.Contains(value, noMultiplexerData) {
@@ -84,8 +81,6 @@ func MultiplexerFunc(
 				}
 			case <-ctx.Done():
 				return nil
-			default:
-				continue
 			}
 		}
 	}
@@ -103,14 +98,14 @@ func SeparatorFunc(
 	})()
 
 	var (
-		i   = 0
+		i      = 0
 		cntOut = len(outputs)
 	)
     
     for {
         select {
         case <-ctx.Done():
-            return ctx.Err()
+            return nil
             
         case value, ok := <-input:
             if !ok {
@@ -122,7 +117,7 @@ func SeparatorFunc(
                 i = (i + 1) % cntOut
                 
             case <-ctx.Done():
-                return ctx.Err()
+                return nil
             }
         }
     }
