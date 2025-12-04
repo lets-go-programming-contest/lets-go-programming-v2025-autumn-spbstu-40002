@@ -1,135 +1,114 @@
-package conveyer
+package handlers
 
 import (
 	"context"
-	"errors"
 	"strings"
 )
 
-var (
-	ErrCantBeDecorated = errors.New("can't be decorated")
-)
-
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	const prefix = "decorated: "
-
+	defer close(output)
+	prefix := "decorated: "
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
-
 			if strings.Contains(data, "no decorator") {
-				return ErrCantBeDecorated
+				return context.Canceled
 			}
-
 			if !strings.HasPrefix(data, prefix) {
 				data = prefix + data
 			}
-
 			select {
-			case <-ctx.Done():
-				return nil
 			case output <- data:
+			case <-ctx.Done():
+				return ctx.Err()
 			}
 		}
 	}
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	if len(outputs) == 0 {
-		return nil
-	}
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
 
-	counter := 0
-
+	index := 0
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
-
-			idx := counter % len(outputs)
-			counter++
-
-			select {
-			case <-ctx.Done():
-				return nil
-			case outputs[idx] <- data:
+			if len(outputs) == 0 {
+				continue
 			}
+			select {
+			case outputs[index] <- data:
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+			index = (index + 1) % len(outputs)
 		}
 	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	if len(inputs) == 0 {
-		return nil
+	defer close(output)
+
+	type result struct {
+		data string
+		ok   bool
 	}
 
-	done := make(chan struct{})
-	defer close(done)
+	merged := make(chan result)
 
-	type dataWithIndex struct {
-		data  string
-		index int
-		ok    bool
-	}
-
-	merged := make(chan dataWithIndex)
-
-	for i, input := range inputs {
-		go func(idx int, ch chan string) {
+	for _, in := range inputs {
+		go func(in chan string) {
 			for {
 				select {
-				case <-done:
-					return
 				case <-ctx.Done():
 					return
-				case data, ok := <-ch:
+				case data, ok := <-in:
 					select {
-					case <-done:
-						return
+					case merged <- result{data, ok}:
 					case <-ctx.Done():
 						return
-					case merged <- dataWithIndex{data, idx, ok}:
-						if !ok {
-							return
-						}
+					}
+					if !ok {
+						return
 					}
 				}
 			}
-		}(i, input)
+		}(in)
 	}
 
-	activeInputs := len(inputs)
-	for {
+	openChannels := len(inputs)
+	for openChannels > 0 {
 		select {
 		case <-ctx.Done():
-			return nil
-		case dwi := <-merged:
-			if !dwi.ok {
-				activeInputs--
-				if activeInputs == 0 {
-					return nil
-				}
+			return ctx.Err()
+		case res := <-merged:
+			if !res.ok {
+				openChannels--
 				continue
 			}
-
-			if strings.Contains(dwi.data, "no multiplexer") {
+			if strings.Contains(res.data, "no multiplexer") {
 				continue
 			}
-
 			select {
+			case output <- res.data:
 			case <-ctx.Done():
-				return nil
-			case output <- dwi.data:
+				return ctx.Err()
 			}
 		}
 	}
+	return nil
 }
