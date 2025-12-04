@@ -7,19 +7,19 @@ import (
 )
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-    var wg sync.WaitGroup
-    done := make(chan struct{})
+    var waitGroup sync.WaitGroup
+    doneChannel := make(chan struct{})
     
-    reader := func(inChan chan string) {
-        defer wg.Done()
+    reader := func(inputChannel chan string) {
+        defer waitGroup.Done()
         for {
             select {
             case <-ctx.Done():
                 return
-            case <-done:
+            case <-doneChannel:
                 return
-            case data, ok := <- inChan:
-                if !ok {
+            case data, channelOpen := <-inputChannel:
+                if !channelOpen {
                     return
                 }
                 if strings.Contains(data, NoMultiplexer) {
@@ -28,7 +28,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
                 select {
                 case <-ctx.Done():
                     return
-                case <-done:
+                case <-doneChannel:
                     return
                 case output <- data:
                 }
@@ -36,14 +36,12 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
         }
     }
     
-    for _, inChan := range inputs {
-        wg.Add(1)
-        go reader(inChan)
+    for _, inputChannel := range inputs {
+        waitGroup.Add(1)
+        go reader(inputChannel)
     }
     
-    <-ctx.Done()
-    close(done)
-    
-    wg.Wait()
-    return ctx.Err()
+    waitGroup.Wait()
+    close(doneChannel)
+    return nil
 }
