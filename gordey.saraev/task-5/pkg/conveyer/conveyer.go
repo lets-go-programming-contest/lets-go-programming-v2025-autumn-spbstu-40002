@@ -9,7 +9,9 @@ import (
 )
 
 type DecoratorFunc func(ctx context.Context, input chan string, output chan string) error
+
 type MultiplexerFunc func(ctx context.Context, inputs []chan string, output chan string) error
+
 type SeparatorFunc func(ctx context.Context, input chan string, outputs []chan string) error
 
 type Conveyer struct {
@@ -36,39 +38,41 @@ func (c *Conveyer) getOrCreateChannel(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if ch, exists := c.channels[name]; exists {
-		return ch
+	if channel, exists := c.channels[name]; exists {
+		return channel
 	}
 
-	ch := make(chan string, c.bufferSize)
-	c.channels[name] = ch
+	channel := make(chan string, c.bufferSize)
+	c.channels[name] = channel
 
-	return ch
+	return channel
 }
 
 func (c *Conveyer) getChannel(name string) (chan string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	ch, exists := c.channels[name]
+	channel, exists := c.channels[name]
 
-	return ch, exists
+	return channel, exists
 }
 
-func (c *Conveyer) RegisterDecorator(fn DecoratorFunc, input, output string) {
+func (c *Conveyer) RegisterDecorator(callback DecoratorFunc, input, output string) {
 	inputChan := c.getOrCreateChannel(input)
 	outputChan := c.getOrCreateChannel(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChan, outputChan)
+		return callback(ctx, inputChan, outputChan)
 	})
 }
 
 func (c *Conveyer) RegisterMultiplexer(callback MultiplexerFunc, inputs []string, output string) {
 	inputChannels := make([]chan string, len(inputs))
-	for i, input := range inputs {
-		inputChannels[i] = c.getOrCreateChannel(input)
+
+	for i, inputName := range inputs {
+		inputChannels[i] = c.getOrCreateChannel(inputName)
 	}
+
 	outputChannel := c.getOrCreateChannel(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -80,8 +84,8 @@ func (c *Conveyer) RegisterSeparator(callback SeparatorFunc, input string, outpu
 	inputChannel := c.getOrCreateChannel(input)
 	outputChannels := make([]chan string, len(outputs))
 
-	for i, output := range outputs {
-		outputChannels[i] = c.getOrCreateChannel(output)
+	for i, outputName := range outputs {
+		outputChannels[i] = c.getOrCreateChannel(outputName)
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -94,16 +98,15 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return nil
 	}
 
-	errorGroup, ctx := errgroup.WithContext(ctx)
+	errGroup, ctx := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
-		handler := handler
-		errorGroup.Go(func() error {
+		errGroup.Go(func() error {
 			return handler(ctx)
 		})
 	}
 
-	if err := errorGroup.Wait(); err != nil {
+	if err := errGroup.Wait(); err != nil {
 		return fmt.Errorf("conveyer run: %w", err)
 	}
 
@@ -112,6 +115,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 func (c *Conveyer) Send(input string, data string) error {
 	channel, exists := c.getChannel(input)
+
 	if !exists {
 		return ErrChanNotFound
 	}
@@ -126,6 +130,7 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	channel, exists := c.getChannel(output)
+
 	if !exists {
 		return "", ErrChanNotFound
 	}
@@ -144,5 +149,6 @@ func (c *Conveyer) Recv(output string) (string, error) {
 
 func (c *Conveyer) HasChannel(name string) bool {
 	_, exists := c.getChannel(name)
+
 	return exists
 }
