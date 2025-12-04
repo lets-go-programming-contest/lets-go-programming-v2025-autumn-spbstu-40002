@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var	errStringNotDecorated = errors.New("can’t be decorated")
+var	errStringNotDecorated = errors.New("can't be decorated")
 
 const (
 	noMultiplexerData = "no multiplexer"
