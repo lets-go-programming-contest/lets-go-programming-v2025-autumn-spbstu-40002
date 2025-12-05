@@ -58,6 +58,7 @@ func MultiplexerFunc(
 	if err := ctx.Err(); err != nil {
 		return nil
 	}
+
 	for _, channel := range inputs {
 		go func(ch <-chan string) {
 			for {
