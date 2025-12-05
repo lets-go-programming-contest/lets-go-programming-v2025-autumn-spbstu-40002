@@ -81,9 +81,8 @@ func MultiplexerFunc(
 						return nil
 					case output <- value:
 					}
-				}(channel)
-				
-			}
+				}				
+			}(channel)
 		}
 	}
 }
