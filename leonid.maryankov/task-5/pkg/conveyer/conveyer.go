@@ -57,9 +57,7 @@ func (c *conveyorImpl) RegisterDecorator(
 	out := c.getOrCreate(output)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		err := fn(ctx, in, out)
-		close(out)
-		return err
+		return fn(ctx, in, out)
 	})
 }
 
@@ -76,11 +74,7 @@ func (c *conveyorImpl) RegisterSeparator(
 	}
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		err := fn(ctx, in, outs)
-		for _, out := range outs {
-			close(out)
-		}
-		return err
+		return fn(ctx, in, outs)
 	})
 }
 
@@ -97,9 +91,7 @@ func (c *conveyorImpl) RegisterMultiplexer(
 	out := c.getOrCreate(output)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		err := fn(ctx, ins, out)
-		close(out)
-		return err
+		return fn(ctx, ins, out)
 	})
 }
 
