@@ -104,20 +104,20 @@ func SeparatorFunc(
 	)
 
 	for {
-        select {
-        case <-ctx.Done():
-            return nil
-        case value, ok := <-input:
-            if !ok {
-                return nil
-            }
-            
-            select {
-            case <-ctx.Done():
-                return nil
-            case outputs[cnt] <- value:
-                cnt = (cnt + 1) % cntOut 
-            }
-        }
-    }
+		select {
+		case <-ctx.Done():
+			return nil
+		case value, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			select {
+			case <-ctx.Done():
+				return nil
+			case outputs[cnt] <- value:
+				cnt = (cnt + 1) % cntOut 
+			}
+		}
+	}
 }
