@@ -103,7 +103,7 @@ func SeparatorFunc(
 		cntOut = len(outputs)
 	)
 
-    for {
+	for {
         select {
         case <-ctx.Done():
             return nil
