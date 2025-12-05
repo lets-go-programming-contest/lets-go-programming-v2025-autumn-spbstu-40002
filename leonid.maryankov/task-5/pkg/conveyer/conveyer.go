@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -103,18 +104,20 @@ func (c *ConveyorImpl) Run(ctx context.Context) error {
 
 	for i := range c.Runners {
 		runner := c.Runners[i]
-
 		runnerLocal := runner
+
 		group.Go(func() error {
 			return runnerLocal(ctx)
 		})
 	}
 
-	err := group.Wait()
+	if err := group.Wait(); err != nil {
+		return fmt.Errorf("%w", err)
+	}
 
 	c.closeAll()
 
-	return err
+	return nil
 }
 
 func (c *ConveyorImpl) closeAll() {

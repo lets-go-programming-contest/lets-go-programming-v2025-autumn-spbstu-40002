@@ -72,12 +72,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	var waitGroup sync.WaitGroup
+
 	waitGroup.Add(len(inputs))
 
-	for _, inputCh := range inputs {
-		chCopy := inputCh
+	for _, ch := range inputs {
+		inputCh := ch
 
-		go func(in chan string) {
+		go func(inputCh chan string) {
 			defer waitGroup.Done()
 
 			for {
@@ -85,7 +86,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				case <-ctx.Done():
 					return
 
-				case value, open := <-in:
+				case value, open := <-inputCh:
 					if !open {
 						return
 					}
@@ -101,7 +102,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(chCopy)
+		}(inputCh)
 	}
 
 	waitGroup.Wait()
