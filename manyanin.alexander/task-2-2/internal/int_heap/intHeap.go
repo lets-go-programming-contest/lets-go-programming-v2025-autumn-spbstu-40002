@@ -35,7 +35,7 @@ func (heap *IntHeap) Pop() interface{} {
 
 	heapLength := len(oldHeap)
 	if heapLength == 0 {
-		panic(ErrEmptyHeap)
+		return nil
 	}
 
 	value := oldHeap[heapLength-1]

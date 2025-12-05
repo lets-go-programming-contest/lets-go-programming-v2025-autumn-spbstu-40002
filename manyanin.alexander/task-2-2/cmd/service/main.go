@@ -23,51 +23,51 @@ var (
 	ErrUnexpectedType      = errors.New("unexpected type")
 )
 
-func readDishNumber() int {
+func readDishNumber() (int, error) {
 	var dishNumber int
 
 	_, err := fmt.Scan(&dishNumber)
 	if err != nil {
-		panic(ErrReadingInput)
+		return 0, ErrReadingInput
 	}
 
 	if dishNumber > MaxDishNumber || dishNumber < MinDishNumber {
-		panic(ErrIncorrectDishNumber)
+		return 0, ErrIncorrectDishNumber
 	}
 
-	return dishNumber
+	return dishNumber, nil
 }
 
-func readDishes(dishNumber int) []int {
+func readDishes(dishNumber int) ([]int, error) {
 	dishes := make([]int, dishNumber)
 
-	for dishIndex := range dishNumber {
+	for dishIndex := range dishes {
 		_, err := fmt.Scan(&dishes[dishIndex])
 		if err != nil {
-			panic(ErrReadingInput)
+			return nil, ErrReadingInput
 		}
 
 		if dishes[dishIndex] > MaxDishRating || dishes[dishIndex] < MinDishRating {
-			panic(ErrIncorrectDishRating)
+			return nil, ErrIncorrectDishRating
 		}
 	}
 
-	return dishes
+	return dishes, nil
 }
 
-func readKValue(dishNumber int) int {
+func readKValue(dishNumber int) (int, error) {
 	var kValue int
 
 	_, err := fmt.Scan(&kValue)
 	if err != nil {
-		panic(ErrReadingInput)
+		return 0, ErrReadingInput
 	}
 
 	if kValue > dishNumber || kValue < 1 {
-		panic(ErrIncorrectKValue)
+		return 0, ErrIncorrectKValue
 	}
 
-	return kValue
+	return kValue, nil
 }
 
 func findKLargest(dishes []int, kValue int) int {
@@ -95,9 +95,27 @@ func findKLargest(dishes []int, kValue int) int {
 }
 
 func main() {
-	dishNumber := readDishNumber()
-	dishes := readDishes(dishNumber)
-	kValue := readKValue(dishNumber)
+	dishNumber, err := readDishNumber()
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
+	dishes, err := readDishes(dishNumber)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
+	kValue, err := readKValue(dishNumber)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
 	result := findKLargest(dishes, kValue)
 
 	fmt.Println(result)
