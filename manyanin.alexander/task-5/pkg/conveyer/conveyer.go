@@ -125,17 +125,18 @@ func (conv *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
 func (conv *Conveyer) Recv(output string) (string, error) {
-	channel, ok := conv.channels[output]
-	if !ok {
+	channel, normal := conv.channels[output]
+	if !normal {
 		return "", errChannel
 	}
 
-	data, ok := <-channel
-	if !ok {
+	data, normal := <-channel
+	if !normal {
 		return undefined, nil
 	}
 
