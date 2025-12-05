@@ -61,7 +61,7 @@ func MultiplexerFunc(
 
 	for _, channel := range inputs {
 		go func(ch <-chan string) {
-			for{
+			for {
 				select {
 				case <-ctx.Done():
 					return
