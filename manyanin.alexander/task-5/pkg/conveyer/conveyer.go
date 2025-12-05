@@ -2,12 +2,13 @@ package conveyer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
 
-var errChannel = fmt.Errorf("chan not found")
+var errChannel = errors.New("chan not found")
 
 const undefined = "undefined"
 
@@ -41,7 +42,7 @@ func New(size int) *Conveyer {
 }
 
 func (conv *Conveyer) RegisterDecorator(
-	fn func(
+	decoratorFunc func(
 		ctx context.Context,
 		input chan string,
 		output chan string,
@@ -52,12 +53,12 @@ func (conv *Conveyer) RegisterDecorator(
 	inputChannel := conv.getOrCreateChannel(input)
 	outputChannel := conv.getOrCreateChannel(output)
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChannel, outputChannel)
+		return decoratorFunc(ctx, inputChannel, outputChannel)
 	})
 }
 
 func (conv *Conveyer) RegisterMultiplexer(
-	fn func(
+	multiplexerFunc func(
 		ctx context.Context,
 		inputs []chan string,
 		output chan string,
@@ -73,12 +74,12 @@ func (conv *Conveyer) RegisterMultiplexer(
 
 	outputCh := conv.getOrCreateChannel(output)
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChannels, outputCh)
+		return multiplexerFunc(ctx, inputChannels, outputCh)
 	})
 }
 
 func (conv *Conveyer) RegisterSeparator(
-	fn func(
+	separatorFunc func(
 		ctx context.Context,
 		input chan string,
 		outputs []chan string,
@@ -94,7 +95,7 @@ func (conv *Conveyer) RegisterSeparator(
 	}
 
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputChannel, outputChannels)
+		return separatorFunc(ctx, inputChannel, outputChannels)
 	})
 }
 
@@ -102,9 +103,10 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 	group, cont := errgroup.WithContext(ctx)
 
 	for _, handler := range conv.handlers {
-		handler := handler
+		currentHandler := handler
+
 		group.Go(func() error {
-			return handler(cont)
+			return currentHandler(cont)
 		})
 	}
 
@@ -127,13 +129,13 @@ func (conv *Conveyer) Send(input string, data string) error {
 }
 
 func (conv *Conveyer) Recv(output string) (string, error) {
-	channel, ok1 := conv.channels[output]
-	if !ok1 {
+	channel, ok := conv.channels[output]
+	if !ok {
 		return "", errChannel
 	}
 
-	data, ok2 := <-channel
-	if !ok2 {
+	data, ok := <-channel
+	if !ok {
 		return undefined, nil
 	}
 
