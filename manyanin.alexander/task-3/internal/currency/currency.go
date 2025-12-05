@@ -2,9 +2,12 @@ package currency
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/manyanin.alexander/task-3/internal/errors"
 )
 
 type Currency struct {
@@ -20,7 +23,7 @@ func (c Currency) MarshalJSON() ([]byte, error) {
 
 	numCode, _ := strconv.Atoi(c.NumCode)
 
-	return json.Marshal(struct {
+	data, err := json.Marshal(struct {
 		NumCode  int     `json:"num_code"`
 		CharCode string  `json:"char_code"`
 		Value    float64 `json:"value"`
@@ -29,6 +32,12 @@ func (c Currency) MarshalJSON() ([]byte, error) {
 		CharCode: c.CharCode,
 		Value:    value,
 	})
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", errors.ErrJSONMarshal, err)
+	}
+
+	return data, nil
 }
 
 func parseValue(value string) float64 {

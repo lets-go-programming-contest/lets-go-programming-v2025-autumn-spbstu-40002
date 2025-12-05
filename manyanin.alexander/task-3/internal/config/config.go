@@ -16,7 +16,7 @@ type Config struct {
 func Load(configPath string) (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %v", errors.ErrConfigRead, err)
+		return nil, fmt.Errorf("%w: %v", errors.ErrConfigRead, err)
 	}
 
 	config := &Config{
@@ -26,7 +26,7 @@ func Load(configPath string) (*Config, error) {
 
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %v", errors.ErrConfigParse, err)
+		return nil, fmt.Errorf("%w: %v", errors.ErrConfigParse, err)
 	}
 
 	if config.InputFile == "" || config.OutputFile == "" {
