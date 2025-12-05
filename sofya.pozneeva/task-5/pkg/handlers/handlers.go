@@ -116,7 +116,7 @@ func SeparatorFunc(
 			case <-ctx.Done():
 				return nil
 			case outputs[cnt] <- value:
-				cnt = (cnt + 1) % cntOut 
+				cnt = (cnt + 1) % cntOut
 			}
 		}
 	}
