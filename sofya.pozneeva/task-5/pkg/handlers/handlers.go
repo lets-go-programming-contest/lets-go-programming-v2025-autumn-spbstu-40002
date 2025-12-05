@@ -66,24 +66,24 @@ func MultiplexerFunc(
 			go func(ch <-chan string) {
 				select {
 				case <-ctx.Done():
-					return nil
+					return
 				case value, ok := <-channel:
 					if !ok {
-						return nil
+						return
 					}
 
-					if strings.Contains(value, noMultiplexerData) {
-						continue
-					}
-
-					select {
-					case <-ctx.Done():
-						return nil
-					case output <- value:
+					if !strings.Contains(value, noMultiplexerData) {
+						select {
+						case <-ctx.Done():
+							return
+						case output <- value:
+						}
 					}
 				}				
 			}(channel)
 		}
+		
+		return nil
 	}
 }
 
