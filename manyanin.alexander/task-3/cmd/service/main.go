@@ -13,16 +13,15 @@ import (
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to configuration file")
+	configPath := flag.String("config", "config.yaml", "Path to configuration file")
 	flag.Parse()
 
-	if *configPath == "" {
-		fmt.Fprintln(os.Stderr, errors.ErrConfigPathEmpty.Error())
+	cfg, err := config.Load(*configPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
 
 		return
 	}
-
-	cfg := config.Load(*configPath)
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
 		fmt.Fprintln(os.Stderr, errors.ErrInputFileNotExist.Error()+": "+cfg.InputFile)
