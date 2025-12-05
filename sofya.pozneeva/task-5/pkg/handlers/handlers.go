@@ -6,9 +6,7 @@ import (
 	"strings"
 )
 
-var	(
-	errStringNotDecorated = errors.New("can't be decorated")
-)
+var	errStringNotDecorated = errors.New("can't be decorated")
 
 const (
 	noMultiplexerData = "no multiplexer"
@@ -57,17 +55,17 @@ func MultiplexerFunc(
 ) error {
 	defer close(output)
 
-	for {
-		if err := ctx.Err(); err != nil {
-			return nil
-		}
+	if err := ctx.Err(); err != nil {
+		return nil
+	}
 
-		for _, channel := range inputs {
-			go func(ch <-chan string) {
+	for _, channel := range inputs {
+		go func(ch <-chan string) {
+			for{
 				select {
 				case <-ctx.Done():
 					return
-				case value, ok := <-channel:
+				case value, ok := <-ch:
 					if !ok {
 						return
 					}
@@ -79,12 +77,13 @@ func MultiplexerFunc(
 						case output <- value:
 						}
 					}
-				}				
-			}(channel)
-		}
-		
-		return nil
+				}
+			}
+		}(channel)
 	}
+	<-ctx.Done()
+
+	return nil
 }
 
 func SeparatorFunc(
