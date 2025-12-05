@@ -10,8 +10,8 @@ import (
 )
 
 type ValCurs struct {
-	XMLName xml.Name          `xml:"ValCurs"`
-	Valutes []currency.Valute `xml:"Valute"`
+	XMLName xml.Name            `xml:"ValCurs"`
+	Valutes []currency.Currency `xml:"Valute"`
 }
 
 func ReadCurrenciesFromXML(filePath string) []currency.Currency {

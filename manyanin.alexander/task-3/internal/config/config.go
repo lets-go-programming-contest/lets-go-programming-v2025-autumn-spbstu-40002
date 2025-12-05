@@ -12,10 +12,10 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func Load(configPath string) *Config {
+func Load(configPath string) (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		panic(errors.ErrConfigRead.Error() + ": " + err.Error())
+		return nil, errors.ErrConfigRead
 	}
 
 	config := &Config{
@@ -25,12 +25,12 @@ func Load(configPath string) *Config {
 
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
-		panic(errors.ErrConfigParse.Error() + ": " + err.Error())
+		return nil, errors.ErrConfigParse
 	}
 
 	if config.InputFile == "" || config.OutputFile == "" {
-		panic(errors.ErrConfigInvalid)
+		return nil, errors.ErrConfigInvalid
 	}
 
-	return config
+	return config, nil
 }
