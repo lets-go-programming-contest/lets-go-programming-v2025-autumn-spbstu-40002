@@ -2,13 +2,11 @@ package conveyer
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
-
-var ErrChanNotFound = errors.New("chan not found")
 
 type handlerRunner func(ctx context.Context) error
 
@@ -16,7 +14,7 @@ type channel struct {
 	ch chan string
 }
 
-type conveyorImpl struct {
+type ConveyorImpl struct {
 	size int
 
 	mu      sync.RWMutex
@@ -24,14 +22,14 @@ type conveyorImpl struct {
 	runners []handlerRunner
 }
 
-func New(size int) *conveyorImpl {
-	return &conveyorImpl{
+func New(size int) *ConveyorImpl {
+	return &ConveyorImpl{
 		size:  size,
 		chans: make(map[string]*channel),
 	}
 }
 
-func (c *conveyorImpl) getOrCreate(id string) chan string {
+func (c *ConveyorImpl) getOrCreate(id string) chan string {
 	if id == "" {
 		return nil
 	}
@@ -39,113 +37,127 @@ func (c *conveyorImpl) getOrCreate(id string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	ch, ok := c.chans[id]
+	existing, ok := c.chans[id]
 	if !ok {
 		newCh := make(chan string, c.size)
 		c.chans[id] = &channel{ch: newCh}
 		return newCh
 	}
-	return ch.ch
+
+	return existing.ch
+
 }
 
-func (c *conveyorImpl) RegisterDecorator(
+func (c *ConveyorImpl) RegisterDecorator(
 	fn func(context.Context, chan string, chan string) error,
 	input string,
 	output string,
 ) {
-	in := c.getOrCreate(input)
-	out := c.getOrCreate(output)
+	inCh := c.getOrCreate(input)
+	outCh := c.getOrCreate(output)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return fn(ctx, in, out)
+		return fn(ctx, inCh, outCh)
 	})
+
 }
 
-func (c *conveyorImpl) RegisterSeparator(
+func (c *ConveyorImpl) RegisterSeparator(
 	fn func(context.Context, chan string, []chan string) error,
 	input string,
 	outputs []string,
 ) {
-	in := c.getOrCreate(input)
+	inCh := c.getOrCreate(input)
 
-	var outs []chan string
+	outChs := make([]chan string, 0, len(outputs))
 	for _, id := range outputs {
-		outs = append(outs, c.getOrCreate(id))
+		outChs = append(outChs, c.getOrCreate(id))
 	}
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return fn(ctx, in, outs)
+		return fn(ctx, inCh, outChs)
 	})
+
 }
 
-func (c *conveyorImpl) RegisterMultiplexer(
+func (c *ConveyorImpl) RegisterMultiplexer(
 	fn func(context.Context, []chan string, chan string) error,
 	inputs []string,
 	output string,
 ) {
-	var ins []chan string
+	inChs := make([]chan string, 0, len(inputs))
 	for _, id := range inputs {
-		ins = append(ins, c.getOrCreate(id))
+		inChs = append(inChs, c.getOrCreate(id))
 	}
 
-	out := c.getOrCreate(output)
+	outCh := c.getOrCreate(output)
 
 	c.runners = append(c.runners, func(ctx context.Context) error {
-		return fn(ctx, ins, out)
+		return fn(ctx, inChs, outCh)
 	})
+
 }
 
-func (c *conveyorImpl) Run(ctx context.Context) error {
+func (c *ConveyorImpl) Run(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
-	for _, r := range c.runners {
-		run := r
+	for i := range c.runners {
+		r := c.runners[i]
 		g.Go(func() error {
-			return run(ctx)
+			return r(ctx)
 		})
 	}
 
 	err := g.Wait()
-
 	c.closeAll()
 
 	return err
+
 }
 
-func (c *conveyorImpl) closeAll() {
+func (c *ConveyorImpl) closeAll() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for _, ch := range c.chans {
+	for _, chObj := range c.chans {
 		func(ch chan string) {
-			defer func() { recover() }()
+			defer func() { _ = recover() }()
 			close(ch)
-		}(ch.ch)
+		}(chObj.ch)
 	}
+
 }
 
-func (c *conveyorImpl) Send(input string, data string) error {
+var ErrChanNotFound = fmt.Errorf("chan not found")
+
+func (c *ConveyorImpl) Send(input string, data string) error {
 	c.mu.RLock()
-	ch, ok := c.chans[input]
+	chObj, ok := c.chans[input]
 	c.mu.RUnlock()
+
 	if !ok {
 		return ErrChanNotFound
 	}
-	ch.ch <- data
+
+	chObj.ch <- data
 	return nil
+
 }
 
-func (c *conveyorImpl) Recv(output string) (string, error) {
+func (c *ConveyorImpl) Recv(output string) (string, error) {
 	c.mu.RLock()
-	ch, ok := c.chans[output]
+	chObj, ok := c.chans[output]
 	c.mu.RUnlock()
+
 	if !ok {
 		return "", ErrChanNotFound
 	}
 
-	val, ok := <-ch.ch
+	value, ok := <-chObj.ch
 	if !ok {
 		return "undefined", nil
 	}
-	return val, nil
+
+	return value, nil
+
 }
