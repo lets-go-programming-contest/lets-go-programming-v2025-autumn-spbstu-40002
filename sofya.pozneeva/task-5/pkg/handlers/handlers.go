@@ -6,7 +6,9 @@ import (
 	"strings"
 )
 
-var	errStringNotDecorated = errors.New("can't be decorated")
+var	(
+	errStringNotDecorated = errors.New("can't be decorated")
+)
 
 const (
 	noMultiplexerData = "no multiplexer"
@@ -61,23 +63,26 @@ func MultiplexerFunc(
 		}
 
 		for _, channel := range inputs {
-			select {
-			case <-ctx.Done():
-				return nil
-			case value, ok := <-channel:
-				if !ok {
-					return nil
-				}
-
-				if strings.Contains(value, noMultiplexerData) {
-					continue
-				}
-
+			go func(ch chan) {
 				select {
 				case <-ctx.Done():
 					return nil
-				case output <- value:
-				}
+				case value, ok := <-channel:
+					if !ok {
+						return nil
+					}
+
+					if strings.Contains(value, noMultiplexerData) {
+						continue
+					}
+
+					select {
+					case <-ctx.Done():
+						return nil
+					case output <- value:
+					}
+				} (channel)
+				
 			}
 		}
 	}
