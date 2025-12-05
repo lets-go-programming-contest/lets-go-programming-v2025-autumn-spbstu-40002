@@ -2,14 +2,14 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 	"sync"
 )
 
 var (
-	errCantBeDecorated = fmt.Errorf("can't be decorated")
-	errEmptyOutputs    = fmt.Errorf("empty output")
+	errCantBeDecorated = errors.New("can't be decorated")
+	errEmptyOutputs    = errors.New("empty output")
 )
 
 const (
@@ -104,7 +104,6 @@ func MultiplexerFunc(
 	}
 
 	var workersWaitGroup sync.WaitGroup
-
 	workersWaitGroup.Add(len(inputs))
 
 	done := make(chan struct{})
