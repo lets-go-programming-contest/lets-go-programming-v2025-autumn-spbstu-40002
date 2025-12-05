@@ -34,7 +34,7 @@ func (c Currency) MarshalJSON() ([]byte, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", errors.ErrJSONMarshal, err)
+		return nil, fmt.Errorf("%w: %w", errors.ErrJSONMarshal, err)
 	}
 
 	return data, nil
