@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/manyanin.alexander/task-3/internal/errors"
@@ -15,7 +16,7 @@ type Config struct {
 func Load(configPath string) (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, errors.ErrConfigRead
+		return nil, fmt.Errorf("%s: %v", errors.ErrConfigRead, err)
 	}
 
 	config := &Config{
@@ -25,7 +26,7 @@ func Load(configPath string) (*Config, error) {
 
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
-		return nil, errors.ErrConfigParse
+		return nil, fmt.Errorf("%s: %v", errors.ErrConfigParse, err)
 	}
 
 	if config.InputFile == "" || config.OutputFile == "" {
