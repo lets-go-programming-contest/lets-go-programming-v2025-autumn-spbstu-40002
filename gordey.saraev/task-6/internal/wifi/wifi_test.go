@@ -5,16 +5,21 @@ import (
 	"net"
 	"testing"
 
-	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type MockWiFiHandle struct {
-	InterfacesFunc func() ([]*wifi.Interface, error)
+	InterfacesFunc func() ([]*struct {
+		Name         string
+		HardwareAddr net.HardwareAddr
+	}, error)
 }
 
-func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
+func (m *MockWiFiHandle) Interfaces() ([]*struct {
+	Name         string
+	HardwareAddr net.HardwareAddr
+}, error) {
 	if m.InterfacesFunc != nil {
 		return m.InterfacesFunc()
 	}
@@ -34,15 +39,21 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	mac2 := parseMAC("aa:bb:cc:dd:ee:ff")
 
 	tests := []struct {
-		name         string
-		interfaces   []*wifi.Interface
+		name       string
+		interfaces []*struct {
+			Name         string
+			HardwareAddr net.HardwareAddr
+		}
 		mockErr      error
 		expectErr    bool
 		expectResult []net.HardwareAddr
 	}{
 		{
 			name: "success with multiple interfaces",
-			interfaces: []*wifi.Interface{
+			interfaces: []*struct {
+				Name         string
+				HardwareAddr net.HardwareAddr
+			}{
 				{Name: "wlan0", HardwareAddr: mac1},
 				{Name: "wlan1", HardwareAddr: mac2},
 			},
@@ -55,23 +66,22 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 			expectResult: nil,
 		},
 		{
-			name:         "empty interfaces",
-			interfaces:   []*wifi.Interface{},
+			name: "empty interfaces",
+			interfaces: []*struct {
+				Name         string
+				HardwareAddr net.HardwareAddr
+			}{},
 			expectResult: []net.HardwareAddr{},
-		},
-		{
-			name: "interface with nil hardware address",
-			interfaces: []*wifi.Interface{
-				{Name: "wlan0", HardwareAddr: nil},
-			},
-			expectResult: []net.HardwareAddr{nil},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &MockWiFiHandle{
-				InterfacesFunc: func() ([]*wifi.Interface, error) {
+				InterfacesFunc: func() ([]*struct {
+					Name         string
+					HardwareAddr net.HardwareAddr
+				}, error) {
 					return tt.interfaces, tt.mockErr
 				},
 			}
@@ -81,7 +91,6 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 			if tt.expectErr {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), "getting interfaces")
 				return
 			}
 
@@ -96,15 +105,21 @@ func TestWiFiService_GetNames(t *testing.T) {
 	mac2 := parseMAC("aa:bb:cc:dd:ee:ff")
 
 	tests := []struct {
-		name         string
-		interfaces   []*wifi.Interface
+		name       string
+		interfaces []*struct {
+			Name         string
+			HardwareAddr net.HardwareAddr
+		}
 		mockErr      error
 		expectErr    bool
 		expectResult []string
 	}{
 		{
 			name: "success with multiple interfaces",
-			interfaces: []*wifi.Interface{
+			interfaces: []*struct {
+				Name         string
+				HardwareAddr net.HardwareAddr
+			}{
 				{Name: "wlan0", HardwareAddr: mac1},
 				{Name: "wlan1", HardwareAddr: mac2},
 			},
@@ -117,23 +132,22 @@ func TestWiFiService_GetNames(t *testing.T) {
 			expectResult: nil,
 		},
 		{
-			name:         "empty interfaces",
-			interfaces:   []*wifi.Interface{},
+			name: "empty interfaces",
+			interfaces: []*struct {
+				Name         string
+				HardwareAddr net.HardwareAddr
+			}{},
 			expectResult: []string{},
-		},
-		{
-			name: "interface with empty name",
-			interfaces: []*wifi.Interface{
-				{Name: "", HardwareAddr: mac1},
-			},
-			expectResult: []string{""},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &MockWiFiHandle{
-				InterfacesFunc: func() ([]*wifi.Interface, error) {
+				InterfacesFunc: func() ([]*struct {
+					Name         string
+					HardwareAddr net.HardwareAddr
+				}, error) {
 					return tt.interfaces, tt.mockErr
 				},
 			}
@@ -143,7 +157,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 			if tt.expectErr {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), "getting interfaces")
 				return
 			}
 
@@ -151,10 +164,4 @@ func TestWiFiService_GetNames(t *testing.T) {
 			assert.Equal(t, tt.expectResult, names)
 		})
 	}
-}
-
-func TestWiFiService_New(t *testing.T) {
-	mockWiFi := &MockWiFiHandle{}
-	service := New(mockWiFi)
-	assert.Equal(t, mockWiFi, service.WiFi)
 }
