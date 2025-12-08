@@ -10,20 +10,18 @@ import (
 )
 
 type MockWiFiHandle struct {
-	InterfacesFunc func() ([]*struct {
+	interfaces []*struct {
 		Name         string
 		HardwareAddr net.HardwareAddr
-	}, error)
+	}
+	err error
 }
 
 func (m *MockWiFiHandle) Interfaces() ([]*struct {
 	Name         string
 	HardwareAddr net.HardwareAddr
 }, error) {
-	if m.InterfacesFunc != nil {
-		return m.InterfacesFunc()
-	}
-	return nil, nil
+	return m.interfaces, m.err
 }
 
 func parseMAC(s string) net.HardwareAddr {
@@ -73,17 +71,23 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 			}{},
 			expectResult: []net.HardwareAddr{},
 		},
+		{
+			name: "interface with nil hardware address",
+			interfaces: []*struct {
+				Name         string
+				HardwareAddr net.HardwareAddr
+			}{
+				{Name: "wlan0", HardwareAddr: nil},
+			},
+			expectResult: []net.HardwareAddr{nil},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &MockWiFiHandle{
-				InterfacesFunc: func() ([]*struct {
-					Name         string
-					HardwareAddr net.HardwareAddr
-				}, error) {
-					return tt.interfaces, tt.mockErr
-				},
+				interfaces: tt.interfaces,
+				err:        tt.mockErr,
 			}
 
 			service := New(mock)
@@ -139,17 +143,23 @@ func TestWiFiService_GetNames(t *testing.T) {
 			}{},
 			expectResult: []string{},
 		},
+		{
+			name: "interface with empty name",
+			interfaces: []*struct {
+				Name         string
+				HardwareAddr net.HardwareAddr
+			}{
+				{Name: "", HardwareAddr: mac1},
+			},
+			expectResult: []string{""},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &MockWiFiHandle{
-				InterfacesFunc: func() ([]*struct {
-					Name         string
-					HardwareAddr net.HardwareAddr
-				}, error) {
-					return tt.interfaces, tt.mockErr
-				},
+				interfaces: tt.interfaces,
+				err:        tt.mockErr,
 			}
 
 			service := New(mock)

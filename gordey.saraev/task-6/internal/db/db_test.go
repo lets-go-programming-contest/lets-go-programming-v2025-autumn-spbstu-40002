@@ -20,6 +20,8 @@ func TestDBService_GetNames(t *testing.T) {
 		name         string
 		mockNames    []string
 		mockErr      error
+		scanErr      bool
+		rowsErr      bool
 		expectErr    bool
 		expectResult []string
 	}{
@@ -43,6 +45,16 @@ func TestDBService_GetNames(t *testing.T) {
 			mockNames:    []string{"John"},
 			expectResult: []string{"John"},
 		},
+		{
+			name:      "scan error",
+			scanErr:   true,
+			expectErr: true,
+		},
+		{
+			name:      "rows error",
+			rowsErr:   true,
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -51,6 +63,13 @@ func TestDBService_GetNames(t *testing.T) {
 
 			if tt.mockErr != nil {
 				mock.ExpectQuery(query).WillReturnError(tt.mockErr)
+			} else if tt.scanErr {
+				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice")
+				rows.RowError(0, errors.New("scan error"))
+				mock.ExpectQuery(query).WillReturnRows(rows)
+			} else if tt.rowsErr {
+				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("rows error"))
+				mock.ExpectQuery(query).WillReturnRows(rows)
 			} else {
 				rows := sqlmock.NewRows([]string{"name"})
 				for _, name := range tt.mockNames {
@@ -83,6 +102,8 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		name         string
 		mockNames    []string
 		mockErr      error
+		scanErr      bool
+		rowsErr      bool
 		expectErr    bool
 		expectResult []string
 	}{
@@ -111,6 +132,16 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			mockNames:    []string{"John"},
 			expectResult: []string{"John"},
 		},
+		{
+			name:      "scan error",
+			scanErr:   true,
+			expectErr: true,
+		},
+		{
+			name:      "rows error",
+			rowsErr:   true,
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -119,6 +150,13 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 			if tt.mockErr != nil {
 				mock.ExpectQuery(query).WillReturnError(tt.mockErr)
+			} else if tt.scanErr {
+				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice")
+				rows.RowError(0, errors.New("scan error"))
+				mock.ExpectQuery(query).WillReturnRows(rows)
+			} else if tt.rowsErr {
+				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errors.New("rows error"))
+				mock.ExpectQuery(query).WillReturnRows(rows)
 			} else {
 				rows := sqlmock.NewRows([]string{"name"})
 				for _, name := range tt.mockNames {
