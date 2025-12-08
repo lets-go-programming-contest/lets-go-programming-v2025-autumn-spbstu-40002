@@ -1,4 +1,4 @@
-package db_test
+package db
 
 import (
 	"errors"
@@ -7,24 +7,14 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	mydb "task-6/internal/db"
 )
-
-func mockDBRows(names []string) *sqlmock.Rows {
-	rows := sqlmock.NewRows([]string{"name"})
-	for _, name := range names {
-		rows.AddRow(name)
-	}
-	return rows
-}
 
 func TestDBService_GetNames(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
 	defer db.Close()
 
-	service := mydb.New(db)
+	service := New(db)
 
 	tests := []struct {
 		name         string
@@ -62,7 +52,11 @@ func TestDBService_GetNames(t *testing.T) {
 			if tt.mockErr != nil {
 				mock.ExpectQuery(query).WillReturnError(tt.mockErr)
 			} else {
-				mock.ExpectQuery(query).WillReturnRows(mockDBRows(tt.mockNames))
+				rows := sqlmock.NewRows([]string{"name"})
+				for _, name := range tt.mockNames {
+					rows.AddRow(name)
+				}
+				mock.ExpectQuery(query).WillReturnRows(rows)
 			}
 
 			names, err := service.GetNames()
@@ -83,7 +77,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	require.NoError(t, err)
 	defer db.Close()
 
-	service := mydb.New(db)
+	service := New(db)
 
 	tests := []struct {
 		name         string
@@ -126,7 +120,11 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			if tt.mockErr != nil {
 				mock.ExpectQuery(query).WillReturnError(tt.mockErr)
 			} else {
-				mock.ExpectQuery(query).WillReturnRows(mockDBRows(tt.mockNames))
+				rows := sqlmock.NewRows([]string{"name"})
+				for _, name := range tt.mockNames {
+					rows.AddRow(name)
+				}
+				mock.ExpectQuery(query).WillReturnRows(rows)
 			}
 
 			names, err := service.GetUniqueNames()
