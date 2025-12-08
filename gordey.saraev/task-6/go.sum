@@ -1,6 +1,6 @@
 github.com/DATA-DOG/go-sqlmock v1.5.2 h1:OcvFkGmslmlZibjAjaHm3L//6LiuBgolP7OputlJIzU=
 github.com/DATA-DOG/go-sqlmock v1.5.2/go.mod h1:88MAG/4G7SMwSE3CeA0ZKzrT5CiOU3OJ+JlNzwDqpNU=
-github.com/davecgh/go-spew v1.1.1 h1:6d0YfKdNlGaQTI2DQaq7YYl57cnb3bzoK2/3HB4jyh4=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/mdlayher/genetlink v1.3.2 h1:K4+HfaYPleVnaun7j8jFmKyaJOa2i2pZx3W2agmV1pk=
 github.com/mdlayher/genetlink v1.3.2/go.mod h1:tcC3pkCrPUGRKp2A2CnWsY1t7n2T2sjR8VKn5B/vp80=
@@ -20,7 +20,5 @@ golang.org/x/net v0.24.0 h1:Idj0UgDV9sWLZtWC7+o3omfldspVL47HxOaGn8M9qiQ=
 golang.org/x/net v0.24.0/go.mod h1:2Q7sJY5mzlzWjKtYUEXSlBWCdyaioyXzRB2RtU8KVE8=
 golang.org/x/sys v0.19.0 h1:8VLyHTe1UcDVeBNthyBqtc93w/98d5+it1zs2O7NoFI=
 golang.org/x/sys v0.19.0/go.mod h1:/xfCO3UDl3hZJfy7/ZiZ6xRFnuUauoi1K6p0G8qihOc=
-gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
-gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhLmmNsI7MRYWRknTHw=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
