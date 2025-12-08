@@ -13,9 +13,7 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
 		sqlDB, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer sqlDB.Close()
-
-		service := db.New(sqlDB)
+		defer DB.Close()
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
@@ -24,105 +22,167 @@ func TestDBService_GetNames(t *testing.T) {
 		mock.ExpectQuery(`^SELECT name FROM users$`).
 			WillReturnRows(rows)
 
-		names, err := service.GetNames()
+		names, err := db.New(DB).GetNames()
 		require.NoError(t, err)
 		require.Equal(t, []string{"Alice", "Bob"}, names)
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("rows.Close() error", func(t *testing.T) {
-		sqlDB, mock, err := sqlmock.New()
+	t.Run("query error", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer sqlDB.Close()
+		defer DB.Close()
 
-		service := db.New(sqlDB)
+		mock.ExpectQuery(`^SELECT name FROM users$`).
+			WillReturnError(errors.New("db connection failed"))
 
-		rows := sqlmock.NewRows([]string{"name"})
-		rows.CloseError(errors.New("connection reset by peer")) // ВОТ ОНО!
+		_, err = db.New(DB).GetNames()
+		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("scan error", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer DB.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(999) // неверный тип
 
 		mock.ExpectQuery(`^SELECT name FROM users$`).
 			WillReturnRows(rows)
 
-		_, err = service.GetNames()
+		_, err = db.New(DB).GetNames()
+		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("row iteration error", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer DB.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			RowError(0, errors.New("network timeout"))
+
+		mock.ExpectQuery(`^SELECT name FROM users$`).
+			WillReturnRows(rows)
+
+		_, err = db.New(DB).GetNames()
+		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("rows.Close() returns error", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer DB.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("John")
+		rows.CloseError(errors.New("connection lost during close"))
+
+		mock.ExpectQuery(`^SELECT name FROM users$`).
+			WillReturnRows(rows)
+
+		_, err = db.New(DB).GetNames()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "closing rows")
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("empty result", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer DB.Close()
+
+		rows := sqlmock.NewRows([]string{"name"})
+
+		mock.ExpectQuery(`^SELECT name FROM users$`).
+			WillReturnRows(rows)
+
+		names, err := db.New(DB).GetNames()
+		require.NoError(t, err)
+		require.Empty(t, names)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestDBService_GetUniqueNames(t *testing.T) {
+	t.Run("successful", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer DB.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			AddRow("Bob")
+
+		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).
+			WillReturnRows(rows)
+
+			names, err := db.New(DB).GetUniqueNames()
+		require.NoError(t, err)
+		require.Equal(t, []string{"Alice", "Bob"}, names)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("rows.Close() returns error", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer DB.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Unique")
+		rows.CloseError(errors.New("close error")
+
+		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).
+			WillReturnRows(rows)
+
+		_, err = db.New(DB).GetUniqueNames()
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "closing rows")
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("query error", func(t *testing.T) {
-		sqlDB, mock, err := sqlmock.New()
+		DB, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer sqlDB.Close()
+		defer DB.Close()
 
-		mock.ExpectQuery(`^SELECT name FROM users$`).
-			WillReturnError(errors.New("db down"))
+		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).
+			WillReturnError(errors.New("db error"))
 
-		_, err = db.New(sqlDB).GetNames()
+		_, err = db.New(DB).GetUniqueNames()
 		require.Error(t, err)
 	})
 
 	t.Run("scan error", func(t *testing.T) {
-		sqlDB, mock, err := sqlmock.New()
+		DB, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer sqlDB.Close()
+		defer DB.Close()
 
-		rows := sqlmock.NewRows([]string{"name"}).AddRow(999)
-
-		mock.ExpectQuery(`^SELECT name FROM users$`).
-			WillReturnRows(rows)
-
-		_, err = db.New(sqlDB).GetNames()
-		require.Error(t, err)
-	})
-
-	t.Run("row error", func(t *testing.T) {
-		sqlDB, mock, err := sqlmock.New()
-		require.NoError(t, err)
-		defer sqlDB.Close()
-
-		rows := sqlmock.NewRows([]string{"name"}).
-			AddRow("A").
-			RowError(0, errors.New("boom"))
-
-		mock.ExpectQuery(`^SELECT name FROM users$`).
-			WillReturnRows(rows)
-
-		_, err = db.New(sqlDB).GetNames()
-		require.Error(t, err)
-	})
-}
-
-func TestDBService_GetUniqueNames(t *testing.T) {
-	t.Run("successful", func(t *testing.T) {
-		sqlDB, mock, err := sqlmock.New()
-		require.NoError(t, err)
-		defer sqlDB.Close()
-
-		rows := sqlmock.NewRows([]string{"name"}).
-			AddRow("Alice").
-			AddRow("Bob")
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 
 		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).
 			WillReturnRows(rows)
 
-		names, err := db.New(sqlDB).GetUniqueNames()
-		require.NoError(t, err)
-		require.Equal(t, []string{"Alice", "Bob"}, names)
+		_, err = db.New(DB).GetUniqueNames()
+		require.Error(t, err)
 	})
 
-	t.Run("rows.Close() error in GetUniqueNames", func(t *testing.T) {
-		sqlDB, mock, err := sqlmock.New()
+	t.Run("empty result", func(t *testing.T) {
+		DB, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer sqlDB.Close()
+		defer DB.Close()
 
 		rows := sqlmock.NewRows([]string{"name"})
-		rows.CloseError(errors.New("close failed"))
 
 		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).
 			WillReturnRows(rows)
 
-		_, err = db.New(sqlDB).GetUniqueNames()
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "closing rows")
+		names, err := db.New(DB).GetUniqueNames()
+		require.NoError(t, err)
+		require.Empty(t, names)
 	})
 }
