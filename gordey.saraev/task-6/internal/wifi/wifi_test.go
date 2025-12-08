@@ -175,3 +175,9 @@ func TestWiFiService_GetNames(t *testing.T) {
 		})
 	}
 }
+
+func TestWiFiService_New(t *testing.T) {
+	mock := &MockWiFiHandle{}
+	service := New(mock)
+	assert.Equal(t, mock, service.WiFi)
+}
