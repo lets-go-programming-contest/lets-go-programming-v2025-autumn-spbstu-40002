@@ -2,6 +2,7 @@ package conveyer
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -100,7 +101,7 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 	}
 
 	if err := handlersGroup.Wait(); err != nil {
-		return ErrHandlersGroupWait
+		return fmt.Errorf("%w", err)
 	}
 
 	return nil
@@ -114,6 +115,7 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 	if !channelExists {
 		return ErrChanNotFound
 	}
+
 	channel <- data
 
 	return nil
