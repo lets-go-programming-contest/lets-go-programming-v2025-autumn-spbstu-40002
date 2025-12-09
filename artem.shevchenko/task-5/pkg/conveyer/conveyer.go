@@ -16,6 +16,7 @@ type Conveyer struct {
 
 func New(channelSize int) *Conveyer {
 	return &Conveyer{
+		mutex:        sync.RWMutex{},
 		channelSize:  channelSize,
 		channels:     make(map[string]chan string),
 		handlersPool: make([]func(context.Context) error, 0),
@@ -92,12 +93,17 @@ func (conveyer *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range conveyer.handlersPool {
 		currentHandler := handler
+
 		handlersGroup.Go(func() error {
 			return currentHandler(handlersContext)
 		})
 	}
 
-	return handlersGroup.Wait()
+	if err := handlersGroup.Wait(); err != nil {
+		return ErrHandlersGroupWait
+	}
+
+	return nil
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
@@ -108,9 +114,8 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 	if !channelExists {
 		return ErrChanNotFound
 	}
-
 	channel <- data
-	
+
 	return nil
 }
 
