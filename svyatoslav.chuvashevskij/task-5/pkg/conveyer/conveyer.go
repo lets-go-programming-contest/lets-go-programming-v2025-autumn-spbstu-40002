@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -16,6 +17,7 @@ type Conveyer struct {
 	size     int
 	channels map[string]chan string
 	handlers []func(ctx context.Context) error
+	mutex    sync.RWMutex
 }
 
 func New(size int) Conveyer {
@@ -23,11 +25,15 @@ func New(size int) Conveyer {
 		size:     size,
 		channels: make(map[string]chan string),
 		handlers: []func(ctx context.Context) error{},
+		mutex:    sync.RWMutex{},
 	}
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
 	defer func() {
+		c.mutex.Lock()
+		defer c.mutex.Unlock()
+
 		for _, channel := range c.channels {
 			close(channel)
 		}
@@ -35,9 +41,13 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	group, ctx := errgroup.WithContext(ctx)
 
+	c.mutex.RLock()
+
 	for _, handler := range c.handlers {
 		group.Go(func() error { return handler(ctx) })
 	}
+
+	c.mutex.RUnlock()
 
 	err := group.Wait()
 	if err != nil {
@@ -48,7 +58,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) Send(input string, data string) error {
+	c.mutex.RLock()
 	channel, exists := c.channels[input]
+	c.mutex.RUnlock()
+
 	if !exists {
 		return fmt.Errorf("%w, trying to send to \"%s\" chan", ErrChanNotFound, input)
 	}
@@ -59,7 +72,10 @@ func (c *Conveyer) Send(input string, data string) error {
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
+	c.mutex.RLock()
 	channel, exists := c.channels[output]
+	c.mutex.RUnlock()
+
 	if !exists {
 		return "", fmt.Errorf("%w, trying to receive from \"%s\" chan", ErrChanNotFound, output)
 	}
@@ -81,6 +97,9 @@ func (c *Conveyer) RegisterDecorator(
 	input string,
 	output string,
 ) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	_, exist := c.channels[input]
 	if !exist {
 		c.channels[input] = make(chan string, c.size)
@@ -105,6 +124,9 @@ func (c *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	inputChannels := make([]chan string, len(inputs))
 
 	for number, input := range inputs {
@@ -135,6 +157,9 @@ func (c *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	_, exist := c.channels[input]
 	if !exist {
 		c.channels[input] = make(chan string, c.size)
