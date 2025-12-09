@@ -27,6 +27,7 @@ func TestDBService_GetNames(t *testing.T) {
 		names, err := service.GetNames()
 		require.NoError(t, err)
 		require.Equal(t, []string{"Alice", "Bob"}, names)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("query error", func(t *testing.T) {
@@ -35,6 +36,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		_, err := service.GetNames()
 		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("scan error", func(t *testing.T) {
@@ -45,6 +47,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		_, err := service.GetNames()
 		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("row error", func(t *testing.T) {
@@ -57,12 +60,13 @@ func TestDBService_GetNames(t *testing.T) {
 
 		_, err := service.GetNames()
 		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("rows.Err() error", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).
-			AddRow("test")
-		rows.RowError(1, errors.New("delayed error"))
+			AddRow("test").
+			RowError(1, errors.New("delayed error"))
 
 		mock.ExpectQuery(`^SELECT name FROM users$`).
 			WillReturnRows(rows)
@@ -70,6 +74,7 @@ func TestDBService_GetNames(t *testing.T) {
 		_, err := service.GetNames()
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "rows error")
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("empty result", func(t *testing.T) {
@@ -79,9 +84,8 @@ func TestDBService_GetNames(t *testing.T) {
 		names, err := service.GetNames()
 		require.NoError(t, err)
 		require.Empty(t, names)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
-
-	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestDBService_GetUniqueNames(t *testing.T) {
@@ -102,6 +106,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		names, err := service.GetUniqueNames()
 		require.NoError(t, err)
 		require.Equal(t, []string{"Alice", "Bob"}, names)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("query error", func(t *testing.T) {
@@ -110,6 +115,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		_, err := service.GetUniqueNames()
 		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("scan error", func(t *testing.T) {
@@ -120,12 +126,13 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		_, err := service.GetUniqueNames()
 		require.Error(t, err)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("rows.Err() error", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).
-			AddRow("test")
-		rows.RowError(1, errors.New("delayed error"))
+			AddRow("test").
+			RowError(1, errors.New("delayed error"))
 
 		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).
 			WillReturnRows(rows)
@@ -133,6 +140,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		_, err := service.GetUniqueNames()
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "rows error")
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("empty result", func(t *testing.T) {
@@ -142,7 +150,6 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		names, err := service.GetUniqueNames()
 		require.NoError(t, err)
 		require.Empty(t, names)
+		require.NoError(t, mock.ExpectationsWereMet())
 	})
-
-	require.NoError(t, mock.ExpectationsWereMet())
 }
