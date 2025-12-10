@@ -72,7 +72,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
 	channel, exists := c.channels[output]
 	c.mu.RUnlock()
-	
+
 	if !exists {
 		return "", ErrNoChannel
 	}
