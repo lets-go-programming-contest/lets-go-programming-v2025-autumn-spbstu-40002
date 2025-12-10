@@ -29,6 +29,7 @@ type Conveyer struct {
 	channelSize  int
 	mapChannels  map[string]chan string
 	handlersPool []func(context.Context) error
+	mu           sync.RWMutex
 }
 
 func New(channelSize int) *Conveyer {
@@ -36,6 +37,7 @@ func New(channelSize int) *Conveyer {
 		channelSize:  channelSize,
 		mapChannels:  make(map[string]chan string),
 		handlersPool: make([]func(context.Context) error, 0),
+		mu:           sync.RWMutex{},
 	}
 }
 
