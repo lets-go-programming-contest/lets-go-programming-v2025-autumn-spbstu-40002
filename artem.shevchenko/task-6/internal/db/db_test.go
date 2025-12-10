@@ -51,6 +51,12 @@ func TestGetNames(t *testing.T) {
 			expectedErr:  "rows error: rows iteration failed",
 			expectedData: []string{"Ivan"},
 		},
+		{
+			name:         "scan error - null value",
+			mockRows:     sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			expectedErr:  "rows scanning:",
+			expectedData: nil,
+		},
 	}
 
 	for _, tc := range tests {
@@ -121,6 +127,12 @@ func TestGetUniqueNames(t *testing.T) {
 			name:         "success - no rows",
 			mockRows:     sqlmock.NewRows([]string{"name"}),
 			expectedData: []string(nil),
+		},
+		{
+			name:         "scan error - null value",
+			mockRows:     sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			expectedErr:  "rows scanning:",
+			expectedData: nil,
 		},
 	}
 
