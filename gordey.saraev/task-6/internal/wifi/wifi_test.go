@@ -2,6 +2,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -24,10 +25,24 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherWifi.Interface, error) {
 	args := m.Called()
 
 	if args.Get(0) == nil {
+		if err := args.Error(1); err != nil {
+			return nil, fmt.Errorf("mock error: %w", err)
+		}
 		return nil, args.Error(1)
 	}
 
-	return args.Get(0).([]*mdlayherWifi.Interface), args.Error(1)
+	result, ok := args.Get(0).([]*mdlayherWifi.Interface)
+	if !ok {
+		if err := args.Error(1); err != nil {
+			return nil, fmt.Errorf("type assertion failed: %w", err)
+		}
+		return nil, args.Error(1)
+	}
+
+	if err := args.Error(1); err != nil {
+		return result, fmt.Errorf("mock error: %w", err)
+	}
+	return result, args.Error(1)
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {

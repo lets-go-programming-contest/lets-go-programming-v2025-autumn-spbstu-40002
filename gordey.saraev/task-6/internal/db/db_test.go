@@ -72,6 +72,7 @@ func TestDBService_GetNames(t *testing.T) {
 		service := db.New(sqlDB)
 
 		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnError(errQueryFailed)
+
 		_, err = service.GetNames()
 		require.Error(t, err)
 
@@ -187,6 +188,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		service := db.New(sqlDB)
 
 		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).WillReturnError(errDatabaseAccess)
+
 		_, err = service.GetUniqueNames()
 		require.Error(t, err)
 
