@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync/atomic"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -39,7 +38,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	var counter int64 = 0
+	counter := 0
 
 	for {
 		select {
@@ -47,13 +46,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
-				for _, output := range outputs {
-					close(output)
-				}
 				return nil
 			}
 
-			index := int(atomic.AddInt64(&counter, 1)-1) % len(outputs)
+			index := counter % len(outputs)
+			counter++
 
 			select {
 			case <-ctx.Done():

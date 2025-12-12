@@ -109,6 +109,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	}
 	c.isRunning = true
 
+	// Создаем все каналы
 	for _, h := range c.handlers {
 		for _, input := range h.inputNames {
 			if _, exists := c.channels[input]; !exists {
@@ -123,20 +124,19 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	}
 	c.mu.Unlock()
 
+	// Запускаем обработчики
 	for _, h := range c.handlers {
 		c.wg.Add(1)
 		go func(h handler) {
 			defer c.wg.Done()
 
-			var inputs []chan string
-			var outputs []chan string
-
+			// Получаем каналы
 			c.mu.RLock()
-			inputs = make([]chan string, len(h.inputNames))
+			inputs := make([]chan string, len(h.inputNames))
 			for i, name := range h.inputNames {
 				inputs[i] = c.channels[name]
 			}
-			outputs = make([]chan string, len(h.outputNames))
+			outputs := make([]chan string, len(h.outputNames))
 			for i, name := range h.outputNames {
 				outputs[i] = c.channels[name]
 			}
@@ -167,20 +167,22 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 		}(h)
 	}
 
+	// Ждем завершения
+	done := make(chan struct{})
 	go func() {
 		c.wg.Wait()
-		close(c.errCh)
+		close(done)
 	}()
 
 	select {
 	case <-ctx.Done():
 		c.closeAllChannels()
 		return ctx.Err()
-	case err, ok := <-c.errCh:
+	case err := <-c.errCh:
 		c.closeAllChannels()
-		if ok {
-			return err
-		}
+		return err
+	case <-done:
+		c.closeAllChannels()
 		return nil
 	}
 }
@@ -199,14 +201,10 @@ func (c *conveyerImpl) closeAllChannels() {
 func (c *conveyerImpl) Send(input string, data string) error {
 	c.mu.RLock()
 	ch, exists := c.channels[input]
-	isRunning := c.isRunning
 	c.mu.RUnlock()
 
-	if !isRunning {
-		return fmt.Errorf("conveyer not running")
-	}
 	if !exists {
-		return fmt.Errorf("chan %s not found", input)
+		return fmt.Errorf("chan not found")
 	}
 
 	select {
@@ -220,14 +218,10 @@ func (c *conveyerImpl) Send(input string, data string) error {
 func (c *conveyerImpl) Recv(output string) (string, error) {
 	c.mu.RLock()
 	ch, exists := c.channels[output]
-	isRunning := c.isRunning
 	c.mu.RUnlock()
 
-	if !isRunning {
-		return "", fmt.Errorf("conveyer not running")
-	}
 	if !exists {
-		return "", fmt.Errorf("chan %s not found", output)
+		return "", fmt.Errorf("chan not found")
 	}
 
 	select {
@@ -237,6 +231,6 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 		}
 		return data, nil
 	default:
-		return "", fmt.Errorf("no data in channel %s", output)
+		return "", nil
 	}
 }
