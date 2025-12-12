@@ -16,9 +16,9 @@ const (
 
 var (
 	ErrUnknownOperation = errors.New("unknown operation")
-	ErrInvalidDeptCount = errors.New("Invalid department count")
-	ErrInvalidEmpCount  = errors.New("Invalid employee count")
-	ErrInvalidInput     = errors.New("Invalid input")
+	ErrInvalidDeptCount = errors.New("invalid department count")
+	ErrInvalidEmpCount  = errors.New("invalid employee count")
+	ErrInvalidInput     = errors.New("invalid input")
 )
 
 type TempController struct {
