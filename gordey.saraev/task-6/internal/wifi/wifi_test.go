@@ -10,9 +10,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNewWiFiService(t *testing.T) {
+	mockHandle := &MockWiFiHandle{}
+	service := wifi.New(mockHandle)
+
+	require.NotNil(t, service)
+	require.NotNil(t, service.WiFi)
+}
+
 func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
-		mockHandle := &wifi.MockWiFiHandle{}
+		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
@@ -36,7 +44,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockHandle := &wifi.MockWiFiHandle{}
+		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
@@ -50,7 +58,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		mockHandle := &wifi.MockWiFiHandle{}
+		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
@@ -67,7 +75,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 func TestWiFiService_GetNames(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
-		mockHandle := &wifi.MockWiFiHandle{}
+		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
@@ -91,7 +99,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
-		mockHandle := &wifi.MockWiFiHandle{}
+		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
@@ -105,7 +113,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		mockHandle := &wifi.MockWiFiHandle{}
+		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
