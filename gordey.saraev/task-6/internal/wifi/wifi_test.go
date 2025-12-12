@@ -27,19 +27,11 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherWifi.Interface, error) {
 		return nil, args.Error(1)
 	}
 
-	iface, ok := args.Get(0).([]*mdlayherWifi.Interface)
-	if !ok {
-		return nil, args.Error(1)
-	}
-
-	return iface, args.Error(1)
+	return args.Get(0).([]*mdlayherWifi.Interface), args.Error(1)
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {
-	t.Parallel()
-
 	t.Run("successful", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -64,7 +56,6 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("error - interface access failed", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -79,7 +70,6 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("error - access denied", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -95,7 +85,6 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -112,10 +101,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 }
 
 func TestWiFiService_GetNames(t *testing.T) {
-	t.Parallel()
-
 	t.Run("successful", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -140,7 +126,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("error - interface access failed", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -155,7 +140,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("error - access denied", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
@@ -171,7 +155,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		t.Parallel()
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
