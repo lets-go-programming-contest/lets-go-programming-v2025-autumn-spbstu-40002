@@ -26,29 +26,26 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherWifi.Interface, error) {
 
 	if args.Get(0) == nil {
 		if err := args.Error(1); err != nil {
-
 			return nil, fmt.Errorf("mock error: %w", err)
 		}
 
-		return nil, args.Error(1)
+		return nil, nil
 	}
 
 	result, ok := args.Get(0).([]*mdlayherWifi.Interface)
 	if !ok {
 		if err := args.Error(1); err != nil {
-
 			return nil, fmt.Errorf("type assertion failed: %w", err)
 		}
 
-		return nil, args.Error(1)
+		return nil, nil
 	}
 
 	if err := args.Error(1); err != nil {
-
 		return result, fmt.Errorf("mock error: %w", err)
 	}
 
-	return result, args.Error(1)
+	return result, nil
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {
