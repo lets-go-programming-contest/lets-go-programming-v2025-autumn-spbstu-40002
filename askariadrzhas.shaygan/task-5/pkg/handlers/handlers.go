@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	errCantBeDecorated = errors.New("cannot apply decoration")
-	errInputsEmpty     = errors.New("no input channels")
-	errOutputsEmpty    = errors.New("no output channels")
+	errCantBeDecorated = errors.New("can't be decorated")
+	errInputsEmpty     = errors.New("inputs are empty")
+	errOutputsEmpty    = errors.New("outputs are empty")
 )
 
 const (
@@ -22,8 +22,8 @@ const (
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
-		case data, active := <-input:
-			if !active {
+		case data, ok := <-input:
+			if !ok {
 				return nil
 			}
 
@@ -48,28 +48,28 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	count := len(outputs)
+	outputLength := len(outputs)
 
-	if count == 0 {
+	if outputLength == 0 {
 		return errOutputsEmpty
 	}
 
-	position := 0
+	currentIndex := 0
 
 	for {
 		select {
-		case data, active := <-input:
-			if !active {
+		case data, ok := <-input:
+			if !ok {
 				return nil
 			}
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[position] <- data:
+			case outputs[currentIndex] <- data:
 			}
 
-			position = (position + 1) % count
+			currentIndex = (currentIndex + 1) % outputLength
 		case <-ctx.Done():
 			return nil
 		}
@@ -79,12 +79,12 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var wg sync.WaitGroup
 
-	inputCount := len(inputs)
-	if inputCount == 0 {
+	inputLength := len(inputs)
+	if inputLength == 0 {
 		return errInputsEmpty
 	}
 
-	wg.Add(inputCount)
+	wg.Add(inputLength)
 
 	for _, inp := range inputs {
 		go func(ch chan string) {
@@ -94,8 +94,8 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				select {
 				case <-ctx.Done():
 					return
-				case data, active := <-ch:
-					if !active {
+				case data, ok := <-ch:
+					if !ok {
 						return
 					}
 
