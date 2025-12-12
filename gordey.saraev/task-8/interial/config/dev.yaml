@@ -1,0 +1,2 @@
+environment: "development"
+log_level: "debug"
