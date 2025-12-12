@@ -8,11 +8,12 @@ import (
 )
 
 func main() {
-	cfg, err := config.LoadConfig()
+	config, err := config.LoadConfig()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "when loading config: %v\n", err)
+
 		return
 	}
 
-	fmt.Print(cfg.Environment, " ", cfg.LogLevel)
+	fmt.Print(config.Environment, " ", config.LogLevel)
 }
