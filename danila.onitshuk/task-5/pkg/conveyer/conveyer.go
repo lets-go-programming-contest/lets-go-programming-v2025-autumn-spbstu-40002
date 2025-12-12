@@ -108,14 +108,14 @@ func (c *Conveyer) Run(ctx context.Context) error {
 // Отправка сообщение в канал input.
 func (c *Conveyer) Send(input string, data string) error {
 	c.mutex.RLock()
-	ch, ok := c.channels[input]
+	channel, ok := c.channels[input]
 	c.mutex.RUnlock()
 
 	if !ok {
 		return ErrNoChannel
 	}
 
-	ch <- data
+	channel <- data
 
 	return nil
 }
