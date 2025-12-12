@@ -3,219 +3,233 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
 
-type Pipeline interface {
-	AddTransformer(
-		processor func(
+var errChannelNotFound = errors.New("channel does not exist")
+
+const undefined = "undefined"
+
+type ConveyerInterface interface {
+	RegisterDecorator(
+		function func(
 			ctx context.Context,
-			inCh chan string,
-			outCh chan string,
+			input chan string,
+			output chan string,
 		) error,
-		source string,
-		dest string,
+		input string,
+		output string,
 	)
 
-	AddMerger(
-		processor func(
+	RegisterMultiplexer(
+		function func(
 			ctx context.Context,
-			sources []chan string,
-			dest chan string,
+			inputs []chan string,
+			output chan string,
 		) error,
-		sources []string,
-		dest string,
+		inputs []string,
+		output string,
 	)
 
-	AddSplitter(
-		processor func(
+	RegisterSeparator(
+		function func(
 			ctx context.Context,
-			source chan string,
-			dests []chan string,
+			input chan string,
+			outputs []chan string,
 		) error,
-		source string,
-		dests []string,
+		input string,
+		outputs []string,
 	)
 
-	Start(ctx context.Context) error
-	Push(source string, value string) error
-	Pull(dest string) (string, error)
+	Run(ctx context.Context) error
+	Send(input string, data string) error
+	Recv(output string) (string, error)
 }
 
-type PipelineImpl struct {
-	chans      map[string]chan string
-	bufferSize int
-	processors []func(ctx context.Context) error
-	accessLock sync.RWMutex
+type Conveyer struct {
+	channels     map[string]chan string
+	bufferLength int
+	processors   []func(ctx context.Context) error
+	lock         sync.RWMutex
 }
 
-func Create(size int) PipelineImpl {
-	return PipelineImpl{
-		chans:      make(map[string]chan string),
-		bufferSize: size,
-		processors: make([]func(ctx context.Context) error, 0),
-		accessLock: sync.RWMutex{},
+func New(size int) Conveyer {
+	return Conveyer{
+		channels:     make(map[string]chan string),
+		bufferLength: size,
+		processors:   make([]func(ctx context.Context) error, 0),
+		lock:         sync.RWMutex{},
 	}
 }
 
-func (p *PipelineImpl) ensureChan(name string) {
-	p.accessLock.Lock()
-	defer p.accessLock.Unlock()
+func (c *Conveyer) setupChannel(channelName string) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	if _, exists := p.chans[name]; !exists {
-		p.chans[name] = make(chan string, p.bufferSize)
+	if _, exists := c.channels[channelName]; !exists {
+		c.channels[channelName] = make(chan string, c.bufferLength)
 	}
 }
 
-func (p *PipelineImpl) fetchChan(name string) (chan string, bool) {
-	if ch, ok := p.chans[name]; ok {
-		return ch, true
+func (c *Conveyer) fetchChannel(channelName string) (chan string, error) {
+	if ch, ok := c.channels[channelName]; ok {
+		return ch, nil
 	}
-	return nil, false
+
+	return nil, errChannelNotFound
 }
 
-func (p *PipelineImpl) shutdownChans() {
-	p.accessLock.Lock()
-	defer p.accessLock.Unlock()
+func (c *Conveyer) terminateChannels() {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	for _, ch := range p.chans {
+	for _, ch := range c.channels {
 		close(ch)
 	}
 }
 
-func (p *PipelineImpl) registerProcessor(processor func(ctx context.Context) error) {
-	p.processors = append(p.processors, processor)
+func (c *Conveyer) addProcessor(processor func(ctx context.Context) error) {
+	c.processors = append(c.processors, processor)
 }
 
-func (p *PipelineImpl) AddTransformer(
-	processor func(
+func (c *Conveyer) RegisterDecorator(
+	function func(
 		ctx context.Context,
-		inCh chan string,
-		outCh chan string,
+		input chan string,
+		output chan string,
 	) error,
-	source string, dest string,
+	input string, output string,
 ) {
-	p.ensureChan(source)
-	p.ensureChan(dest)
+	c.setupChannel(input)
+	c.setupChannel(output)
 
-	p.registerProcessor(func(ctx context.Context) error {
-		p.accessLock.RLock()
-		defer p.accessLock.RUnlock()
+	c.addProcessor(func(ctx context.Context) error {
+		c.lock.RLock()
+		defer c.lock.RUnlock()
 
-		inCh, _ := p.fetchChan(source)
-		outCh, _ := p.fetchChan(dest)
+		inputCh, _ := c.fetchChannel(input)
+		outputCh, _ := c.fetchChannel(output)
 
-		return processor(ctx, inCh, outCh)
+		return function(ctx, inputCh, outputCh)
 	})
 }
 
-func (p *PipelineImpl) AddMerger(
-	processor func(
+func (c *Conveyer) RegisterMultiplexer(
+	function func(
 		ctx context.Context,
-		sources []chan string,
-		dest chan string,
+		inputs []chan string,
+		output chan string,
 	) error,
-	sources []string, dest string,
+	inputs []string, output string,
 ) {
-	for _, src := range sources {
-		p.ensureChan(src)
-	}
-	p.ensureChan(dest)
-
-	p.registerProcessor(func(ctx context.Context) error {
-		p.accessLock.RLock()
-		defer p.accessLock.RUnlock()
-
-		sourceChans := make([]chan string, len(sources))
-		for i, src := range sources {
-			ch, _ := p.fetchChan(src)
-			sourceChans[i] = ch
-		}
-
-		destChan, _ := p.fetchChan(dest)
-		return processor(ctx, sourceChans, destChan)
-	})
-}
-
-func (p *PipelineImpl) AddSplitter(
-	processor func(
-		ctx context.Context,
-		source chan string,
-		dests []chan string,
-	) error,
-	source string, dests []string,
-) {
-	p.ensureChan(source)
-	for _, dest := range dests {
-		p.ensureChan(dest)
+	for _, inp := range inputs {
+		c.setupChannel(inp)
 	}
 
-	p.registerProcessor(func(ctx context.Context) error {
-		p.accessLock.RLock()
-		defer p.accessLock.RUnlock()
+	c.setupChannel(output)
 
-		sourceChan, _ := p.fetchChan(source)
-		destChans := make([]chan string, len(dests))
-		for i, dest := range dests {
-			ch, _ := p.fetchChan(dest)
-			destChans[i] = ch
+	c.addProcessor(func(ctx context.Context) error {
+		c.lock.RLock()
+		defer c.lock.RUnlock()
+
+		inputChannels := make([]chan string, len(inputs))
+
+		for i, inp := range inputs {
+			ch, _ := c.fetchChannel(inp)
+			inputChannels[i] = ch
 		}
 
-		return processor(ctx, sourceChan, destChans)
+		outputCh, _ := c.fetchChannel(output)
+
+		return function(ctx, inputChannels, outputCh)
 	})
 }
 
-func (p *PipelineImpl) Start(ctx context.Context) error {
-	defer p.shutdownChans()
+func (c *Conveyer) RegisterSeparator(
+	function func(
+		ctx context.Context,
+		input chan string,
+		outputs []chan string,
+	) error,
+	input string, outputs []string,
+) {
+	c.setupChannel(input)
+
+	for _, out := range outputs {
+		c.setupChannel(out)
+	}
+
+	c.addProcessor(func(ctx context.Context) error {
+		c.lock.RLock()
+		defer c.lock.RUnlock()
+
+		inputCh, _ := c.fetchChannel(input)
+
+		outputChannels := make([]chan string, len(outputs))
+
+		for i, out := range outputs {
+			ch, _ := c.fetchChannel(out)
+			outputChannels[i] = ch
+		}
+
+		return function(ctx, inputCh, outputChannels)
+	})
+}
+
+func (c *Conveyer) Run(ctx context.Context) error {
+	defer c.terminateChannels()
 
 	group, ctxWithCancel := errgroup.WithContext(ctx)
 
-	p.accessLock.RLock()
-	for _, processor := range p.processors {
-		proc := processor
+	c.lock.RLock()
+
+	for _, proc := range c.processors {
+		currentProc := proc
 		group.Go(func() error {
-			return proc(ctxWithCancel)
+			return currentProc(ctxWithCancel)
 		})
 	}
-	p.accessLock.RUnlock()
+
+	c.lock.RUnlock()
 
 	if err := group.Wait(); err != nil {
+		return fmt.Errorf("execution failed: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Conveyer) Send(input string, data string) error {
+	c.lock.RLock()
+
+	inputCh, err := c.fetchChannel(input)
+	if err != nil {
 		return err
 	}
+
+	c.lock.RUnlock()
+
+	inputCh <- data
+
 	return nil
 }
 
-func (p *PipelineImpl) Push(source string, value string) error {
-	p.accessLock.RLock()
-	ch, found := p.fetchChan(source)
-	p.accessLock.RUnlock()
+func (c *Conveyer) Recv(output string) (string, error) {
+	c.lock.RLock()
 
-	if !found {
-		return ErrChanMissing
+	outputCh, err := c.fetchChannel(output)
+	if err != nil {
+		return "", err
 	}
 
-	ch <- value
-	return nil
-}
+	c.lock.RUnlock()
 
-func (p *PipelineImpl) Pull(dest string) (string, error) {
-	p.accessLock.RLock()
-	ch, found := p.fetchChan(dest)
-	p.accessLock.RUnlock()
-
-	if !found {
-		return "", ErrChanMissing
-	}
-
-	if data, ok := <-ch; ok {
+	if data, ok := <-outputCh; ok {
 		return data, nil
+	} else {
+		return undefined, nil
 	}
-	return Undefined, nil
 }
-
-var (
-	ErrChanMissing = errors.New("channel does not exist")
-	Undefined      = "undefined"
-)
