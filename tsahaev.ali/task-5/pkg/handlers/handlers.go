@@ -2,111 +2,113 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
+	"sync"
+)
+
+var (
+	ErrCantDecorate           = errors.New("can't be decorated")
+	ErrContextDoneInDecorator = errors.New("context done in decorator")
+	ErrContextDoneInSeparator = errors.New("context done in separator")
+)
+
+const (
+	StrNoDecorator = "no decorator"
+	StrNoMult      = "no multiplexer"
+	StrDecorated   = "decorated: "
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(data, "no decorator") {
-				return fmt.Errorf("can't be decorated")
+			if strings.Contains(data, StrNoDecorator) {
+				return ErrCantDecorate
 			}
 
-			if !strings.HasPrefix(data, "decorated: ") {
-				data = "decorated: " + data
+			if !strings.HasPrefix(data, StrDecorated) {
+				data = StrDecorated + data
 			}
 
 			select {
-			case <-ctx.Done():
-				return ctx.Err()
 			case output <- data:
+			case <-ctx.Done():
+				return errors.Join(ErrContextDoneInDecorator, ctx.Err())
 			}
+		case <-ctx.Done():
+			return errors.Join(ErrContextDoneInDecorator, ctx.Err())
 		}
 	}
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	if len(outputs) == 0 {
-		return nil
-	}
-
-	counter := 0
+	index := 0
 
 	for {
 		select {
-		case <-ctx.Done():
-			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			index := counter % len(outputs)
-			counter++
-
 			select {
-			case <-ctx.Done():
-				return ctx.Err()
 			case outputs[index] <- data:
+			case <-ctx.Done():
+				return errors.Join(ErrContextDoneInSeparator, ctx.Err())
 			}
+
+			index = (index + 1) % len(outputs)
+		case <-ctx.Done():
+			return errors.Join(ErrContextDoneInSeparator, ctx.Err())
 		}
 	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	combined := make(chan string)
+	waitGroup := &sync.WaitGroup{}
+	done := make(chan struct{})
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	for _, inputChannel := range inputs {
+		waitGroup.Add(1)
 
-	for _, input := range inputs {
-		go func(in chan string) {
+		go func(inputChan chan string) {
+			defer waitGroup.Done()
+
 			for {
 				select {
-				case <-ctx.Done():
-					return
-				case data, ok := <-in:
+				case data, ok := <-inputChan:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(data, "no multiplexer") {
+					if strings.Contains(data, StrNoMult) {
 						continue
 					}
 
 					select {
+					case output <- data:
 					case <-ctx.Done():
 						return
-					case combined <- data:
+					case <-done:
+						return
 					}
+				case <-ctx.Done():
+					return
+				case <-done:
+					return
 				}
 			}
-		}(input)
+		}(inputChannel)
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-combined:
-			if !ok {
-				close(output)
-				return nil
-			}
+	<-ctx.Done()
+	close(done)
+	waitGroup.Wait()
 
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case output <- data:
-			}
-		}
-	}
+	return nil
 }
