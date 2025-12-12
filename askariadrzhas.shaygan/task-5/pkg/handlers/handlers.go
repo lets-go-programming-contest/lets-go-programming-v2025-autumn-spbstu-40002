@@ -8,38 +8,38 @@ import (
 )
 
 var (
-	ErrDecorationFailed = errors.New("decoration not possible")
-	ErrNoSources        = errors.New("no sources provided")
-	ErrNoDestinations   = errors.New("no destinations provided")
+	errCantBeDecorated = errors.New("cannot apply decoration")
+	errInputsEmpty     = errors.New("no input channels")
+	errOutputsEmpty    = errors.New("no output channels")
 )
 
 const (
-	SkipDecorator  = "no decorator"
-	SkipMerger     = "no multiplexer"
-	DecoratedLabel = "decorated: "
+	noDecoratorSub   = "no decorator"
+	noMultiplexerSub = "no multiplexer"
+	decoratedSub     = "decorated: "
 )
 
-func PrefixProcessor(ctx context.Context, inCh chan string, outCh chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
-		case data, active := <-inCh:
+		case data, active := <-input:
 			if !active {
 				return nil
 			}
 
-			if strings.Contains(data, SkipDecorator) {
-				return ErrDecorationFailed
+			if strings.Contains(data, noDecoratorSub) {
+				return errCantBeDecorated
 			}
 
 			result := data
-			if !strings.HasPrefix(data, DecoratedLabel) {
-				result = DecoratedLabel + data
+			if !strings.HasPrefix(data, decoratedSub) {
+				result = decoratedSub + data
 			}
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case outCh <- result:
+			case output <- result:
 			}
 		case <-ctx.Done():
 			return nil
@@ -47,16 +47,18 @@ func PrefixProcessor(ctx context.Context, inCh chan string, outCh chan string) e
 	}
 }
 
-func SplitProcessor(ctx context.Context, inCh chan string, outChs []chan string) error {
-	if len(outChs) == 0 {
-		return ErrNoDestinations
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	count := len(outputs)
+
+	if count == 0 {
+		return errOutputsEmpty
 	}
 
-	idx := 0
+	position := 0
 
 	for {
 		select {
-		case data, active := <-inCh:
+		case data, active := <-input:
 			if !active {
 				return nil
 			}
@@ -64,49 +66,52 @@ func SplitProcessor(ctx context.Context, inCh chan string, outChs []chan string)
 			select {
 			case <-ctx.Done():
 				return nil
-			case outChs[idx] <- data:
+			case outputs[position] <- data:
 			}
 
-			idx = (idx + 1) % len(outChs)
+			position = (position + 1) % count
 		case <-ctx.Done():
 			return nil
 		}
 	}
 }
 
-func MergeProcessor(ctx context.Context, inChs []chan string, outCh chan string) error {
-	if len(inChs) == 0 {
-		return ErrNoSources
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	var wg sync.WaitGroup
+
+	inputCount := len(inputs)
+	if inputCount == 0 {
+		return errInputsEmpty
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(inChs))
+	wg.Add(inputCount)
 
-	for _, ch := range inChs {
-		go func(input chan string) {
+	for _, inp := range inputs {
+		go func(ch chan string) {
 			defer wg.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, active := <-input:
+				case data, active := <-ch:
 					if !active {
 						return
 					}
 
-					if !strings.Contains(data, SkipMerger) {
+					if !strings.Contains(data, noMultiplexerSub) {
 						select {
 						case <-ctx.Done():
 							return
-						case outCh <- data:
+						case output <- data:
 						}
 					}
 				}
 			}
-		}(ch)
+		}(inp)
 	}
 
 	wg.Wait()
+
 	return nil
 }
