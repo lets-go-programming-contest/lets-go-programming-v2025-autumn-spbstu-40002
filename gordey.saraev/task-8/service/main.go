@@ -1,15 +1,18 @@
 package main
 
 import (
-	"config-example/config"
-	"log"
+	"fmt"
+	"os"
+
+	"github.com/F0LY/task-8/internal/config"
 )
 
 func main() {
-	cfg, err := config.GetConfig()
+	cfg, err := config.LoadAppConfig()
 	if err != nil {
-		log.Fatalf("Failed to get config: %v", err)
+		fmt.Fprintf(os.Stderr, "Config error: %v\n", err)
+		os.Exit(1)
 	}
 
-	cfg.PrintConfig()
+	fmt.Printf("%s %s\n", cfg.Environment, cfg.LogLevel)
 }
