@@ -11,6 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errInterfaceAccess = errors.New("interface access failed")
+	errAccessDenied    = errors.New("access denied")
+)
+
 type MockWiFiHandle struct {
 	mock.Mock
 }
@@ -50,16 +55,31 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		mockHandle.AssertExpectations(t)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - interface access failed", func(t *testing.T) {
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
-		mockHandle.On("Interfaces").Return(nil, errors.New("interfaces error"))
+		mockHandle.On("Interfaces").Return(nil, errInterfaceAccess)
 
 		_, err := service.GetAddresses()
 
 		require.Error(t, err)
+
+		mockHandle.AssertExpectations(t)
+	})
+
+	t.Run("error - access denied", func(t *testing.T) {
+		mockHandle := &MockWiFiHandle{}
+
+		service := wifi.New(mockHandle)
+
+		mockHandle.On("Interfaces").Return(nil, errAccessDenied)
+
+		_, err := service.GetAddresses()
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "access denied")
 
 		mockHandle.AssertExpectations(t)
 	})
@@ -105,16 +125,31 @@ func TestWiFiService_GetNames(t *testing.T) {
 		mockHandle.AssertExpectations(t)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("error - interface access failed", func(t *testing.T) {
 		mockHandle := &MockWiFiHandle{}
 
 		service := wifi.New(mockHandle)
 
-		mockHandle.On("Interfaces").Return(nil, errors.New("interfaces error"))
+		mockHandle.On("Interfaces").Return(nil, errInterfaceAccess)
 
 		_, err := service.GetNames()
 
 		require.Error(t, err)
+
+		mockHandle.AssertExpectations(t)
+	})
+
+	t.Run("error - access denied", func(t *testing.T) {
+		mockHandle := &MockWiFiHandle{}
+
+		service := wifi.New(mockHandle)
+
+		mockHandle.On("Interfaces").Return(nil, errAccessDenied)
+
+		_, err := service.GetNames()
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "access denied")
 
 		mockHandle.AssertExpectations(t)
 	})

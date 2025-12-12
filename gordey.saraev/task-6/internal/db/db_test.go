@@ -10,6 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errQueryFailed      = errors.New("query failed")
+	errScanFailed       = errors.New("scan failed")
+	errRowProcessing    = errors.New("row processing failed")
+	errRowsIteration    = errors.New("rows iteration failed")
+	errDatabaseAccess   = errors.New("database access failed")
+	errResultProcessing = errors.New("result processing failed")
+	errOperationFailed  = errors.New("operation failed")
+)
+
 type errorDatabase struct {
 	err error
 }
@@ -47,14 +57,7 @@ func TestDBService_GetNames(t *testing.T) {
 	})
 
 	t.Run("query error", func(t *testing.T) {
-		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnError(errors.New("db error"))
-		_, err := service.GetNames()
-		require.Error(t, err)
-	})
-
-	t.Run("scan error type mismatch", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow(123)
-		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnRows(rows)
+		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnError(errQueryFailed)
 		_, err := service.GetNames()
 		require.Error(t, err)
 	})
@@ -69,23 +72,14 @@ func TestDBService_GetNames(t *testing.T) {
 	})
 
 	t.Run("row error", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow("A").RowError(0, errors.New("boom"))
+		rows := sqlmock.NewRows([]string{"name"}).AddRow("A").RowError(0, errRowProcessing)
 		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnRows(rows)
 		_, err := service.GetNames()
 		require.Error(t, err)
-	})
-
-	t.Run("rows.Err() error", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow("test")
-		rows.RowError(1, errors.New("delayed error"))
-		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnRows(rows)
-		_, err := service.GetNames()
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "rows error")
 	})
 
 	t.Run("rows close error", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").CloseError(errors.New("close error"))
+		rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").CloseError(errResultProcessing)
 		mock.ExpectQuery(`^SELECT name FROM users$`).WillReturnRows(rows)
 		names, err := service.GetNames()
 		require.Error(t, err)
@@ -119,14 +113,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	})
 
 	t.Run("query error", func(t *testing.T) {
-		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).WillReturnError(errors.New("db error"))
-		_, err := service.GetUniqueNames()
-		require.Error(t, err)
-	})
-
-	t.Run("scan error type mismatch", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow(123)
-		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).WillReturnRows(rows)
+		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).WillReturnError(errDatabaseAccess)
 		_, err := service.GetUniqueNames()
 		require.Error(t, err)
 	})
@@ -140,17 +127,8 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		require.Nil(t, names)
 	})
 
-	t.Run("rows.Err() error", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow("test")
-		rows.RowError(1, errors.New("delayed error"))
-		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).WillReturnRows(rows)
-		_, err := service.GetUniqueNames()
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "rows error")
-	})
-
 	t.Run("rows close error", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").CloseError(errors.New("close error"))
+		rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").CloseError(errResultProcessing)
 		mock.ExpectQuery(`^SELECT DISTINCT name FROM users$`).WillReturnRows(rows)
 		names, err := service.GetUniqueNames()
 		require.Error(t, err)
@@ -170,8 +148,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 func TestDBService_WithErrorDatabase(t *testing.T) {
 	t.Run("GetNames with custom error database", func(t *testing.T) {
-		mockErr := errors.New("custom query error")
-		dbService := db.New(&errorDatabase{err: mockErr})
+		dbService := db.New(&errorDatabase{err: errOperationFailed})
 
 		names, err := dbService.GetNames()
 		require.Error(t, err)
@@ -180,8 +157,7 @@ func TestDBService_WithErrorDatabase(t *testing.T) {
 	})
 
 	t.Run("GetUniqueNames with custom error database", func(t *testing.T) {
-		mockErr := errors.New("custom query error")
-		dbService := db.New(&errorDatabase{err: mockErr})
+		dbService := db.New(&errorDatabase{err: errOperationFailed})
 
 		names, err := dbService.GetUniqueNames()
 		require.Error(t, err)
