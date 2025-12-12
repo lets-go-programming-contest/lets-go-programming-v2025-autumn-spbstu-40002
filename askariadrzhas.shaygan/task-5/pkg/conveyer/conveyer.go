@@ -188,6 +188,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range c.handlers {
 		h := handler
+
 		group.Go(func() error {
 			return h(ctxWithCancel)
 		})
@@ -208,6 +209,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	inCh, err := c.getChannel(input)
 	if err != nil {
 		c.mu.RUnlock()
+
 		return err
 	}
 
@@ -224,6 +226,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	outCh, err := c.getChannel(output)
 	if err != nil {
 		c.mu.RUnlock()
+
 		return "", err
 	}
 
