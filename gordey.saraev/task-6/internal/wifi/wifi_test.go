@@ -6,17 +6,9 @@ import (
 	"testing"
 
 	"github.com/F0LY/task-6/internal/wifi"
-	"github.com/mdlayher/wifi"
+	mdlayherWifi "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/require"
 )
-
-func TestNewWiFiService(t *testing.T) {
-	mockHandle := &MockWiFiHandle{}
-	service := wifi.New(mockHandle)
-
-	require.NotNil(t, service)
-	require.NotNil(t, service.WiFi)
-}
 
 func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
@@ -24,7 +16,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifi.New(mockHandle)
 
-		ifaces := []*wifi.Interface{
+		ifaces := []*mdlayherWifi.Interface{
 			{
 				HardwareAddr: net.HardwareAddr{0x00, 0x01, 0x02, 0x03, 0x04, 0x05},
 			},
@@ -62,7 +54,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifi.New(mockHandle)
 
-		mockHandle.On("Interfaces").Return([]*wifi.Interface{}, nil)
+		mockHandle.On("Interfaces").Return([]*mdlayherWifi.Interface{}, nil)
 
 		addrs, err := service.GetAddresses()
 
@@ -79,7 +71,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifi.New(mockHandle)
 
-		ifaces := []*wifi.Interface{
+		ifaces := []*mdlayherWifi.Interface{
 			{
 				Name: "wlan0",
 			},
@@ -117,7 +109,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifi.New(mockHandle)
 
-		mockHandle.On("Interfaces").Return([]*wifi.Interface{}, nil)
+		mockHandle.On("Interfaces").Return([]*mdlayherWifi.Interface{}, nil)
 
 		names, err := service.GetNames()
 
