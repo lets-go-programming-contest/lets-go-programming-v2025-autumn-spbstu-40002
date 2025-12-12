@@ -7,8 +7,18 @@ import (
 
 	"github.com/F0LY/task-6/internal/wifi"
 	mdlayherWifi "github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+type MockWiFiHandle struct {
+	mock.Mock
+}
+
+func (m *MockWiFiHandle) Interfaces() ([]*mdlayherWifi.Interface, error) {
+	args := m.Called()
+	return args.Get(0).([]*mdlayherWifi.Interface), args.Error(1)
+}
 
 func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
