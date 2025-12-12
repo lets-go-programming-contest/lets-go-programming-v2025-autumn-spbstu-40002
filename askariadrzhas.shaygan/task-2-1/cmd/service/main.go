@@ -14,7 +14,12 @@ const (
 	maxTemp      = 30
 )
 
-var ErrUnknownOperation = errors.New("unknown operation")
+var (
+	ErrUnknownOperation = errors.New("unknown operation")
+	ErrInvalidDeptCount = errors.New("Invalid department count")
+	ErrInvalidEmpCount  = errors.New("Invalid employee count")
+	ErrInvalidInput     = errors.New("Invalid input")
+)
 
 type TempController struct {
 	optimalTemp int
@@ -76,7 +81,7 @@ func main() {
 
 	_, err := fmt.Scanln(&deptCount)
 	if err != nil || deptCount > maxDeptNum || deptCount < minDeptNum {
-		fmt.Println("Invalid department count")
+		fmt.Println(ErrInvalidDeptCount)
 
 		return
 	}
@@ -87,7 +92,7 @@ func main() {
 
 		_, err = fmt.Scanln(&employeeCount)
 		if err != nil || employeeCount > maxEmployees || employeeCount < minEmployees {
-			fmt.Println("Invalid employee count")
+			fmt.Println(ErrInvalidEmpCount)
 
 			return
 		}
@@ -102,7 +107,7 @@ func main() {
 
 			_, err = fmt.Scanln(&operation, &value)
 			if err != nil {
-				fmt.Println("Invalid input")
+				fmt.Println(ErrInvalidInput)
 
 				return
 			}
