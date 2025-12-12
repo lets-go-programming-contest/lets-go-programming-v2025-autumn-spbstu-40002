@@ -1,4 +1,4 @@
-module config-example
+module github.com/F0LY/task-8
 
 go 1.22.7
 
