@@ -1,25 +1,19 @@
 package config
 
 import (
-	"fmt"
-
 	"gopkg.in/yaml.v3"
 )
 
-type AppConfig struct {
+type Config struct {
 	Environment string `yaml:"environment"`
 	LogLevel    string `yaml:"log_level"`
 }
 
-func LoadAppConfig() (*AppConfig, error) {
-	if configContent == nil {
-		return nil, fmt.Errorf("config content is empty")
-	}
-
-	var cfg AppConfig
-	err := yaml.Unmarshal(configContent, &cfg)
+func LoadConfig() (*Config, error) {
+	var cfg Config
+	err := yaml.Unmarshal(configFile, &cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse config: %w", err)
+		return nil, err
 	}
 
 	return &cfg, nil
