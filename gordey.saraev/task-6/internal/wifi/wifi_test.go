@@ -2,6 +2,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -24,16 +25,24 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherWifi.Interface, error) {
 	args := m.Called()
 
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, fmt.Errorf("mock error: %w", args.Error(1))
 	}
 
-	return args.Get(0).([]*mdlayherWifi.Interface), args.Error(1)
+	result, ok := args.Get(0).([]*mdlayherWifi.Interface)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failed: %w", args.Error(1))
+	}
+
+	return result, fmt.Errorf("mock error: %w", args.Error(1))
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {
-	t.Run("successful", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+	t.Parallel()
 
+	t.Run("successful", func(t *testing.T) {
+		t.Parallel()
+
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		ifaces := []*mdlayherWifi.Interface{
@@ -56,8 +65,9 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("error - interface access failed", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+		t.Parallel()
 
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		mockHandle.On("Interfaces").Return(nil, errInterfaceAccess)
@@ -70,8 +80,9 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("error - access denied", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+		t.Parallel()
 
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		mockHandle.On("Interfaces").Return(nil, errAccessDenied)
@@ -85,8 +96,9 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+		t.Parallel()
 
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		mockHandle.On("Interfaces").Return([]*mdlayherWifi.Interface{}, nil)
@@ -101,9 +113,12 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 }
 
 func TestWiFiService_GetNames(t *testing.T) {
-	t.Run("successful", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+	t.Parallel()
 
+	t.Run("successful", func(t *testing.T) {
+		t.Parallel()
+
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		ifaces := []*mdlayherWifi.Interface{
@@ -126,8 +141,9 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("error - interface access failed", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+		t.Parallel()
 
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		mockHandle.On("Interfaces").Return(nil, errInterfaceAccess)
@@ -140,8 +156,9 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("error - access denied", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+		t.Parallel()
 
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		mockHandle.On("Interfaces").Return(nil, errAccessDenied)
@@ -155,8 +172,9 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		mockHandle := &MockWiFiHandle{}
+		t.Parallel()
 
+		mockHandle := &MockWiFiHandle{}
 		service := wifi.New(mockHandle)
 
 		mockHandle.On("Interfaces").Return([]*mdlayherWifi.Interface{}, nil)
