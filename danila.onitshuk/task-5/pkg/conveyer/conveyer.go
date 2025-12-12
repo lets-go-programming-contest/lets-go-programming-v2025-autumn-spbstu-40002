@@ -2,6 +2,7 @@ package conveyer
 
 import (
 	"context"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -14,6 +15,7 @@ type Conveyer struct {
 	channelSize  int
 	channels     map[string]chan string
 	handlersPool []func(context.Context) error
+	mutex        sync.RWMutex
 }
 
 func New(channelSize int) *Conveyer {
@@ -21,6 +23,7 @@ func New(channelSize int) *Conveyer {
 		channelSize:  channelSize,
 		channels:     make(map[string]chan string),
 		handlersPool: make([]func(context.Context) error, 0),
+		mutex:        sync.RWMutex{},
 	}
 }
 
@@ -104,7 +107,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 // Отправка сообщение в канал input.
 func (c *Conveyer) Send(input string, data string) error {
+	c.mutex.RLock()
 	ch, ok := c.channels[input]
+	c.mutex.RUnlock()
+
 	if !ok {
 		return ErrNoChannel
 	}
@@ -116,7 +122,10 @@ func (c *Conveyer) Send(input string, data string) error {
 
 // Получение данных из канала output.
 func (c *Conveyer) Recv(output string) (string, error) {
+	c.mutex.RLock()
 	channel, channelAvailability := c.channels[output]
+	c.mutex.RUnlock()
+
 	if !channelAvailability {
 		return "", ErrNoChannel
 	}
