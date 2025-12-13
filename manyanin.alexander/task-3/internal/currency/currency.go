@@ -1,59 +1,58 @@
 package currency
 
 import (
-	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/manyanin.alexander/task-3/internal/errors"
 )
 
 type Currency struct {
-	NumCode  string `xml:"NumCode"`
-	CharCode string `xml:"CharCode"`
-	Value    string `xml:"Value"`
+	XMLName  xml.Name `json:"-"         xml:"Valute"`
+	NumCode  int      `json:"num_code"  xml:"NumCode"`
+	CharCode string   `json:"char_code" xml:"CharCode"`
+	Value    float64  `json:"value"     xml:"Value"`
 }
 
-func (c Currency) MarshalJSON() ([]byte, error) {
-	cleanValue := strings.ReplaceAll(c.Value, ",", ".")
-
-	value, _ := strconv.ParseFloat(cleanValue, 64)
-
-	numCode, _ := strconv.Atoi(c.NumCode)
-
-	data, err := json.Marshal(struct {
-		NumCode  int     `json:"num_code"`
-		CharCode string  `json:"char_code"`
-		Value    float64 `json:"value"`
-	}{
-		NumCode:  numCode,
-		CharCode: c.CharCode,
-		Value:    value,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errors.ErrJSONMarshal, err)
+func (c *Currency) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	type alias Currency
+	var aux struct {
+		alias
+		NumCodeStr string `xml:"NumCode"`
+		ValueStr   string `xml:"Value"`
 	}
 
-	return data, nil
-}
+	if err := d.DecodeElement(&aux, &start); err != nil {
+		return err
+	}
 
-func parseValue(value string) float64 {
-	cleanValue := strings.ReplaceAll(value, ",", ".")
+	*c = Currency(aux.alias)
 
-	val, _ := strconv.ParseFloat(cleanValue, 64)
+	numCode, err := strconv.Atoi(aux.NumCodeStr)
+	if err != nil {
+		return fmt.Errorf("failed to parse NumCode: %w", err)
+	}
+	c.NumCode = numCode
 
-	return val
+	cleanValue := strings.ReplaceAll(aux.ValueStr, ",", ".")
+	value, err := strconv.ParseFloat(cleanValue, 64)
+	if err != nil {
+		return fmt.Errorf("failed to parse Value: %w", err)
+	}
+	c.Value = value
+
+	c.CharCode = aux.CharCode
+
+	return nil
 }
 
 func SortByValue(currencies []Currency) []Currency {
 	sorted := make([]Currency, len(currencies))
-
 	copy(sorted, currencies)
 
 	sort.Slice(sorted, func(i, j int) bool {
-		return parseValue(sorted[i].Value) > parseValue(sorted[j].Value)
+		return sorted[i].Value > sorted[j].Value
 	})
 
 	return sorted
