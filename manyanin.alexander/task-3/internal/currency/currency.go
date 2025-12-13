@@ -2,7 +2,6 @@ package currency
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"sort"
 	"strconv"
@@ -12,33 +11,9 @@ import (
 )
 
 type Currency struct {
-	XMLName  xml.Name `json:"-"         xml:"Valute"`
-	NumCode  string   `json:"num_code"  xml:"NumCode"`
-	CharCode string   `json:"char_code" xml:"CharCode"`
-	Value    string   `json:"value"     xml:"Value"`
-}
-
-func (c *Currency) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	type alias Currency
-	var aux struct {
-		alias
-		NumCodeStr string `xml:"NumCode"`
-		ValueStr   string `xml:"Value"`
-	}
-
-	if err := decoder.DecodeElement(&aux, &start); err != nil {
-		return fmt.Errorf("%w: %w", errors.ErrXMLDecode, err)
-	}
-
-	*c = Currency(aux.alias)
-
-	c.NumCode = aux.NumCodeStr
-
-	c.Value = aux.ValueStr
-
-	c.CharCode = aux.CharCode
-
-	return nil
+	NumCode  string `json:"num_code"  xml:"NumCode"`
+	CharCode string `json:"char_code" xml:"CharCode"`
+	Value    string `json:"value"     xml:"Value"`
 }
 
 func (c Currency) MarshalJSON() ([]byte, error) {
@@ -57,7 +32,6 @@ func (c Currency) MarshalJSON() ([]byte, error) {
 		CharCode: c.CharCode,
 		Value:    value,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errors.ErrJSONMarshal, err)
 	}
