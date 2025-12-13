@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -16,14 +17,20 @@ type Conveyer struct {
 	channelSize int
 	channels    map[string]chan string
 	handlers    []func(ctx context.Context) error
+	mu          sync.RWMutex
 }
 
 func (conv *Conveyer) getOrCreateChannel(name string) chan string {
+	conv.mu.Lock()
+
+	defer conv.mu.Unlock()
+
 	if ch, exists := conv.channels[name]; exists {
 		return ch
 	}
 
 	ch := make(chan string, conv.channelSize)
+
 	conv.channels[name] = ch
 
 	return ch
@@ -119,7 +126,12 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 }
 
 func (conv *Conveyer) Send(input string, data string) error {
+	conv.mu.RLock()
+
 	channel, ok := conv.channels[input]
+
+	conv.mu.RUnlock()
+
 	if !ok {
 		return errChannel
 	}
@@ -130,15 +142,35 @@ func (conv *Conveyer) Send(input string, data string) error {
 }
 
 func (conv *Conveyer) Recv(output string) (string, error) {
-	channel, normal := conv.channels[output]
-	if !normal {
+	conv.mu.RLock()
+
+	channel, ok := conv.channels[output]
+
+	conv.mu.RUnlock()
+
+	if !ok {
 		return "", errChannel
 	}
 
-	data, normal := <-channel
-	if !normal {
+	data, ok := <-channel
+	if !ok {
 		return undefined, nil
 	}
 
 	return data, nil
+}
+
+func (conv *Conveyer) Close() {
+	conv.mu.Lock()
+
+	defer conv.mu.Unlock()
+
+	for name, ch := range conv.channels {
+		select {
+		case <-ch:
+		default:
+		}
+		close(ch)
+		delete(conv.channels, name)
+	}
 }
