@@ -14,5 +14,5 @@ func main() {
 		return
 	}
 
-	fmt.Print(config.Environment, config.LogLevel)
+	fmt.Print(config.Environment, " ", config.LogLevel)
 }
