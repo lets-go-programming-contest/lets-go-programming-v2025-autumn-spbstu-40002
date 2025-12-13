@@ -45,6 +45,7 @@ func New(size int) *Conveyer {
 		channelSize: size,
 		channels:    make(map[string]chan string),
 		handlers:    make([]func(ctx context.Context) error, 0),
+		mu:          sync.RWMutex{},
 	}
 }
 
@@ -144,16 +145,16 @@ func (conv *Conveyer) Send(input string, data string) error {
 func (conv *Conveyer) Recv(output string) (string, error) {
 	conv.mu.RLock()
 
-	channel, ok := conv.channels[output]
+	channel, normal := conv.channels[output]
 
 	conv.mu.RUnlock()
 
-	if !ok {
+	if !normal {
 		return "", errChannel
 	}
 
-	data, ok := <-channel
-	if !ok {
+	data, normal := <-channel
+	if !normal {
 		return undefined, nil
 	}
 
