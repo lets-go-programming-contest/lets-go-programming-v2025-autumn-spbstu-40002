@@ -94,21 +94,17 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	if len(c.handlers) == 0 {
-		return nil
-	}
-
-	errGroup, ctx := errgroup.WithContext(ctx)
+	groupHandlers, gctx := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
-		errGroup.Go(func() error {
-			return handler(ctx)
+		h := handler
+
+		groupHandlers.Go(func() error {
+			return h(gctx)
 		})
 	}
-	if err := errGroup.Wait(); err != nil {
-		return err
-	}
-	return nil
+
+	return groupHandlers.Wait()
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -121,8 +117,6 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
-
-	close(channel)
 
 	return nil
 }
