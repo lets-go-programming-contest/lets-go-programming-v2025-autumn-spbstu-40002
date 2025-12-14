@@ -25,7 +25,7 @@ var testTable = []struct { //nolint:gochecknoglobals
 }
 
 var (
-	ErrExpected       = errors.New("errExpected")         //nolint:gochecknoglobals
+	ErrExpected       = errors.New("errExpected")
 	QueryName         = "SELECT name FROM users"          //nolint:gochecknoglobals
 	QueryDistinctName = "SELECT DISTINCT name FROM users" //nolint:gochecknoglobals
 )
@@ -44,6 +44,7 @@ func TestNew(t *testing.T) {
 
 func TestGetNames(t *testing.T) {
 	t.Parallel()
+
 	mockDB, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when marshaling expected jsondata", err)
