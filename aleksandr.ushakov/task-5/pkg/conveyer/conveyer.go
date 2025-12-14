@@ -61,6 +61,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, input := range inputs {
 		c.createChannel(input)
 	}
+
 	c.createChannel(output)
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		requiredChannels := make([]chan string, 0, len(inputs))
@@ -82,9 +83,11 @@ func (c *Conveyer) RegisterSeparator(
 	outputs []string,
 ) {
 	c.createChannel(input)
+
 	for _, output := range outputs {
 		c.createChannel(output)
 	}
+
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		requiredChannels := make([]chan string, 0, len(outputs))
 
@@ -107,7 +110,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	return groupHandlers.Wait()
+	return groupHandlers.Wait() //nolint:wrapcheck
 }
 
 func (c *Conveyer) Send(input string, data string) error {
