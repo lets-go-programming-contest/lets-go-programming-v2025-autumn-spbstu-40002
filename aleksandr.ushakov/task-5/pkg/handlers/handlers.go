@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/rachguta/task-5/pkg/myerrors"
+	"task-5/pkg/myerrors"
 )
 
 const (

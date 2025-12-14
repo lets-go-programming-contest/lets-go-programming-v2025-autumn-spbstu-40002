@@ -4,7 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rachguta/task-5/pkg/myerrors"
+	"task-5/pkg/myerrors"
+
 	"golang.org/x/sync/errgroup"
 )
 
