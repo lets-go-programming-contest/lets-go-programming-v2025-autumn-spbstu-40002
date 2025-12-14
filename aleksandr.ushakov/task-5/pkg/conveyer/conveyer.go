@@ -2,10 +2,12 @@ package conveyer
 
 import (
 	"context"
+
 	"sync"
 
-	"golang.org/x/sync/errgroup"
 	"task-5/pkg/myerrors"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Conveyer struct {
