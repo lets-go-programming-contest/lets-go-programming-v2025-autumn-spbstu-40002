@@ -3,7 +3,6 @@ package conveyer
 import (
 	"context"
 	"sync"
-
 	"task-5/pkg/myerrors"
 
 	"golang.org/x/sync/errgroup"
@@ -19,13 +18,13 @@ type Conveyer struct {
 func (c *Conveyer) createChannel(name string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	if _, exists := c.channels[name]; !exists {
 		c.channels[name] = make(chan string, c.size)
 	}
 }
 
 func New(size int) *Conveyer {
-
 	return &Conveyer{
 		size:     size,
 		channels: make(map[string]chan string),
@@ -35,7 +34,7 @@ func New(size int) *Conveyer {
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(
+	handler func(
 		ctx context.Context,
 		input chan string,
 		output chan string,
@@ -45,11 +44,13 @@ func (c *Conveyer) RegisterDecorator(
 ) {
 	c.createChannel(input)
 	c.createChannel(output)
-	c.handlers = append(c.handlers, func(ctx context.Context) error { return fn(ctx, c.channels[input], c.channels[output]) })
+	c.handlers = append(c.handlers, func(ctx context.Context) error {
+		return handler(ctx, c.channels[input], c.channels[output])
+	})
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(
+	handler func(
 		ctx context.Context,
 		inputs []chan string,
 		output chan string,
@@ -66,12 +67,13 @@ func (c *Conveyer) RegisterMultiplexer(
 		for _, input := range inputs {
 			requiredChannels = append(requiredChannels, c.channels[input])
 		}
-		return fn(ctx, requiredChannels, c.channels[output])
+
+		return handler(ctx, requiredChannels, c.channels[output])
 	})
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(
+	handler func(
 		ctx context.Context,
 		input chan string,
 		outputs []chan string,
@@ -89,7 +91,8 @@ func (c *Conveyer) RegisterSeparator(
 		for _, out := range outputs {
 			requiredChannels = append(requiredChannels, c.channels[out])
 		}
-		return fn(ctx, c.channels[input], requiredChannels)
+
+		return handler(ctx, c.channels[input], requiredChannels)
 	})
 }
 
@@ -123,14 +126,14 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
-	ch, exists := c.channels[output]
+	channel, exists := c.channels[output]
 	c.mu.RUnlock()
 
 	if !exists {
 		return "", myerrors.ErrNoChannel
 	}
 
-	data, ok := <-ch
+	data, ok := <-channel
 	if !ok {
 		return "undefined", nil
 	}

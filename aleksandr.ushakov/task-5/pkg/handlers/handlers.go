@@ -18,8 +18,8 @@ func PrefixDecoratorFunc(
 	input chan string,
 	output chan string,
 ) error {
-
 	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
