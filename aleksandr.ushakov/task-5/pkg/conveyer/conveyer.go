@@ -122,6 +122,8 @@ func (c *Conveyer) Send(input string, data string) error {
 
 	channel <- data
 
+	close(channel)
+
 	return nil
 }
 
