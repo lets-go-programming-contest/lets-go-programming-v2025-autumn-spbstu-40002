@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -16,14 +17,26 @@ type Conveyer struct {
 	channelSize int
 	channels    map[string]chan string
 	handlers    []func(ctx context.Context) error
+	mu          sync.RWMutex
 }
 
 func (conv *Conveyer) getOrCreateChannel(name string) chan string {
+	conv.mu.RLock()
+	ch, exists := conv.channels[name]
+	conv.mu.RUnlock()
+
+	if exists {
+		return ch
+	}
+
+	conv.mu.Lock()
+	defer conv.mu.Unlock()
+
 	if ch, exists := conv.channels[name]; exists {
 		return ch
 	}
 
-	ch := make(chan string, conv.channelSize)
+	ch = make(chan string, conv.channelSize)
 	conv.channels[name] = ch
 
 	return ch
@@ -52,9 +65,12 @@ func (conv *Conveyer) RegisterDecorator(
 ) {
 	inputChannel := conv.getOrCreateChannel(input)
 	outputChannel := conv.getOrCreateChannel(output)
+
+	conv.mu.Lock()
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return callback(ctx, inputChannel, outputChannel)
 	})
+	conv.mu.Unlock()
 }
 
 func (conv *Conveyer) RegisterMultiplexer(
@@ -73,9 +89,12 @@ func (conv *Conveyer) RegisterMultiplexer(
 	}
 
 	outputCh := conv.getOrCreateChannel(output)
+
+	conv.mu.Lock()
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return callback(ctx, inputChannels, outputCh)
 	})
+	conv.mu.Unlock()
 }
 
 func (conv *Conveyer) RegisterSeparator(
@@ -94,25 +113,41 @@ func (conv *Conveyer) RegisterSeparator(
 		outputChannels[i] = conv.getOrCreateChannel(outputName)
 	}
 
+	conv.mu.Lock()
 	conv.handlers = append(conv.handlers, func(ctx context.Context) error {
 		return callback(ctx, inputChannel, outputChannels)
 	})
+	conv.mu.Unlock()
 }
 
 func (conv *Conveyer) Run(ctx context.Context) error {
 	group, cont := errgroup.WithContext(ctx)
 
-	for _, handler := range conv.handlers {
+	conv.mu.RLock()
+	handlers := make([]func(ctx context.Context) error, len(conv.handlers))
+	copy(handlers, conv.handlers)
+	conv.mu.RUnlock()
+
+	for _, handler := range handlers {
+		handler := handler
 		group.Go(func() error {
 			return handler(cont)
 		})
 	}
 
-	return fmt.Errorf("group wait: %w", group.Wait())
+	err := group.Wait()
+	if err != nil {
+		return fmt.Errorf("conveyer run: %w", err)
+	}
+
+	return nil
 }
 
 func (conv *Conveyer) Send(input string, data string) error {
+	conv.mu.RLock()
 	channel, ok := conv.channels[input]
+	conv.mu.RUnlock()
+
 	if !ok {
 		return errChannel
 	}
@@ -123,7 +158,10 @@ func (conv *Conveyer) Send(input string, data string) error {
 }
 
 func (conv *Conveyer) Recv(output string) (string, error) {
+	conv.mu.RLock()
 	channel, ok1 := conv.channels[output]
+	conv.mu.RUnlock()
+
 	if !ok1 {
 		return "", errChannel
 	}
