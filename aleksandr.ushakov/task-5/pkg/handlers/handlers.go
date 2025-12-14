@@ -23,7 +23,7 @@ func PrefixDecoratorFunc(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 
 		case data, ok := <-input:
 			if !ok {
@@ -38,9 +38,9 @@ func PrefixDecoratorFunc(
 				data = msgForDecorator + data
 			}
 			select {
-			case output <- data:
 			case <-ctx.Done():
 				return nil
+			case output <- data:
 			}
 		}
 	}
@@ -54,7 +54,7 @@ func MultiplexerFunc(
 	defer close(output)
 
 	for _, inputCh := range inputs {
-		go func(channel chan string) {
+		go func(channel <-chan string) {
 			for {
 				select {
 				case <-ctx.Done():
@@ -64,7 +64,7 @@ func MultiplexerFunc(
 						return
 					}
 
-					if !strings.Contains(data, noMultiplexerMsg) {
+					if presenceTag := strings.Contains(data, noDecoratorMsg); !presenceTag {
 						select {
 						case <-ctx.Done():
 							return
