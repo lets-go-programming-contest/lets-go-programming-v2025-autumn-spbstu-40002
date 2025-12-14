@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testTable = []struct {
+var testTable = []struct { //nolint:gochecknoglobals
 	names       []string
 	errWrap     string
 	errExpected error
@@ -26,7 +26,7 @@ var testTable = []struct {
 
 var (
 	ErrExpected       = errors.New("errExpected")
-	QueryName         = "SELECT name FROM users"
+	QueryName         = "SELECT name FROM users" //nolint:gochecknoglobals
 	QueryDistinctName = "SELECT DISTINCT name FROM users"
 	MustBeNil         = "must be nil"
 	ScanError         = "rows scanning"
@@ -48,21 +48,23 @@ func TestNew(t *testing.T) {
 func TestGetNames(t *testing.T) {
 	t.Parallel()
 	mockDB, mock, err := sqlmock.New()
+
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when marshaling expected jsondata", err)
 	}
+
 	defer mockDB.Close()
 
 	service := myDB.DBService{DB: mockDB}
 
 	for i, row := range testTable {
-
 		mock.ExpectQuery(QueryName).WillReturnRows(helperMockDBRows(t, row.names)).WillReturnError(row.errExpected)
 		names, err := service.GetNames()
 
 		if row.errExpected != nil {
 			require.ErrorIs(t, err, row.errExpected, "row: %d, expected error:%w, actual error: %w", i, row.errExpected, err)
 			require.Nil(t, names, "row: %d, names must be nil", i)
+
 			continue
 		}
 
@@ -72,7 +74,9 @@ func TestGetNames(t *testing.T) {
 	}
 
 	mock.ExpectQuery(QueryName).WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow(nil))
+
 	names, err := service.GetNames()
+
 	require.ErrorContains(t, err, ScanError)
 	require.Nil(t, names, MustBeNil)
 
@@ -87,21 +91,23 @@ func TestGetNames(t *testing.T) {
 func TestGetDistinctNames(t *testing.T) {
 	t.Parallel()
 	mockDB, mock, err := sqlmock.New()
+
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when marshaling expected jsondata", err)
 	}
+
 	defer mockDB.Close()
 
 	service := myDB.DBService{DB: mockDB}
 
 	for i, row := range testTable {
-
 		mock.ExpectQuery(QueryDistinctName).WillReturnRows(helperMockDBRows(t, row.names)).WillReturnError(row.errExpected)
 		names, err := service.GetUniqueNames()
 
 		if row.errExpected != nil {
 			require.ErrorIs(t, err, row.errExpected, "row: %d, expected error:%w, actual error: %w", i, row.errExpected, err)
 			require.Nil(t, names, "row: %d, names must be nil", i)
+
 			continue
 		}
 
@@ -111,7 +117,9 @@ func TestGetDistinctNames(t *testing.T) {
 	}
 
 	mock.ExpectQuery(QueryDistinctName).WillReturnRows(sqlmock.NewRows([]string{"name"}).AddRow(nil))
+
 	names, err := service.GetUniqueNames()
+
 	require.ErrorContains(t, err, ScanError)
 	require.Nil(t, names, MustBeNil)
 

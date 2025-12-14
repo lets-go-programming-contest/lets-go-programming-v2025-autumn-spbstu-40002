@@ -17,7 +17,7 @@ type rowTestSysInfo struct {
 	errExpected error
 }
 
-var testTable = []rowTestSysInfo{
+var testTable = []rowTestSysInfo{ //nolint:gochecknoglobals
 	{
 		addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"},
 		names: []string{"eth1", "eth2"},
