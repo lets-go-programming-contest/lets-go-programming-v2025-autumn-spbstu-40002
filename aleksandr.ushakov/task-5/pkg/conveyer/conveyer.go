@@ -2,9 +2,7 @@ package conveyer
 
 import (
 	"context"
-
 	"sync"
-	"task-5/pkg/myerrors"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -120,7 +118,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	c.mu.RUnlock()
 
 	if !exists {
-		return myerrors.ErrNoChannel
+		return ErrNoChannel
 	}
 
 	channel <- data
@@ -134,7 +132,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.RUnlock()
 
 	if !exists {
-		return "", myerrors.ErrNoChannel
+		return "", ErrNoChannel
 	}
 
 	data, ok := <-channel

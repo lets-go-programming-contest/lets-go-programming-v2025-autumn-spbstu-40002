@@ -3,8 +3,6 @@ package handlers
 import (
 	"context"
 	"strings"
-
-	"task-5/pkg/myerrors"
 )
 
 const (
@@ -31,7 +29,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(data, noDecoratorMsg) {
-				return myerrors.ErrNoDecorate
+				return ErrNoDecorate
 			}
 
 			if !strings.HasPrefix(data, msgForDecorator) {
