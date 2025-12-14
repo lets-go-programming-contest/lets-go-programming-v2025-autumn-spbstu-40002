@@ -22,24 +22,24 @@ type Conveyer struct {
 
 func (conv *Conveyer) getOrCreateChannel(name string) chan string {
 	conv.mu.RLock()
-	ch, exists := conv.channels[name]
+	channel, exists := conv.channels[name]
 	conv.mu.RUnlock()
 
 	if exists {
-		return ch
+		return channel
 	}
 
 	conv.mu.Lock()
 	defer conv.mu.Unlock()
 
-	if ch, exists := conv.channels[name]; exists {
-		return ch
+	if channel, exists := conv.channels[name]; exists {
+		return channel
 	}
 
-	ch = make(chan string, conv.channelSize)
-	conv.channels[name] = ch
+	channel = make(chan string, conv.channelSize)
+	conv.channels[name] = channel
 
-	return ch
+	return channel
 }
 
 func New(size int) *Conveyer {
@@ -51,6 +51,7 @@ func New(size int) *Conveyer {
 		channelSize: size,
 		channels:    make(map[string]chan string),
 		handlers:    make([]func(ctx context.Context) error, 0),
+		mu:          sync.RWMutex{},
 	}
 }
 
@@ -129,7 +130,6 @@ func (conv *Conveyer) Run(ctx context.Context) error {
 	conv.mu.RUnlock()
 
 	for _, handler := range handlers {
-		handler := handler
 		group.Go(func() error {
 			return handler(cont)
 		})
