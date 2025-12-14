@@ -1,4 +1,4 @@
-module github.com/rachguta/task-5
+module task-5
 
 go 1.22.7
 
