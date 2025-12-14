@@ -64,7 +64,7 @@ func MultiplexerFunc(
 						return
 					}
 
-					if presenceTag := strings.Contains(data, noDecoratorMsg); !presenceTag {
+					if presenceTag := strings.Contains(data, noMultiplexerMsg); !presenceTag {
 						select {
 						case <-ctx.Done():
 							return
