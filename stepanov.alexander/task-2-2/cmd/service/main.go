@@ -7,9 +7,15 @@ import (
 
 type IntHeap []int
 
-func (h *IntHeap) Len() int           { return len(*h) }
-func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
-func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
+func (h *IntHeap) Len() int {
+	return len(*h)
+}
+func (h *IntHeap) Less(i, j int) bool {
+	return (*h)[i] > (*h)[j]
+}
+func (h *IntHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
 
 func (h *IntHeap) Push(x any) {
 	value, ok := x.(int)
@@ -36,17 +42,18 @@ func main() {
 		return
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
-
-	for i := 0; i < dishesCount; i++ {
-		var rating int
-
-		if _, err := fmt.Scan(&rating); err != nil {
+	ratings := make([]int, dishesCount)
+	for i := range ratings {
+		if _, err := fmt.Scan(&ratings[i]); err != nil {
 			return
 		}
+	}
 
-		heap.Push(h, rating)
+	priorityQueue := &IntHeap{}
+	heap.Init(priorityQueue)
+
+	for _, rating := range ratings {
+		heap.Push(priorityQueue, rating)
 	}
 
 	if _, err := fmt.Scan(&order); err != nil {
@@ -54,10 +61,10 @@ func main() {
 	}
 
 	for i := 1; i < order; i++ {
-		heap.Pop(h)
+		heap.Pop(priorityQueue)
 	}
 
-	top, ok := heap.Pop(h).(int)
+	top, ok := heap.Pop(priorityQueue).(int)
 	if !ok {
 		return
 	}
