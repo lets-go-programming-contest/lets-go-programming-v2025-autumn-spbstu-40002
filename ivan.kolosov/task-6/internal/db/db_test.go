@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGetNames(t *testing.T) {
-	var testTable = []rowTestDB{
+	testTable := []rowTestDB{
 		{
 			mockRows:     sqlmock.NewRows([]string{"name"}).AddRow("Dasha").AddRow("Daria").AddRow("Dashka"),
 			expectations: []string{"Dasha", "Daria", "Dashka"},
@@ -55,6 +55,7 @@ func TestGetNames(t *testing.T) {
 	for i, testCase := range testTable {
 		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(testCase.mockRows).
 			WillReturnError(testCase.expectedError)
+
 		names, err := dbService.GetNames()
 
 		if testCase.expectedError != nil {
@@ -86,7 +87,7 @@ func TestGetNames(t *testing.T) {
 }
 
 func TestGetUniqueNames(t *testing.T) {
-	var testTable = []rowTestDB{
+	testTable := []rowTestDB{
 		{
 			mockRows:     sqlmock.NewRows([]string{"name"}).AddRow("Dasha").AddRow("Daria").AddRow("Dashka"),
 			expectations: []string{"Dasha", "Daria", "Dashka"},
