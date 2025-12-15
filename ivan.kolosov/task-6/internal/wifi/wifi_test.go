@@ -21,7 +21,7 @@ type rowTestSysInfo struct {
 	names       []string
 }
 
-var testTable = []rowTestSysInfo{
+var testTable = []rowTestSysInfo{ //nolint:gochecknoglobals
 	{
 		addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"},
 		names: []string{"eth1", "eth2"},
@@ -74,6 +74,7 @@ func TestGetAddresses(t *testing.T) {
 	for i, row := range testTable {
 		mockWifi.On("Interfaces").Unset()
 		mockWifi.On("Interfaces").Return(helperMockIfaces(t, row.addrs), row.errExpected)
+
 		actualAddrs, err := wifiService.GetAddresses()
 
 		if row.errExpected != nil {
@@ -98,7 +99,6 @@ func helperMockIfaces(t *testing.T, addrs []string) []*wifi.Interface {
 	for i, addrStr := range addrs {
 		hwAddr := parseMAC(addrStr)
 		if hwAddr == nil {
-
 			continue
 		}
 
