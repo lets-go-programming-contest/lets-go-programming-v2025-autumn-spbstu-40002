@@ -50,7 +50,7 @@ func TestGetNames(t *testing.T) {
 
 	defer mockDB.Close()
 
-	dbService := db.DBService{DB: mockDB}
+	dbService := db.New(mockDB)
 
 	for i, testCase := range testTable {
 		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(testCase.mockRows).
@@ -105,7 +105,7 @@ func TestGetUniqueNames(t *testing.T) {
 
 	defer mockDB.Close()
 
-	dbService := db.DBService{DB: mockDB}
+	dbService := db.New(mockDB)
 
 	for i, testCase := range testTable {
 		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(testCase.mockRows).
