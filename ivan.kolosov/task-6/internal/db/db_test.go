@@ -11,7 +11,7 @@ import (
 
 var errExpected = errors.New("errExpected")
 
-type rowTestDb struct {
+type rowTestDB struct {
 	mockRows      *sqlmock.Rows
 	expectedError error
 	expectations  []string
@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGetNames(t *testing.T) {
-	var testTable = []rowTestDb{
+	var testTable = []rowTestDB{
 		{
 			mockRows:     sqlmock.NewRows([]string{"name"}).AddRow("Dasha").AddRow("Daria").AddRow("Dashka"),
 			expectations: []string{"Dasha", "Daria", "Dashka"},
@@ -50,7 +50,7 @@ func TestGetNames(t *testing.T) {
 
 	defer mockDB.Close()
 
-	dbService := db.New(mockDB)
+	dbService := db.DBService{DB: mockDB}
 
 	for i, testCase := range testTable {
 		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(testCase.mockRows).
@@ -61,6 +61,7 @@ func TestGetNames(t *testing.T) {
 			require.ErrorIs(t, err, testCase.expectedError, "row: %d, expected error: %w, actual error: %w", i,
 				testCase.expectedError, err)
 			require.Nil(t, names, "row: %d, names must be nil", i)
+
 			continue
 		}
 
@@ -85,7 +86,7 @@ func TestGetNames(t *testing.T) {
 }
 
 func TestGetUniqueNames(t *testing.T) {
-	var testTable = []rowTestDb{
+	var testTable = []rowTestDB{
 		{
 			mockRows:     sqlmock.NewRows([]string{"name"}).AddRow("Dasha").AddRow("Daria").AddRow("Dashka"),
 			expectations: []string{"Dasha", "Daria", "Dashka"},
@@ -105,17 +106,19 @@ func TestGetUniqueNames(t *testing.T) {
 
 	defer mockDB.Close()
 
-	dbService := db.New(mockDB)
+	dbService := db.DBService{DB: mockDB}
 
 	for i, testCase := range testTable {
 		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(testCase.mockRows).
 			WillReturnError(testCase.expectedError)
+
 		names, err := dbService.GetUniqueNames()
 
 		if testCase.expectedError != nil {
 			require.ErrorIs(t, err, testCase.expectedError, "row: %d, expected error: %w, actual error: %w", i,
 				testCase.expectedError, err)
 			require.Nil(t, names, "row: %d, names must be nil", i)
+
 			continue
 		}
 
