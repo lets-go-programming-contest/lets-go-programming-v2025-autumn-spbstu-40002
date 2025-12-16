@@ -55,7 +55,7 @@ var testTable3 = []rowTestSysInfo2{
 		errExpected: errors.New("ExpectedError"),
 	},
 	{
-		names: []string{}, // тест пустого списка
+		names: []string{},
 	},
 }
 
