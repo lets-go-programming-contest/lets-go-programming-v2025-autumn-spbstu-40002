@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sonychello/task-6/internal/wifi"
+	myWifi "github.com/sonychello/task-6/internal/wifi"
 )
 
 type mockWiFiHandle struct {
@@ -71,7 +71,7 @@ func TestGetAddresses(t *testing.T) {
 				mockWifi.On("Interfaces").Return(interfaces, nil)
 			}
 
-			wifiService := New(mockWifi)
+			wifiService := myWifi.New(mockWifi)
 			actualAddrs, err := wifiService.GetAddresses()
 
 			if row.errExpected != nil {
@@ -108,7 +108,7 @@ func TestGetNames(t *testing.T) {
 				mockWifi.On("Interfaces").Return(interfaces, nil)
 			}
 
-			wifiService := New(mockWifi)
+			wifiService := myWifi.New(mockWifi)
 			actualNames, err := wifiService.GetNames()
 
 			if row.errExpected != nil {
@@ -182,5 +182,6 @@ func parseMAC(macStr string) net.HardwareAddr {
 	}
 	return hwAddr
 }
+
 
 
