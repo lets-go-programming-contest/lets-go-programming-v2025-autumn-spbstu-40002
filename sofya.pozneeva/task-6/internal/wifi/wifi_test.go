@@ -20,7 +20,6 @@ func (m *mockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-
 	return args.Get(0).([]*wifi.Interface), args.Error(1)
 }
 
@@ -143,7 +142,6 @@ func mockIfacesWithAdds(addrs []string) []*wifi.Interface {
 		}
 		interfaces = append(interfaces, iface)
 	}
-
 	return interfaces
 }
 
@@ -161,7 +159,6 @@ func mockIfacesWithNames(names []string) []*wifi.Interface {
 		}
 		interfaces = append(interfaces, iface)
 	}
-
 	return interfaces
 }
 
@@ -173,7 +170,6 @@ func parseMACs(macStrs []string) []net.HardwareAddr {
 			addrs = append(addrs, hwAddr)
 		}
 	}
-
 	return addrs
 }
 
@@ -182,7 +178,7 @@ func parseMAC(macStr string) net.HardwareAddr {
 	if err != nil {
 		return nil
 	}
-
 	return hwAddr
 }
+
 
