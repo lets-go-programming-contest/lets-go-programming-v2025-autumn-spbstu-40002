@@ -7,7 +7,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
 
-	db "internal/db"
+	db "github.com/sofya.pozneeva/task-6/internal/db"
 )
 
 var (
