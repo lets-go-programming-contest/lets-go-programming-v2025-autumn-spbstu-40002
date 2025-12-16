@@ -9,6 +9,8 @@ import (
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/sonychello/task-6/internal/wifi"
 )
 
 type mockWiFiHandle struct {
@@ -36,7 +38,7 @@ var testTable2 = []rowTestSysInfo1{
 		errExpected: errors.New("ExpectedError"),
 	},
 	{
-		addrs: []string{}, // тест пустого списка
+		addrs: []string{},
 	},
 }
 
@@ -180,4 +182,5 @@ func parseMAC(macStr string) net.HardwareAddr {
 	}
 	return hwAddr
 }
+
 
