@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
@@ -180,3 +180,4 @@ func parseMAC(macStr string) net.HardwareAddr {
 	}
 	return hwAddr
 }
+
