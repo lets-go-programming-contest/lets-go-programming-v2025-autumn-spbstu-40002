@@ -90,7 +90,6 @@ func TestGetAddresses(t *testing.T) {
 						"row: %d, expected addrs: %v actual addrs: %v", i, expectedAddrs, actualAddrs)
 				}
 			}
-
 			mockWifi.AssertExpectations(t)
 		})
 	}
@@ -120,7 +119,6 @@ func TestGetNames(t *testing.T) {
 				require.Equal(t, row.names, actualNames,
 					"row: %d, expected names: %v, actual names: %v", i, row.names, actualNames)
 			}
-
 			mockWifi.AssertExpectations(t)
 		})
 	}
