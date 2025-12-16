@@ -2,23 +2,15 @@ module task-6
 
 go 1.22.7
 
-require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/mdlayher/wifi v0.0.0-20220330172155-a44c70b6d3c8
-	github.com/stretchr/testify v1.8.4
+replace (
+    github.com/mdlayher/wifi => ./local_wifi_stub
+    golang.org/x/crypto => golang.org/x/crypto v0.14.0
+    golang.org/x/net => golang.org/x/net v0.17.0
+    golang.org/x/sys => golang.org/x/sys v0.13.0
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/mdlayher/genetlink v1.3.2 // indirect
-	github.com/mdlayher/netlink v1.8.0 // indirect
-	github.com/mdlayher/socket v0.5.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+    github.com/DATA-DOG/go-sqlmock v1.5.2
+    github.com/stretchr/testify v1.8.4
+    github.com/mdlayher/wifi v0.0.0
 )
