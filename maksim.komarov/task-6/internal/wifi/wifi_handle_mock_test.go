@@ -14,13 +14,23 @@ func (m *wiFiHandleMock) Interfaces() ([]*wifi.Interface, error) {
 
 	var out []*wifi.Interface
 
-	v := args.Get(0)
-	if v != nil {
-		typed, ok := v.([]*wifi.Interface)
+	v0 := args.Get(0)
+	if v0 != nil {
+		typed, ok := v0.([]*wifi.Interface)
 		if ok {
 			out = typed
 		}
 	}
 
-	return out, args.Error(1)
+	var err error
+
+	v1 := args.Get(1)
+	if v1 != nil {
+		typedErr, ok := v1.(error)
+		if ok {
+			err = typedErr
+		}
+	}
+
+	return out, err
 }
