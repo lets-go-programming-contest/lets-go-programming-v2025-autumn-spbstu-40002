@@ -9,7 +9,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 
-	db "maksim.komarov/task-6/internal/db"
+	db "github.com/megurumacabre/task-6/internal/db"
 )
 
 func TestDBService_GetNames_OK(t *testing.T) {

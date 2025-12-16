@@ -8,7 +8,7 @@ import (
 
 	"github.com/mdlayher/wifi"
 
-	wifisvc "maksim.komarov/task-6/internal/wifi"
+	wifisvc "github.com/megurumacabre/task-6/internal/wifi"
 )
 
 func TestWiFiService_GetAddresses_OK(t *testing.T) {
