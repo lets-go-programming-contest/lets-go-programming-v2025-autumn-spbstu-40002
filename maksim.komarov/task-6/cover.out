@@ -1,0 +1,20 @@
+mode: set
+github.com/megurumacabre/task-6/internal/db/db.go:16.33,18.2 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:20.55,24.16 3 1
+github.com/megurumacabre/task-6/internal/db/db.go:24.16,26.3 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:27.2,31.18 3 1
+github.com/megurumacabre/task-6/internal/db/db.go:31.18,34.42 2 1
+github.com/megurumacabre/task-6/internal/db/db.go:34.42,36.4 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:38.3,38.30 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:41.2,41.35 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:41.35,43.3 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:45.2,45.19 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:48.61,52.16 3 1
+github.com/megurumacabre/task-6/internal/db/db.go:52.16,54.3 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:55.2,59.18 3 1
+github.com/megurumacabre/task-6/internal/db/db.go:59.18,62.43 2 1
+github.com/megurumacabre/task-6/internal/db/db.go:62.43,64.4 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:66.3,66.33 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:69.2,69.35 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:69.35,71.3 1 1
+github.com/megurumacabre/task-6/internal/db/db.go:73.2,73.20 1 1
