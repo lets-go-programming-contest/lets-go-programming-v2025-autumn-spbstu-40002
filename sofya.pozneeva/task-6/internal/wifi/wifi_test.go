@@ -63,17 +63,14 @@ func TestGetAddresses(t *testing.T) {
 	for i, row := range testTable2 {
 		t.Run(fmt.Sprintf("Test case %d", i), func(t *testing.T) {
 			mockWifi := new(mockWiFiHandle)
-
 			if row.errExpected != nil {
 				mockWifi.On("Interfaces").Return(nil, row.errExpected)
 			} else {
 				interfaces := mockIfacesWithAdds(row.addrs)
 				mockWifi.On("Interfaces").Return(interfaces, nil)
 			}
-
 			wifiService := myWifi.New(mockWifi)
 			actualAddrs, err := wifiService.GetAddresses()
-
 			if row.errExpected != nil {
 				require.Error(t, err, "row: %d, expected error but got none", i)
 				require.ErrorContains(t, err, row.errExpected.Error(), "row: %d", i)
@@ -99,17 +96,14 @@ func TestGetNames(t *testing.T) {
 	for i, row := range testTable3 {
 		t.Run(fmt.Sprintf("Test case %d", i), func(t *testing.T) {
 			mockWifi := new(mockWiFiHandle)
-
 			if row.errExpected != nil {
 				mockWifi.On("Interfaces").Return(nil, row.errExpected)
 			} else {
 				interfaces := mockIfacesWithNames(row.names)
 				mockWifi.On("Interfaces").Return(interfaces, nil)
 			}
-
 			wifiService := myWifi.New(mockWifi)
 			actualNames, err := wifiService.GetNames()
-
 			if row.errExpected != nil {
 				require.Error(t, err, "row: %d, expected error but got none", i)
 				require.ErrorContains(t, err, row.errExpected.Error(), "row: %d", i)
