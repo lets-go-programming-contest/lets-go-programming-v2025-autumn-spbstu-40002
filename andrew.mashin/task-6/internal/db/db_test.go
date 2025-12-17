@@ -36,6 +36,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestGetNames(t *testing.T) {
+	t.Parallel()
+
 	tests := []testCase{
 		{
 			name:        "success - multiple names",
@@ -76,7 +78,6 @@ func TestGetNames(t *testing.T) {
 	})
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -147,6 +148,8 @@ func TestGetNames(t *testing.T) {
 }
 
 func TestGetUniqueNames(t *testing.T) {
+	t.Parallel()
+
 	tests := []testCase{
 		{
 			name:        "success - multiple names",
@@ -187,7 +190,6 @@ func TestGetUniqueNames(t *testing.T) {
 	})
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
