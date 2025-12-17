@@ -7,11 +7,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var errUnmarshaling = errors.New("an error occured while unmarshaling config file")
+var errUnmarshaling = errors.New("an error occurred while unmarshaling config file")
 
 type Config struct {
-	Enviroment string `yaml:"environment"`
-	LogLevel   string `yaml:"log_level"`
+	Environment string `yaml:"environment"`
+	LogLevel    string `yaml:"log_level"`
 }
 
 func Load() (*Config, error) {
