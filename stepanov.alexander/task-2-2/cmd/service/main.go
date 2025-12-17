@@ -7,24 +7,20 @@ import (
 
 type IntHeap []int
 
-func (h *IntHeap) Len() int {
-	return len(*h)
+func (h IntHeap) Len() int {
+	return len(h)
 }
 
-func (h *IntHeap) Less(i, j int) bool {
-	return (*h)[i] > (*h)[j]
+func (h IntHeap) Less(i, j int) bool {
+	return h[i] > h[j]
 }
 
-func (h *IntHeap) Swap(i, j int) {
-	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+func (h IntHeap) Swap(i, j int) {
+	h[i], h[j] = h[j], h[i]
 }
 
 func (h *IntHeap) Push(x any) {
-	value, ok := x.(int)
-	if !ok {
-		return
-	}
-
+	value := x.(int)
 	*h = append(*h, value)
 }
 
@@ -51,25 +47,16 @@ func main() {
 		}
 	}
 
-	priorityQueue := &IntHeap{}
-	heap.Init(priorityQueue)
-
-	for _, rating := range ratings {
-		heap.Push(priorityQueue, rating)
-	}
+	h := IntHeap(ratings)
+	heap.Init(&h)
 
 	if _, err := fmt.Scan(&order); err != nil {
 		return
 	}
 
 	for i := 1; i < order; i++ {
-		heap.Pop(priorityQueue)
+		heap.Pop(&h)
 	}
 
-	top, ok := heap.Pop(priorityQueue).(int)
-	if !ok {
-		return
-	}
-
-	fmt.Println(top)
+	fmt.Println(heap.Pop(&h).(int))
 }
