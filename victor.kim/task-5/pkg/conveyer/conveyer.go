@@ -53,7 +53,6 @@ func (c *Conveyer) RegisterDecorator(
 	c.makeChannels(input, out)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-
 		return handler(ctx, c.channels[input], c.channels[out])
 	})
 }
