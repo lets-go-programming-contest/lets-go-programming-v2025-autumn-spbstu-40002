@@ -1,4 +1,4 @@
-module github.com/abdelrhmanbaha/task-8
+module github.com/lets-go-programming-v2025-autumn-spbstu-40002/victor.kim
 
 go 1.22.7
 
