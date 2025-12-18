@@ -23,6 +23,7 @@ type Conveyer struct {
 
 func New(channelSize int) *Conveyer {
 	return &Conveyer{
+		mu:          sync.RWMutex{},
 		channelSize: channelSize,
 		channels:    make(map[string]chan string),
 		handlers:    make([]func(context.Context) error, 0),
@@ -52,6 +53,7 @@ func (c *Conveyer) RegisterDecorator(
 	c.makeChannels(input, out)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
+
 		return handler(ctx, c.channels[input], c.channels[out])
 	})
 }
@@ -72,6 +74,7 @@ func (c *Conveyer) RegisterMultiplexer(
 		for _, name := range inNames {
 			inputChans = append(inputChans, c.channels[name])
 		}
+
 		return handler(ctx, inputChans, c.channels[out])
 	})
 }
@@ -92,19 +95,22 @@ func (c *Conveyer) RegisterSeparator(
 		for _, name := range outNames {
 			outputChans = append(outputChans, c.channels[name])
 		}
+
 		return handler(ctx, c.channels[input], outputChans)
 	})
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
 	c.mu.RLock()
-	handlers := append([]func(context.Context) error(nil), c.handlers...)
+	handlers := make([]func(context.Context) error, len(c.handlers))
+	copy(handlers, c.handlers)
 	c.mu.RUnlock()
 
 	errGroup, egCtx := errgroup.WithContext(ctx)
 
 	for _, handlerFunc := range handlers {
 		hf := handlerFunc
+
 		errGroup.Go(func() error {
 			return hf(egCtx)
 		})
@@ -119,27 +125,29 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 func (c *Conveyer) Send(input string, data string) error {
 	c.mu.RLock()
-	ch, ok := c.channels[input]
+	chn, ok := c.channels[input]
 	c.mu.RUnlock()
 
 	if !ok {
 		return ErrChanNotFound
 	}
 
-	ch <- data
+	chn <- data
+
 	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
-	ch, ok := c.channels[output]
+	chn, ok := c.channels[output]
 	c.mu.RUnlock()
 
 	if !ok {
 		return "", ErrChanNotFound
 	}
 
-	value, open := <-ch
+	value, open := <-chn
+
 	if !open {
 		return undefinedData, nil
 	}
