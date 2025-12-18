@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -13,6 +14,8 @@ const undefinedData = "undefined"
 var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer struct {
+	mu sync.RWMutex
+
 	channelSize int
 	channels    map[string]chan string
 	handlers    []func(context.Context) error
@@ -43,8 +46,10 @@ func (c *Conveyer) RegisterDecorator(
 	input string,
 	out string,
 ) {
-	c.makeChannels(input)
-	c.makeChannels(out)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.makeChannels(input, out)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		return handler(ctx, c.channels[input], c.channels[out])
@@ -56,6 +61,9 @@ func (c *Conveyer) RegisterMultiplexer(
 	inNames []string,
 	out string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.makeChannels(inNames...)
 	c.makeChannels(out)
 
@@ -64,7 +72,6 @@ func (c *Conveyer) RegisterMultiplexer(
 		for _, name := range inNames {
 			inputChans = append(inputChans, c.channels[name])
 		}
-
 		return handler(ctx, inputChans, c.channels[out])
 	})
 }
@@ -74,6 +81,9 @@ func (c *Conveyer) RegisterSeparator(
 	input string,
 	outNames []string,
 ) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.makeChannels(input)
 	c.makeChannels(outNames...)
 
@@ -82,17 +92,19 @@ func (c *Conveyer) RegisterSeparator(
 		for _, name := range outNames {
 			outputChans = append(outputChans, c.channels[name])
 		}
-
 		return handler(ctx, c.channels[input], outputChans)
 	})
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	c.mu.RLock()
+	handlers := append([]func(context.Context) error(nil), c.handlers...)
+	c.mu.RUnlock()
+
 	errGroup, egCtx := errgroup.WithContext(ctx)
 
-	for _, handlerFunc := range c.handlers {
+	for _, handlerFunc := range handlers {
 		hf := handlerFunc
-
 		errGroup.Go(func() error {
 			return hf(egCtx)
 		})
@@ -106,24 +118,28 @@ func (c *Conveyer) Run(ctx context.Context) error {
 }
 
 func (c *Conveyer) Send(input string, data string) error {
+	c.mu.RLock()
 	ch, ok := c.channels[input]
+	c.mu.RUnlock()
+
 	if !ok {
 		return ErrChanNotFound
 	}
 
 	ch <- data
-
 	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
+	c.mu.RLock()
 	ch, ok := c.channels[output]
+	c.mu.RUnlock()
+
 	if !ok {
 		return "", ErrChanNotFound
 	}
 
 	value, open := <-ch
-
 	if !open {
 		return undefinedData, nil
 	}
