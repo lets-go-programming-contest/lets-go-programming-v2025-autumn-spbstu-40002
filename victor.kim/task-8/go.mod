@@ -1,4 +1,4 @@
-module github.com/lets-go-programming-v2025-autumn-spbstu-40002/victor.kim
+module github.com/lets-go-programming-v2025-autumn-spbstu-40002/victor.kim/task-8
 
 go 1.22.7
 
