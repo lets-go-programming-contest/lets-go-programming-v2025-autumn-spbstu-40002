@@ -53,10 +53,8 @@ func TestGetAddresses(t *testing.T) {
 				interfaces := mockIfacesWithAdds(tc.addrs)
 				mockWifi.On("Interfaces").Return(interfaces, nil)
 			}
-
 			wifiService := myWifi.New(mockWifi)
 			actualAddrs, err := wifiService.GetAddresses()
-
 			if tc.errExpected != nil {
 				require.Error(t, err)
 				require.Nil(t, actualAddrs)
@@ -99,10 +97,8 @@ func TestGetNames(t *testing.T) {
 				interfaces := mockIfacesWithNames(tc.names)
 				mockWifi.On("Interfaces").Return(interfaces, nil)
 			}
-
 			wifiService := myWifi.New(mockWifi)
 			actualNames, err := wifiService.GetNames()
-
 			if tc.errExpected != nil {
 				require.Error(t, err)
 				require.Nil(t, actualNames)
@@ -155,4 +151,3 @@ func parseMACs(macStrs []string) []net.HardwareAddr {
 	}
 	return addrs
 }
-
