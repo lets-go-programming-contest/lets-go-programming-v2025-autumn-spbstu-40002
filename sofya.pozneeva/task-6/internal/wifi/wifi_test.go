@@ -1,6 +1,8 @@
 package wifi_test
 
 import (
+	"fmt"
+	"net"
 	"testing"
 
 	"github.com/mdlayher/wifi"
@@ -153,3 +155,4 @@ func parseMACs(macStrs []string) []net.HardwareAddr {
 	}
 	return addrs
 }
+
