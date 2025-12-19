@@ -1,13 +1,16 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
 	"net"
 	"testing"
 
+	mywifi "github.com/Expeline/task-6/internal/wifi"
 	wifipkg "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/require"
 )
+
+var errFail = errors.New("fail")
 
 type MockWiFiHandle struct {
 	ifaces []*wifipkg.Interface
@@ -19,8 +22,7 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifipkg.Interface, error) {
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {
-	a1 := net.HardwareAddr{1, 2, 3}
-	a2 := net.HardwareAddr{4, 5, 6}
+	t.Parallel()
 
 	tests := []struct {
 		name    string
@@ -31,41 +33,38 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		{
 			name: "single_interface",
 			mock: &MockWiFiHandle{
-				ifaces: []*wifipkg.Interface{
-					{HardwareAddr: a1},
-				},
+				ifaces: []*wifipkg.Interface{{HardwareAddr: net.HardwareAddr{1, 2, 3}}},
 			},
-			want: []net.HardwareAddr{a1},
+			want: []net.HardwareAddr{{1, 2, 3}},
 		},
 		{
 			name: "multiple_interfaces",
 			mock: &MockWiFiHandle{
 				ifaces: []*wifipkg.Interface{
-					{HardwareAddr: a1},
-					{HardwareAddr: a2},
+					{HardwareAddr: net.HardwareAddr{1}},
+					{HardwareAddr: net.HardwareAddr{2}},
 				},
 			},
-			want: []net.HardwareAddr{a1, a2},
+			want: []net.HardwareAddr{{1}, {2}},
 		},
 		{
 			name: "empty_interfaces",
-			mock: &MockWiFiHandle{
-				ifaces: []*wifipkg.Interface{},
-			},
+			mock: &MockWiFiHandle{ifaces: []*wifipkg.Interface{}},
 			want: []net.HardwareAddr{},
 		},
 		{
-			name: "interfaces_error",
-			mock: &MockWiFiHandle{
-				err: errors.New("fail"),
-			},
+			name:    "error",
+			mock:    &MockWiFiHandle{err: errFail},
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			svc := New(tt.mock)
+			t.Parallel()
+
+			svc := mywifi.New(tt.mock)
 
 			res, err := svc.GetAddresses()
 			if tt.wantErr {
@@ -81,6 +80,8 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 }
 
 func TestWiFiService_GetNames(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		mock    *MockWiFiHandle
@@ -90,42 +91,38 @@ func TestWiFiService_GetNames(t *testing.T) {
 		{
 			name: "single_interface",
 			mock: &MockWiFiHandle{
-				ifaces: []*wifipkg.Interface{
-					{Name: "wlan0"},
-				},
+				ifaces: []*wifipkg.Interface{{Name: "wlan0"}},
 			},
 			want: []string{"wlan0"},
 		},
 		{
-			name: "multiple_interfaces_order_preserved",
+			name: "multiple_interfaces",
 			mock: &MockWiFiHandle{
 				ifaces: []*wifipkg.Interface{
 					{Name: "eth0"},
 					{Name: "wlan0"},
-					{Name: "lo"},
 				},
 			},
-			want: []string{"eth0", "wlan0", "lo"},
+			want: []string{"eth0", "wlan0"},
 		},
 		{
 			name: "empty_interfaces",
-			mock: &MockWiFiHandle{
-				ifaces: []*wifipkg.Interface{},
-			},
+			mock: &MockWiFiHandle{ifaces: []*wifipkg.Interface{}},
 			want: []string{},
 		},
 		{
-			name: "interfaces_error",
-			mock: &MockWiFiHandle{
-				err: errors.New("fail"),
-			},
+			name:    "error",
+			mock:    &MockWiFiHandle{err: errFail},
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			svc := New(tt.mock)
+			t.Parallel()
+
+			svc := mywifi.New(tt.mock)
 
 			res, err := svc.GetNames()
 			if tt.wantErr {
