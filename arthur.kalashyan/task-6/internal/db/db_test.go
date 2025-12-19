@@ -2,6 +2,7 @@ package db_test
 
 import (
 	"errors"
+	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -103,7 +104,6 @@ func TestDBService_GetNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			env := setupDB(t)
@@ -158,6 +158,14 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "scan error",
+			setup: func(m sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+				m.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+			},
+			wantErr: true,
+		},
+		{
 			name: "rows_error",
 			setup: func(m sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
@@ -180,7 +188,6 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			env := setupDB(t)
