@@ -1,0 +1,107 @@
+package wifi_test
+
+import (
+	"errors"
+	"net"
+	"testing"
+
+	"github.com/leonid.maryankov/task-6/internal/wifi"
+	wifipkg "github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+)
+
+type WiFiHandleMock struct {
+	mock.Mock
+}
+
+func NewWiFiHandle(t *testing.T) *WiFiHandleMock {
+	t.Helper()
+	return &WiFiHandleMock{}
+}
+
+func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
+	args := m.Called()
+	return args.Get(0).([]*wifipkg.Interface), args.Error(1)
+}
+
+func TestGetAddresses(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+
+	ifaces := []*wifipkg.Interface{
+		{
+			Name:         "eth0",
+			HardwareAddr: mustMAC("00:11:22:33:44:55"),
+		},
+		{
+			Name:         "wlan0",
+			HardwareAddr: mustMAC("aa:bb:cc:dd:ee:ff"),
+		},
+	}
+
+	mockWiFi.On("Interfaces").Return(ifaces, nil)
+
+	service := wifi.New(mockWiFi)
+
+	addrs, err := service.GetAddresses()
+
+	require.NoError(t, err)
+	require.Equal(t, []net.HardwareAddr{
+		mustMAC("00:11:22:33:44:55"),
+		mustMAC("aa:bb:cc:dd:ee:ff"),
+	}, addrs)
+}
+
+func TestGetAddresses_Error(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+
+	mockWiFi.On("Interfaces").
+		Return([]*wifipkg.Interface(nil), errors.New("iface error"))
+
+	service := wifi.New(mockWiFi)
+
+	addrs, err := service.GetAddresses()
+
+	require.Error(t, err)
+	require.Nil(t, addrs)
+}
+
+func TestGetNames(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+
+	ifaces := []*wifipkg.Interface{
+		{Name: "eth0"},
+		{Name: "wlan0"},
+	}
+
+	mockWiFi.On("Interfaces").Return(ifaces, nil)
+
+	service := wifi.New(mockWiFi)
+
+	names, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Equal(t, []string{"eth0", "wlan0"}, names)
+}
+
+func TestGetNames_Error(t *testing.T) {
+	mockWiFi := NewWiFiHandle(t)
+
+	mockWiFi.On("Interfaces").
+		Return([]*wifipkg.Interface(nil), errors.New("iface error"))
+
+	service := wifi.New(mockWiFi)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
+func mustMAC(s string) net.HardwareAddr {
+	m, err := net.ParseMAC(s)
+	if err != nil {
+		panic(err)
+	}
+	return m
+}
