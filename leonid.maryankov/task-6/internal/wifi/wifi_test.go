@@ -11,21 +11,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var errIface = errors.New("iface error")
+
 type WiFiHandleMock struct {
 	mock.Mock
 }
 
 func NewWiFiHandle(t *testing.T) *WiFiHandleMock {
 	t.Helper()
+
 	return &WiFiHandleMock{}
 }
 
 func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
 	args := m.Called()
-	return args.Get(0).([]*wifipkg.Interface), args.Error(1)
+
+	ifaces, _ := args.Get(0).([]*wifipkg.Interface)
+	return ifaces, args.Error(1)
 }
 
 func TestGetAddresses(t *testing.T) {
+	t.Parallel()
+
 	mockWiFi := NewWiFiHandle(t)
 
 	ifaces := []*wifipkg.Interface{
@@ -53,10 +60,12 @@ func TestGetAddresses(t *testing.T) {
 }
 
 func TestGetAddresses_Error(t *testing.T) {
+	t.Parallel()
+
 	mockWiFi := NewWiFiHandle(t)
 
 	mockWiFi.On("Interfaces").
-		Return([]*wifipkg.Interface(nil), errors.New("iface error"))
+		Return(nil, errIface)
 
 	service := wifi.New(mockWiFi)
 
@@ -67,6 +76,8 @@ func TestGetAddresses_Error(t *testing.T) {
 }
 
 func TestGetNames(t *testing.T) {
+	t.Parallel()
+
 	mockWiFi := NewWiFiHandle(t)
 
 	ifaces := []*wifipkg.Interface{
@@ -85,10 +96,12 @@ func TestGetNames(t *testing.T) {
 }
 
 func TestGetNames_Error(t *testing.T) {
+	t.Parallel()
+
 	mockWiFi := NewWiFiHandle(t)
 
 	mockWiFi.On("Interfaces").
-		Return([]*wifipkg.Interface(nil), errors.New("iface error"))
+		Return(nil, errIface)
 
 	service := wifi.New(mockWiFi)
 
@@ -103,5 +116,6 @@ func mustMAC(s string) net.HardwareAddr {
 	if err != nil {
 		panic(err)
 	}
+
 	return m
 }
