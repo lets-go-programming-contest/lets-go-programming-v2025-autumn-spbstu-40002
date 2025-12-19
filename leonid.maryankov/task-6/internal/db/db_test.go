@@ -9,6 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNew(t *testing.T) {
+	mockDB, _, err := sqlmock.New()
+	require.NoError(t, err)
+
+	service := db.New(mockDB)
+	require.NotNil(t, service)
+}
+
 func TestGetNames(t *testing.T) {
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
@@ -27,6 +35,24 @@ func TestGetNames(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, []string{"Alice", "Bob"}, names)
+}
+
+func TestGetNames_EmptyResult(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mock.ExpectationsWereMet()
+
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"})
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Empty(t, names)
 }
 
 func TestGetNames_QueryError(t *testing.T) {
@@ -74,7 +100,6 @@ func TestGetNames_RowsError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		AddRow("Bob").
 		CloseError(errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT name FROM users").
@@ -104,6 +129,24 @@ func TestGetUniqueNames(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, []string{"Alice", "Bob"}, names)
+}
+
+func TestGetUniqueNames_EmptyResult(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mock.ExpectationsWereMet()
+
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"})
+
+	mock.ExpectQuery("SELECT DISTINCT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetUniqueNames()
+
+	require.NoError(t, err)
+	require.Empty(t, names)
 }
 
 func TestGetUniqueNames_QueryError(t *testing.T) {
@@ -151,7 +194,6 @@ func TestGetUniqueNames_RowsError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		AddRow("Bob").
 		CloseError(errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").
