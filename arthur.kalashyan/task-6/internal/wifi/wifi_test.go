@@ -2,6 +2,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -19,13 +20,19 @@ type MockWiFiHandle struct {
 
 func (m *MockWiFiHandle) Interfaces() ([]*wifipkg.Interface, error) {
 	args := m.Called()
-	ifaces := args.Get(0)
-	if ifaces != nil {
-		if val, ok := ifaces.([]*wifipkg.Interface); ok {
-			ifaces = val
-		}
+	val := args.Get(0)
+	if val == nil {
+		val = []*wifipkg.Interface{}
 	}
-	return ifaces.([]*wifipkg.Interface), args.Error(1)
+	var ifaces []*wifipkg.Interface
+	if v, ok := val.([]*wifipkg.Interface); ok {
+		ifaces = v
+	}
+	err := args.Error(1)
+	if err != nil {
+		err = fmt.Errorf("getting interfaces: %w", err)
+	}
+	return ifaces, err
 }
 
 func TestWiFiService_New(t *testing.T) {
@@ -33,13 +40,17 @@ func TestWiFiService_New(t *testing.T) {
 	mockHandle := &MockWiFiHandle{}
 	svc := service.New(mockHandle)
 	require.NotNil(t, svc)
+	require.Same(t, mockHandle, svc.WiFi)
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Parallel()
+	mac1, _ := net.ParseMAC("aa:bb:cc:11:22:33")
+	mac2, _ := net.ParseMAC("aa:bb:cc:44:55:66")
+
 	tests := []struct {
 		name    string
-		mock    *MockWiFiHandle
+		mock    func() *MockWiFiHandle
 		want    []net.HardwareAddr
 		wantErr bool
 	}{
@@ -47,18 +58,13 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 			name: "multiple",
 			mock: func() *MockWiFiHandle {
 				m := &MockWiFiHandle{}
-				mac1, _ := net.ParseMAC("aa:bb:cc:11:22:33")
-				mac2, _ := net.ParseMAC("aa:bb:cc:44:55:66")
 				m.On("Interfaces").Return([]*wifipkg.Interface{
 					{HardwareAddr: mac1},
 					{HardwareAddr: mac2},
 				}, nil).Once()
 				return m
-			}(),
-			want: []net.HardwareAddr{
-				{0xaa, 0xbb, 0xcc, 0x11, 0x22, 0x33},
-				{0xaa, 0xbb, 0xcc, 0x44, 0x55, 0x66},
 			},
+			want: []net.HardwareAddr{mac1, mac2},
 		},
 		{
 			name: "empty",
@@ -66,7 +72,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 				m := &MockWiFiHandle{}
 				m.On("Interfaces").Return([]*wifipkg.Interface{}, nil).Once()
 				return m
-			}(),
+			},
 			want: []net.HardwareAddr{},
 		},
 		{
@@ -75,7 +81,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 				m := &MockWiFiHandle{}
 				m.On("Interfaces").Return([]*wifipkg.Interface(nil), errWiFi).Once()
 				return m
-			}(),
+			},
 			wantErr: true,
 		},
 	}
@@ -84,7 +90,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			svc := service.New(tt.mock)
+			svc := service.New(tt.mock())
 			got, err := svc.GetAddresses()
 			if tt.wantErr {
 				require.Error(t, err)
@@ -92,16 +98,17 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, got)
 			}
-			tt.mock.AssertExpectations(t)
+			tt.mock().AssertExpectations(t)
 		})
 	}
 }
 
 func TestWiFiService_GetNames(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name    string
-		mock    *MockWiFiHandle
+		mock    func() *MockWiFiHandle
 		want    []string
 		wantErr bool
 	}{
@@ -110,11 +117,10 @@ func TestWiFiService_GetNames(t *testing.T) {
 			mock: func() *MockWiFiHandle {
 				m := &MockWiFiHandle{}
 				m.On("Interfaces").Return([]*wifipkg.Interface{
-					{Name: "wlp3s0"},
-					{Name: "wlan0"},
+					{Name: "wlp3s0"}, {Name: "wlan0"},
 				}, nil).Once()
 				return m
-			}(),
+			},
 			want: []string{"wlp3s0", "wlan0"},
 		},
 		{
@@ -123,7 +129,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 				m := &MockWiFiHandle{}
 				m.On("Interfaces").Return([]*wifipkg.Interface{}, nil).Once()
 				return m
-			}(),
+			},
 			want: []string{},
 		},
 		{
@@ -132,7 +138,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 				m := &MockWiFiHandle{}
 				m.On("Interfaces").Return([]*wifipkg.Interface(nil), errWiFi).Once()
 				return m
-			}(),
+			},
 			wantErr: true,
 		},
 	}
@@ -141,7 +147,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			svc := service.New(tt.mock)
+			svc := service.New(tt.mock())
 			got, err := svc.GetNames()
 			if tt.wantErr {
 				require.Error(t, err)
@@ -149,7 +155,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, tt.want, got)
 			}
-			tt.mock.AssertExpectations(t)
+			tt.mock().AssertExpectations(t)
 		})
 	}
 }
