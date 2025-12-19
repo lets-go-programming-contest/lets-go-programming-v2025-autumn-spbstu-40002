@@ -33,12 +33,20 @@ func TestDBService_GetNames(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "success multiple",
+			name: "success with data",
 			setup: func(m sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").AddRow("Bob")
 				m.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 			},
 			want: []string{"Alice", "Bob"},
+		},
+		{
+			name: "success empty",
+			setup: func(m sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"})
+				m.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+			},
+			want: []string{},
 		},
 		{
 			name: "query error",
@@ -56,7 +64,7 @@ func TestDBService_GetNames(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "rows error",
+			name: "rows error after iteration",
 			setup: func(m sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").RowError(0, errRowsError)
 				m.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
@@ -64,7 +72,7 @@ func TestDBService_GetNames(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "close error",
+			name: "rows close error",
 			setup: func(m sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).AddRow("Alice").CloseError(errCloseError)
 				m.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
@@ -79,13 +87,15 @@ func TestDBService_GetNames(t *testing.T) {
 			t.Parallel()
 			svc, mock := setupDB(t)
 			tt.setup(mock)
+
 			got, err := svc.GetNames()
 			if tt.wantErr {
 				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, tt.want, got)
+				return
 			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
 			require.NoError(t, mock.ExpectationsWereMet())
 		})
 	}
