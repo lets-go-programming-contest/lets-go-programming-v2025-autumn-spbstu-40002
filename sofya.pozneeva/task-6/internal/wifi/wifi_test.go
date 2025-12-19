@@ -78,7 +78,6 @@ func TestGetAddresses(t *testing.T) {
 			} else {
 				require.NoError(t, err, "row: %d, error must be nil", i)
 				expectedAddrs := parseMACs(row.addrs)
-
 				if expectedAddrs == nil && actualAddrs != nil {
 					require.Len(t, actualAddrs, 0, "row: %d, expected nil or empty slice, got len=%d", i, len(actualAddrs))
 				} else {
