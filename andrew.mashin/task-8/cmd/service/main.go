@@ -1,4 +1,4 @@
-package service
+package main
 
 import (
 	"fmt"
@@ -14,5 +14,5 @@ func main() {
 		return
 	}
 
-	fmt.Printf(cfg.Environment, " ", cfg.LogLevel)
+	fmt.Println(cfg.Environment, cfg.LogLevel)
 }
