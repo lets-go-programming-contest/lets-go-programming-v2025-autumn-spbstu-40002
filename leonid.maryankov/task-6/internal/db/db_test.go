@@ -45,6 +45,47 @@ func TestGetNames_QueryError(t *testing.T) {
 	require.Nil(t, names)
 }
 
+func TestGetNames_ScanError(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mock.ExpectationsWereMet()
+
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice").
+		RowError(0, errors.New("scan error"))
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
+func TestGetNames_RowsError(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mock.ExpectationsWereMet()
+
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice").
+		AddRow("Bob").
+		CloseError(errors.New("rows error"))
+
+	mock.ExpectQuery("SELECT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
 func TestGetUniqueNames(t *testing.T) {
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
@@ -65,6 +106,22 @@ func TestGetUniqueNames(t *testing.T) {
 	require.Equal(t, []string{"Alice", "Bob"}, names)
 }
 
+func TestGetUniqueNames_QueryError(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mock.ExpectationsWereMet()
+
+	service := db.New(mockDB)
+
+	mock.ExpectQuery("SELECT DISTINCT name FROM users").
+		WillReturnError(errors.New("db error"))
+
+	names, err := service.GetUniqueNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
 func TestGetUniqueNames_ScanError(t *testing.T) {
 	mockDB, mock, err := sqlmock.New()
 	require.NoError(t, err)
@@ -75,6 +132,27 @@ func TestGetUniqueNames_ScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
 		RowError(0, errors.New("scan error"))
+
+	mock.ExpectQuery("SELECT DISTINCT name FROM users").
+		WillReturnRows(rows)
+
+	names, err := service.GetUniqueNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+}
+
+func TestGetUniqueNames_RowsError(t *testing.T) {
+	mockDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer mock.ExpectationsWereMet()
+
+	service := db.New(mockDB)
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice").
+		AddRow("Bob").
+		CloseError(errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").
 		WillReturnRows(rows)
