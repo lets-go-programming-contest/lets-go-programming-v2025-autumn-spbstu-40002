@@ -2,6 +2,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -28,7 +29,12 @@ func (m *WiFiHandleMock) Interfaces() ([]*wifipkg.Interface, error) {
 
 	ifaces, _ := args.Get(0).([]*wifipkg.Interface)
 
-	return ifaces, args.Error(1)
+	err := args.Error(1)
+	if err != nil {
+		return nil, fmt.Errorf("interfaces mock error: %w", err)
+	}
+
+	return ifaces, nil
 }
 
 func TestGetAddresses(t *testing.T) {
@@ -65,8 +71,7 @@ func TestGetAddresses_Error(t *testing.T) {
 
 	mockWiFi := NewWiFiHandle(t)
 
-	mockWiFi.On("Interfaces").
-		Return(nil, errIface)
+	mockWiFi.On("Interfaces").Return(nil, errIface)
 
 	service := wifi.New(mockWiFi)
 
@@ -101,8 +106,7 @@ func TestGetNames_Error(t *testing.T) {
 
 	mockWiFi := NewWiFiHandle(t)
 
-	mockWiFi.On("Interfaces").
-		Return(nil, errIface)
+	mockWiFi.On("Interfaces").Return(nil, errIface)
 
 	service := wifi.New(mockWiFi)
 
