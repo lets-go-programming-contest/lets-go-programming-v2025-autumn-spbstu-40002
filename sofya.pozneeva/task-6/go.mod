@@ -1,6 +1,6 @@
-module github.com/sonychello/task-6
+module task-6
 
-go 1.22.7
+go 1.25.5
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect
@@ -12,7 +12,6 @@ require (
 	github.com/mdlayher/socket v0.4.1 // indirect
 	github.com/mdlayher/wifi v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
