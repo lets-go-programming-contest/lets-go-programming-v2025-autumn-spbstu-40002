@@ -1,11 +1,9 @@
-package db_test
+package db
 
 import (
 	"errors"
 	"regexp"
 	"testing"
-
-	db "github.com/t1wt/task-6/internal/db"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
@@ -31,7 +29,7 @@ func TestGetNames_SuccessWithData(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("alice").AddRow("bob")
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
@@ -48,7 +46,7 @@ func TestGetNames_SuccessNoData(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name"})
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
@@ -65,7 +63,7 @@ func TestGetNames_QueryError(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnError(errQuery)
 
@@ -83,7 +81,7 @@ func TestGetNames_ScanError(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name", "age"}).AddRow("alice", 30)
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
@@ -100,7 +98,7 @@ func TestGetNames_RowsError(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("alice").RowError(0, errRows)
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
@@ -117,7 +115,7 @@ func TestGetUniqueNames_SuccessWithData(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("alice").AddRow("alice")
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
 
@@ -134,7 +132,7 @@ func TestGetUniqueNames_SuccessNoData(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name"})
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
 
@@ -151,7 +149,7 @@ func TestGetUniqueNames_QueryError(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnError(errQuery)
 
@@ -169,7 +167,7 @@ func TestGetUniqueNames_ScanError(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name", "age"}).AddRow("alice", 30)
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
 
@@ -186,7 +184,7 @@ func TestGetUniqueNames_RowsError(t *testing.T) {
 	require.NoError(t, err)
 	defer closeDB(t, sqlDB)
 
-	service := db.New(sqlDB)
+	service := New(sqlDB)
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("alice").RowError(0, errRows)
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
 
