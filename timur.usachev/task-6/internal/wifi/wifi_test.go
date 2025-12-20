@@ -13,7 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errIfaces = errors.New("getting interfaces failed")
+var (
+	errIfaces           = errors.New("getting interfaces failed")
+	errInvalidIfaceType = errors.New("invalid interface type")
+)
 
 type MockWiFi struct {
 	mock.Mock
@@ -24,7 +27,7 @@ func (m *MockWiFi) Interfaces() ([]*wifi.Interface, error) {
 	ifaceSlice, ok := args.Get(0).([]*wifi.Interface)
 
 	if !ok {
-		return nil, fmt.Errorf("expected []*wifi.Interface, got %T", args.Get(0))
+		return nil, errInvalidIfaceType
 	}
 
 	if err := args.Error(1); err != nil {
