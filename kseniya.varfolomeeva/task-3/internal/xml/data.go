@@ -55,7 +55,6 @@ func (b ByExchangeRate) Swap(i, j int) {
 }
 
 func (b ByExchangeRate) Less(firstIndex, secondIndex int) bool {
-
 	rateI, err := b[firstIndex].ToFloat()
 	if err != nil {
 		return false
