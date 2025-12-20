@@ -11,12 +11,6 @@ import (
 
 const defaultDirPerm = 0o750
 
-type CurrencyRecord struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
-}
-
 func SaveCurrencies(data *xml.Currencies, path string) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, defaultDirPerm); err != nil {
@@ -34,19 +28,15 @@ func SaveCurrencies(data *xml.Currencies, path string) error {
 		}
 	}()
 
-	records := make([]CurrencyRecord, len(data.Currencies))
+	records := make([]xml.CurrencyRecord, len(data.Currencies))
 
 	for index, currency := range data.Currencies {
-		value, err := currency.ToFloat()
+		record, err := currency.ToRecord()
 		if err != nil {
 			return fmt.Errorf("convert: %w", err)
 		}
 
-		records[index] = CurrencyRecord{
-			NumCode:  currency.NumCode,
-			CharCode: currency.CharCode,
-			Value:    value,
-		}
+		records[index] = record
 	}
 
 	encoder := json.NewEncoder(file)

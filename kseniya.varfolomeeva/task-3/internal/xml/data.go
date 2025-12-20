@@ -10,7 +10,6 @@ type Currency struct {
 	ID       string `xml:"ID,attr"`
 	NumCode  int    `xml:"NumCode"`
 	CharCode string `xml:"CharCode"`
-	Nominal  int    `xml:"Nominal"`
 	Name     string `xml:"Name"`
 	Value    string `xml:"Value"`
 }
@@ -18,16 +17,31 @@ type Currency struct {
 func (c Currency) ToFloat() (float64, error) {
 	normalized := strings.ReplaceAll(c.Value, ",", ".")
 
-	var value float64
-
-	var err error
-
-	value, err = strconv.ParseFloat(normalized, 64)
+	value, err := strconv.ParseFloat(normalized, 64)
 	if err != nil {
 		return 0, fmt.Errorf("parse float: %w", err)
 	}
 
 	return value, nil
+}
+
+type CurrencyRecord struct {
+	NumCode  int     `json:"num_code"`
+	CharCode string  `json:"char_code"`
+	Value    float64 `json:"value"`
+}
+
+func (c Currency) ToRecord() (CurrencyRecord, error) {
+	value, err := c.ToFloat()
+	if err != nil {
+		return CurrencyRecord{}, fmt.Errorf("convert to record: %w", err)
+	}
+
+	return CurrencyRecord{
+		NumCode:  c.NumCode,
+		CharCode: c.CharCode,
+		Value:    value,
+	}, nil
 }
 
 type ByExchangeRate []Currency
@@ -41,18 +55,13 @@ func (b ByExchangeRate) Swap(i, j int) {
 }
 
 func (b ByExchangeRate) Less(firstIndex, secondIndex int) bool {
-	var rateI float64
 
-	var rateJ float64
-
-	var err error
-
-	rateI, err = b[firstIndex].ToFloat()
+	rateI, err := b[firstIndex].ToFloat()
 	if err != nil {
 		return false
 	}
 
-	rateJ, err = b[secondIndex].ToFloat()
+	rateJ, err := b[secondIndex].ToFloat()
 	if err != nil {
 		return false
 	}
