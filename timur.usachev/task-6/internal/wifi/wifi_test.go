@@ -2,100 +2,92 @@ package wifi
 
 import (
 	"errors"
+	"net"
 	"testing"
 
-	mdwifi "github.com/mdlayher/wifi"
+	"github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-var errDummy = errors.New("db error")
-var errScan = errors.New("scan error")
+var errIfaces = errors.New("getting interfaces failed")
 
-type mockDB struct {
-	names []string
-	err   error
+type MockWiFi struct {
+	mock.Mock
 }
 
-func (m *mockDB) GetNames() ([]string, error) {
-	return m.names, m.err
+func (m *MockWiFi) Interfaces() ([]*wifi.Interface, error) {
+	args := m.Called()
+	ifaceSlice, _ := args.Get(0).([]*wifi.Interface)
+	return ifaceSlice, args.Error(1)
 }
 
-type mockScanner struct {
-	ifaces []*mdwifi.Interface
-	err    error
-}
-
-func (m *mockScanner) Interfaces() ([]*mdwifi.Interface, error) {
-	return m.ifaces, m.err
-}
-
-func TestAvailableNetworks_TableDriven(t *testing.T) {
-	cases := []struct {
-		name   string
-		input  []string
-		expect []string
-	}{
-		{"single", []string{"Net1"}, []string{"Net1"}},
-		{"empty filtered", []string{"", "Net1", ""}, []string{"Net1"}},
-		{"duplicates", []string{"A", "B", "A", "C", "B"}, []string{"A", "B", "C"}},
-		{"unicode", []string{"сеть", "ネット", "شبكة"}, []string{"сеть", "ネット", "شبكة"}},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			s := New(&mockDB{names: tc.input}, &mockScanner{})
-			out, err := s.AvailableNetworks()
-			require.NoError(t, err)
-			require.Equal(t, tc.expect, out)
-		})
-	}
-}
-
-func TestAvailableNetworks_DBError(t *testing.T) {
-	s := New(&mockDB{err: errDummy}, &mockScanner{})
-	_, err := s.AvailableNetworks()
-	require.Error(t, err)
-}
-
-func TestAvailableNetworks_ScannerError(t *testing.T) {
-	s := New(&mockDB{names: []string{"A"}}, &mockScanner{err: errScan})
-	_, err := s.AvailableNetworks()
-	require.Error(t, err)
-}
-
-func TestNewRealScanner_Coverage(t *testing.T) {
-	_, _ = NewRealScanner()
-}
-
-func TestRealScanner_Interfaces_PanicCoverage(t *testing.T) {
-	r := &RealScanner{}
-	defer func() {
-		require.NotNil(t, recover())
-	}()
-	_, _ = r.Interfaces()
-}
-
-func TestNewRealScanner_ErrorBranch(t *testing.T) {
-	old := newWifiClient
-	defer func() { newWifiClient = old }()
-
-	newWifiClient = func() (*mdwifi.Client, error) {
-		return nil, errScan
-	}
-
-	_, err := NewRealScanner()
-	require.Error(t, err)
-}
-
-func TestNewRealScanner_SuccessBranch(t *testing.T) {
-	old := newWifiClient
-	defer func() { newWifiClient = old }()
-
-	newWifiClient = func() (*mdwifi.Client, error) {
-		return &mdwifi.Client{}, nil
-	}
-
-	s, err := NewRealScanner()
+func TestGetAddresses_Success(t *testing.T) {
+	t.Parallel()
+	hw := net.HardwareAddr{0x01, 0x02, 0x03, 0x04, 0x05, 0x06}
+	if1 := &wifi.Interface{Name: "wlan0", HardwareAddr: hw}
+	m := new(MockWiFi)
+	m.On("Interfaces").Return([]*wifi.Interface{if1}, nil)
+	service := New(m)
+	addrs, err := service.GetAddresses()
 	require.NoError(t, err)
-	require.NotNil(t, s)
+	require.Equal(t, []net.HardwareAddr{hw}, addrs)
+	m.AssertExpectations(t)
+}
+
+func TestGetAddresses_Empty(t *testing.T) {
+	t.Parallel()
+	m := new(MockWiFi)
+	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
+	service := New(m)
+	addrs, err := service.GetAddresses()
+	require.NoError(t, err)
+	require.Empty(t, addrs)
+	m.AssertExpectations(t)
+}
+
+func TestGetAddresses_Error(t *testing.T) {
+	t.Parallel()
+	m := new(MockWiFi)
+	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
+	service := New(m)
+	addrs, err := service.GetAddresses()
+	require.Nil(t, addrs)
+	require.ErrorIs(t, err, errIfaces)
+	m.AssertExpectations(t)
+}
+
+func TestGetNames_Success(t *testing.T) {
+	t.Parallel()
+	if1 := &wifi.Interface{Name: "wlan0"}
+	if2 := &wifi.Interface{Name: "eth0"}
+	m := new(MockWiFi)
+	m.On("Interfaces").Return([]*wifi.Interface{if1, if2}, nil)
+	service := New(m)
+	names, err := service.GetNames()
+	require.NoError(t, err)
+	require.Equal(t, []string{"wlan0", "eth0"}, names)
+	m.AssertExpectations(t)
+}
+
+func TestGetNames_Empty(t *testing.T) {
+	t.Parallel()
+	m := new(MockWiFi)
+	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
+	service := New(m)
+	names, err := service.GetNames()
+	require.NoError(t, err)
+	require.Empty(t, names)
+	m.AssertExpectations(t)
+}
+
+func TestGetNames_Error(t *testing.T) {
+	t.Parallel()
+	m := new(MockWiFi)
+	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
+	service := New(m)
+	names, err := service.GetNames()
+	require.Nil(t, names)
+	require.ErrorIs(t, err, errIfaces)
+	m.AssertExpectations(t)
 }

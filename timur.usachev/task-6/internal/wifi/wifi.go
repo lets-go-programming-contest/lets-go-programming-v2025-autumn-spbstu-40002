@@ -1,61 +1,50 @@
 package wifi
 
-import mdwifi "github.com/mdlayher/wifi"
+import (
+	"fmt"
+	"net"
 
-type DB interface {
-	GetNames() ([]string, error)
+	"github.com/mdlayher/wifi"
+)
+
+type WiFiHandle interface {
+	Interfaces() ([]*wifi.Interface, error)
 }
 
-type Scanner interface {
-	Interfaces() ([]*mdwifi.Interface, error)
+type WiFiService struct {
+	WiFi WiFiHandle
 }
 
-var newWifiClient = mdwifi.New
-
-type RealScanner struct {
-	client *mdwifi.Client
+func New(wifi WiFiHandle) WiFiService {
+	return WiFiService{WiFi: wifi}
 }
 
-func NewRealScanner() (*RealScanner, error) {
-	c, err := newWifiClient()
+func (service WiFiService) GetAddresses() ([]net.HardwareAddr, error) {
+	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting interfaces: %w", err)
 	}
-	return &RealScanner{client: c}, nil
-}
 
-func (r *RealScanner) Interfaces() ([]*mdwifi.Interface, error) {
-	return r.client.Interfaces()
-}
+	addrs := make([]net.HardwareAddr, 0, len(interfaces))
 
-type Service struct {
-	DB      DB
-	Scanner Scanner
-}
-
-func New(db DB, scanner Scanner) *Service {
-	return &Service{DB: db, Scanner: scanner}
-}
-
-func (s *Service) AvailableNetworks() ([]string, error) {
-	if _, err := s.Scanner.Interfaces(); err != nil {
-		return nil, err
+	for _, iface := range interfaces {
+		addrs = append(addrs, iface.HardwareAddr)
 	}
-	names, err := s.DB.GetNames()
+
+	return addrs, nil
+}
+
+func (service WiFiService) GetNames() ([]string, error) {
+	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getting interfaces: %w", err)
 	}
-	seen := make(map[string]struct{})
-	var out []string
-	for _, n := range names {
-		if n == "" {
-			continue
-		}
-		if _, ok := seen[n]; ok {
-			continue
-		}
-		seen[n] = struct{}{}
-		out = append(out, n)
+
+	names := make([]string, 0, len(interfaces))
+
+	for _, iface := range interfaces {
+		names = append(names, iface.Name)
 	}
-	return out, nil
+
+	return names, nil
 }
