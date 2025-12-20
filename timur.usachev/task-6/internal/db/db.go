@@ -10,20 +10,16 @@ func New(db *sql.DB) *Store {
 	return &Store{DB: db}
 }
 
-var closeRows = func(r *sql.Rows) error {
-	return r.Close()
-}
-
-func (s *Store) GetNames() (res []string, err error) {
+func (s *Store) GetNames() ([]string, error) {
 	rows, err := s.DB.Query("SELECT name FROM users")
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if cerr := closeRows(rows); cerr != nil && err == nil {
-			err = cerr
-		}
-	}()
+
+	defer rows.Close()
+
+	res := make([]string, 0)
+
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
@@ -31,8 +27,10 @@ func (s *Store) GetNames() (res []string, err error) {
 		}
 		res = append(res, name)
 	}
-	if err = rows.Err(); err != nil {
+
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
 	return res, nil
 }
