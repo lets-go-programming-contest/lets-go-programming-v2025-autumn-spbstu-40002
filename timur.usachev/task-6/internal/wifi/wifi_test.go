@@ -21,10 +21,14 @@ type MockWiFi struct {
 
 func (m *MockWiFi) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
-	ifaceSlice := args.Get(0).([]*wifi.Interface)
+	ifaceSlice, ok := args.Get(0).([]*wifi.Interface)
 
-	if args.Error(1) != nil {
-		return ifaceSlice, fmt.Errorf("%w", args.Error(1))
+	if !ok {
+		return nil, fmt.Errorf("expected []*wifi.Interface, got %T", args.Get(0))
+	}
+
+	if err := args.Error(1); err != nil {
+		return ifaceSlice, fmt.Errorf("%w", err)
 	}
 
 	return ifaceSlice, nil
