@@ -23,7 +23,6 @@ func (m *MockWiFi) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 	ifaceSlice, _ := args.Get(0).([]*wifi.Interface)
 	err := args.Error(1)
-
 	if err != nil {
 		return ifaceSlice, fmt.Errorf("%w", err)
 	}
