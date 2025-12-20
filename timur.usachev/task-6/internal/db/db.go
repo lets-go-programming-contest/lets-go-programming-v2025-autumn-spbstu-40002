@@ -1,12 +1,18 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 )
 
+type Rows interface {
+	Next() bool
+	Scan(dest ...any) error
+	Err() error
+	Close() error
+}
+
 type Database interface {
-	Query(query string, args ...any) (*sql.Rows, error)
+	Query(query string, args ...any) (Rows, error)
 }
 
 type Store struct {
@@ -18,6 +24,7 @@ func New(db Database) *Store {
 }
 
 func (s *Store) GetNames() (names []string, err error) {
+	names = []string{}
 	rows, err := s.DB.Query("SELECT name FROM users")
 	if err != nil {
 		return nil, fmt.Errorf("query: %w", err)
@@ -45,6 +52,7 @@ func (s *Store) GetNames() (names []string, err error) {
 }
 
 func (s *Store) GetUniqueNames() (names []string, err error) {
+	names = []string{}
 	rows, err := s.DB.Query("SELECT DISTINCT name FROM users")
 	if err != nil {
 		return nil, fmt.Errorf("query: %w", err)
