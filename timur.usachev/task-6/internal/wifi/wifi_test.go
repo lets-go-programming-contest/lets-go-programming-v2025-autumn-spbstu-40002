@@ -22,8 +22,13 @@ type MockWiFi struct {
 func (m *MockWiFi) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 	ifaceSlice, _ := args.Get(0).([]*wifi.Interface)
+	err := args.Error(1)
 
-	return ifaceSlice, fmt.Errorf("%w", args.Error(1))
+	if err != nil {
+		return ifaceSlice, fmt.Errorf("%w", err)
+	}
+
+	return ifaceSlice, nil
 }
 
 func TestGetAddresses_Success(t *testing.T) {
@@ -31,8 +36,10 @@ func TestGetAddresses_Success(t *testing.T) {
 
 	hw := net.HardwareAddr{0x01, 0x02, 0x03, 0x04, 0x05, 0x06}
 	if1 := &wifi.Interface{Name: "wlan0", HardwareAddr: hw}
+
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{if1}, nil)
+
 	service := wifipkg.New(m)
 	addrs, err := service.GetAddresses()
 	require.NoError(t, err)
@@ -45,6 +52,7 @@ func TestGetAddresses_Empty(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
+
 	service := wifipkg.New(m)
 	addrs, err := service.GetAddresses()
 	require.NoError(t, err)
@@ -57,6 +65,7 @@ func TestGetAddresses_Error(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
+
 	service := wifipkg.New(m)
 	addrs, err := service.GetAddresses()
 	require.Nil(t, addrs)
@@ -69,8 +78,10 @@ func TestGetNames_Success(t *testing.T) {
 
 	if1 := &wifi.Interface{Name: "wlan0"}
 	if2 := &wifi.Interface{Name: "eth0"}
+
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{if1, if2}, nil)
+
 	service := wifipkg.New(m)
 	names, err := service.GetNames()
 	require.NoError(t, err)
@@ -83,6 +94,7 @@ func TestGetNames_Empty(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
+
 	service := wifipkg.New(m)
 	names, err := service.GetNames()
 	require.NoError(t, err)
@@ -95,6 +107,7 @@ func TestGetNames_Error(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
+
 	service := wifipkg.New(m)
 	names, err := service.GetNames()
 	require.Nil(t, names)
