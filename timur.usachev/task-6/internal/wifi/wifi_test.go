@@ -19,11 +19,13 @@ type MockWiFi struct {
 func (m *MockWiFi) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 	ifaceSlice, _ := args.Get(0).([]*wifi.Interface)
+
 	return ifaceSlice, args.Error(1)
 }
 
 func TestGetAddresses_Success(t *testing.T) {
 	t.Parallel()
+
 	hw := net.HardwareAddr{0x01, 0x02, 0x03, 0x04, 0x05, 0x06}
 	if1 := &wifi.Interface{Name: "wlan0", HardwareAddr: hw}
 	m := new(MockWiFi)
@@ -37,6 +39,7 @@ func TestGetAddresses_Success(t *testing.T) {
 
 func TestGetAddresses_Empty(t *testing.T) {
 	t.Parallel()
+
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
 	service := New(m)
@@ -48,6 +51,7 @@ func TestGetAddresses_Empty(t *testing.T) {
 
 func TestGetAddresses_Error(t *testing.T) {
 	t.Parallel()
+
 	m := new(MockWiFi)
 	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
 	service := New(m)
@@ -59,6 +63,7 @@ func TestGetAddresses_Error(t *testing.T) {
 
 func TestGetNames_Success(t *testing.T) {
 	t.Parallel()
+
 	if1 := &wifi.Interface{Name: "wlan0"}
 	if2 := &wifi.Interface{Name: "eth0"}
 	m := new(MockWiFi)
@@ -72,6 +77,7 @@ func TestGetNames_Success(t *testing.T) {
 
 func TestGetNames_Empty(t *testing.T) {
 	t.Parallel()
+
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
 	service := New(m)
@@ -83,6 +89,7 @@ func TestGetNames_Empty(t *testing.T) {
 
 func TestGetNames_Error(t *testing.T) {
 	t.Parallel()
+
 	m := new(MockWiFi)
 	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
 	service := New(m)
