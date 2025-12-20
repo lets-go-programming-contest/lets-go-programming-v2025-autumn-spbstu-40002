@@ -1,59 +1,72 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+)
 
-type Store struct {
-	DB *sql.DB
+type Database interface {
+	Query(query string, args ...any) (*sql.Rows, error)
 }
 
-func New(db *sql.DB) *Store {
+type Store struct {
+	DB Database
+}
+
+func New(db Database) *Store {
 	return &Store{DB: db}
 }
 
-func (s *Store) GetNames() ([]string, error) {
+func (s *Store) GetNames() (names []string, err error) {
 	rows, err := s.DB.Query("SELECT name FROM users")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query: %w", err)
 	}
-	defer rows.Close()
 
-	res := make([]string, 0)
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = fmt.Errorf("close: %w", cerr)
+		}
+	}()
 
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan: %w", err)
 		}
-		res = append(res, name)
+		names = append(names, name)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rows: %w", err)
 	}
 
-	return res, nil
+	return names, nil
 }
 
-func (s *Store) GetUniqueNames() ([]string, error) {
+func (s *Store) GetUniqueNames() (names []string, err error) {
 	rows, err := s.DB.Query("SELECT DISTINCT name FROM users")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query: %w", err)
 	}
-	defer rows.Close()
 
-	res := make([]string, 0)
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = fmt.Errorf("close: %w", cerr)
+		}
+	}()
 
 	for rows.Next() {
 		var name string
 		if err := rows.Scan(&name); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan: %w", err)
 		}
-		res = append(res, name)
+		names = append(names, name)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rows: %w", err)
 	}
 
-	return res, nil
+	return names, nil
 }
