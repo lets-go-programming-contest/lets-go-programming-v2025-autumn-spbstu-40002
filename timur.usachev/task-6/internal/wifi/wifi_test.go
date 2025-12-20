@@ -1,10 +1,12 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
 	"fmt"
 	"net"
 	"testing"
+
+	wifipkg "github.com/t1wt/task-6/internal/wifi"
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
@@ -31,7 +33,7 @@ func TestGetAddresses_Success(t *testing.T) {
 	if1 := &wifi.Interface{Name: "wlan0", HardwareAddr: hw}
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{if1}, nil)
-	service := New(m)
+	service := wifipkg.New(m)
 	addrs, err := service.GetAddresses()
 	require.NoError(t, err)
 	require.Equal(t, []net.HardwareAddr{hw}, addrs)
@@ -43,7 +45,7 @@ func TestGetAddresses_Empty(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
-	service := New(m)
+	service := wifipkg.New(m)
 	addrs, err := service.GetAddresses()
 	require.NoError(t, err)
 	require.Empty(t, addrs)
@@ -55,7 +57,7 @@ func TestGetAddresses_Error(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
-	service := New(m)
+	service := wifipkg.New(m)
 	addrs, err := service.GetAddresses()
 	require.Nil(t, addrs)
 	require.ErrorIs(t, err, errIfaces)
@@ -69,7 +71,7 @@ func TestGetNames_Success(t *testing.T) {
 	if2 := &wifi.Interface{Name: "eth0"}
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{if1, if2}, nil)
-	service := New(m)
+	service := wifipkg.New(m)
 	names, err := service.GetNames()
 	require.NoError(t, err)
 	require.Equal(t, []string{"wlan0", "eth0"}, names)
@@ -81,7 +83,7 @@ func TestGetNames_Empty(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return([]*wifi.Interface{}, nil)
-	service := New(m)
+	service := wifipkg.New(m)
 	names, err := service.GetNames()
 	require.NoError(t, err)
 	require.Empty(t, names)
@@ -93,7 +95,7 @@ func TestGetNames_Error(t *testing.T) {
 
 	m := new(MockWiFi)
 	m.On("Interfaces").Return(([]*wifi.Interface)(nil), errIfaces)
-	service := New(m)
+	service := wifipkg.New(m)
 	names, err := service.GetNames()
 	require.Nil(t, names)
 	require.ErrorIs(t, err, errIfaces)
