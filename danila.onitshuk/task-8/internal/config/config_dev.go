@@ -4,5 +4,5 @@ package config
 
 import _ "embed"
 
-//go:embed dev.yaml
+//go:embed settings/dev.yaml
 var configFile []byte

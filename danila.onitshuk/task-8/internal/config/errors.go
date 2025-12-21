@@ -2,6 +2,4 @@ package config
 
 import "errors"
 
-var (
-	errUnmarshalFailed = errors.New("processing yaml")
-)
+var errUnmarshalFailed = errors.New("processing yaml")
