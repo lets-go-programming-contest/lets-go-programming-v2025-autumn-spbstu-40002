@@ -1,8 +1,8 @@
-//go:build dev
+//go:build !dev
 
 package config
 
 import _ "embed"
 
-//go:embed settings/prod.yaml
+//go:embed prod.yaml
 var configFile []byte
