@@ -1,19 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"os"
+    "fmt"
+    "os"
 
-	"stepanov.alexander/internal/config"
+    "github.com/stepanov.alexander/task-8/internal/config"
 )
 
 func main() {
-	cfg, err := config.Load()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "load config error: %v", err)
+    cfg, err := config.Load()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "load config error: %v\n", err)
+        return
+    }
 
-		return
-	}
-
-	fmt.Print(cfg.Environment, " ", cfg.LogLevel)
+    fmt.Print(cfg.Environment, " ", cfg.LogLevel)
 }
