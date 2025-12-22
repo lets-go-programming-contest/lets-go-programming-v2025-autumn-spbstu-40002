@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/stepanov.alexander/task-3/pkg/config"
-	"github.com/stepanov.alexander/task-3/pkg/loader"
-	"github.com/stepanov.alexander/task-3/pkg/processor"
-	"github.com/stepanov.alexander/task-3/pkg/writer"
+	"stepanov.alexander/task-3/internal/config"
+	"stepanov.alexander/task-3/internal/loader"
+	"stepanov.alexander/task-3/internal/processor"
+	"stepanov.alexander/task-3/internal/writer"
 )
 
 func main() {
@@ -22,8 +22,7 @@ func main() {
 		log.Fatalf("failed to process XML: %v", err)
 	}
 
-	err = writer.WriteJSON(cfg.OutputFile, rates)
-	if err != nil {
+	if err := writer.WriteJSON(cfg.OutputFile, rates); err != nil {
 		log.Fatalf("failed to write JSON: %v", err)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stepanov.alexander/task-3/pkg/loader"
+	"stepanov.alexander/task-3/internal/loader"
 )
 
 type CurrencyRate struct {
