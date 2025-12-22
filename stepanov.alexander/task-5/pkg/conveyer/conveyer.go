@@ -103,3 +103,96 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
+	ctx, cancelFunc := context.WithCancel(ctx)
+	defer cancelFunc()
+
+	errorChan := make(chan error, 1)
+
+	var waitGroup sync.WaitGroup
+
+	for _, registeredHandler := range c.handlers {
+		currentHandler := registeredHandler
+
+		waitGroup.Add(1)
+
+		runHandler := func() {
+			defer waitGroup.Done()
+
+			err := currentHandler(ctx)
+			if err == nil {
+				return
+			}
+
+			select {
+			case errorChan <- err:
+				cancelFunc()
+			default:
+			}
+		}
+
+		go runHandler()
+	}
+
+	doneChan := make(chan struct{})
+
+	waitDone := func() {
+		waitGroup.Wait()
+		close(doneChan)
+	}
+
+	go waitDone()
+
+	var finalError error
+
+	select {
+	case err := <-errorChan:
+		finalError = err
+
+	case <-doneChan:
+		finalError = nil
+
+	case <-ctx.Done():
+		finalError = nil
+	}
+
+	<-doneChan
+
+	c.mu.Lock()
+	for _, channel := range c.channels {
+		close(channel)
+	}
+	c.mu.Unlock()
+
+	return finalError
+}
+
+func (c *Conveyer) Send(inputID string, data string) error {
+	c.mu.RLock()
+	channel, channelExists := c.channels[inputID]
+	c.mu.RUnlock()
+
+	if !channelExists {
+		return ErrChanNotFound
+	}
+
+	channel <- data
+
+	return nil
+}
+
+func (c *Conveyer) Recv(outputID string) (string, error) {
+	c.mu.RLock()
+	channel, channelExists := c.channels[outputID]
+	c.mu.RUnlock()
+
+	if !channelExists {
+		return "", ErrChanNotFound
+	}
+
+	data, open := <-channel
+	if !open {
+		return Undefined, nil
+	}
+
+	return data, nil
+}
