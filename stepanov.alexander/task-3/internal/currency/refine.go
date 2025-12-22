@@ -49,4 +49,3 @@ func ExportToJSON(filePath string, catalog *CurrencyIndex) error {
 
 	return nil
 }
-
