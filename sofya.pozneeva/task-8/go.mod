@@ -1,4 +1,4 @@
-module task-8
+module github.com/sonychello/task-8
 
 go 1.22.7
 
