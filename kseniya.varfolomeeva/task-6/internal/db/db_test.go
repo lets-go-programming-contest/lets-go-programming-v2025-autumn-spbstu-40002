@@ -1,9 +1,10 @@
-package db
+package db_test
 
 import (
 	"database/sql"
 	"testing"
 
+	"task-6/internal/db"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
 )
@@ -11,22 +12,22 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	mock.ExpectationsWereMet()
 
-	service := New(db)
-	require.Equal(t, db, service.DB, "Expected DB to be set")
+	service := db.New(dbConn)
+	require.Equal(t, dbConn, service.DB, "Expected DB to be set")
 }
 
 func TestDBService_GetNames_Success(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
@@ -36,7 +37,7 @@ func TestDBService_GetNames_Success(t *testing.T) {
 		AddRow("Olga")
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetNames()
 	require.NoError(t, err)
 
@@ -53,9 +54,9 @@ func TestDBService_GetNames_Success(t *testing.T) {
 func TestDBService_GetNames_WithDuplicates(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
@@ -65,7 +66,7 @@ func TestDBService_GetNames_WithDuplicates(t *testing.T) {
 		AddRow("Maria")
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetNames()
 	require.NoError(t, err)
 
@@ -78,14 +79,14 @@ func TestDBService_GetNames_WithDuplicates(t *testing.T) {
 func TestDBService_GetNames_Empty(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetNames()
 	require.NoError(t, err)
 	require.Empty(t, names, "Expected empty slice")
@@ -96,14 +97,14 @@ func TestDBService_GetNames_Empty(t *testing.T) {
 func TestDBService_GetNames_QueryError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	mock.ExpectQuery("SELECT name FROM users").
 		WillReturnError(sql.ErrConnDone)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetNames()
 	require.Error(t, err, "Expected error")
 	require.Nil(t, names, "Expected nil result on error")
@@ -115,16 +116,16 @@ func TestDBService_GetNames_QueryError(t *testing.T) {
 func TestDBService_GetNames_ScanError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
 		AddRow(nil)
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetNames()
 	require.Error(t, err, "Expected error")
 	require.Nil(t, names, "Expected nil result on error")
@@ -136,16 +137,16 @@ func TestDBService_GetNames_ScanError(t *testing.T) {
 func TestDBService_GetNames_RowsError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
 	rows.AddRow("Ivan")
 	rows.RowError(0, sql.ErrTxDone)
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetNames()
 	require.Error(t, err, "Expected error")
 	require.Nil(t, names, "Expected nil result on error")
@@ -157,29 +158,23 @@ func TestDBService_GetNames_RowsError(t *testing.T) {
 func TestDBService_GetUniqueNames_Success(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
 		AddRow("Maria").
 		AddRow("Alexey").
 		AddRow("Eugene").
-		AddRow("Olga").
-		AddRow("Ivan").
-		AddRow("Eugene")
+		AddRow("Olga")
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetUniqueNames()
 	require.NoError(t, err)
-	require.Len(t, names, 7, "Expected 7 names (with duplicates from DISTINCT)")
-
-	expected := []string{"Ivan", "Maria", "Alexey", "Eugene", "Olga", "Ivan", "Eugene"}
-	for i, name := range names {
-		require.Equal(t, expected[i], name, "Name mismatch at index %d", i)
-	}
+	require.Len(t, names, 5, "Expected 5 unique names")
+	require.Equal(t, []string{"Ivan", "Maria", "Alexey", "Eugene", "Olga"}, names)
 
 	require.NoError(t, mock.ExpectationsWereMet(), "Unfulfilled expectations")
 }
@@ -187,24 +182,18 @@ func TestDBService_GetUniqueNames_Success(t *testing.T) {
 func TestDBService_GetUniqueNames_OnlyEugene(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
-	rows := sqlmock.NewRows([]string{"name"}).
-		AddRow("Eugene").
-		AddRow("Eugene").
-		AddRow("Eugene")
+	rows := sqlmock.NewRows([]string{"name"}).AddRow("Eugene")
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetUniqueNames()
 	require.NoError(t, err)
-	require.Len(t, names, 3, "Expected 3 Eugene names")
-
-	for i, name := range names {
-		require.Equal(t, "Eugene", name, "All names should be Eugene at index %d", i)
-	}
+	require.Len(t, names, 1, "Expected 1 unique name")
+	require.Equal(t, []string{"Eugene"}, names)
 
 	require.NoError(t, mock.ExpectationsWereMet(), "Unfulfilled expectations")
 }
@@ -212,14 +201,14 @@ func TestDBService_GetUniqueNames_OnlyEugene(t *testing.T) {
 func TestDBService_GetUniqueNames_Empty(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetUniqueNames()
 	require.NoError(t, err)
 	require.Empty(t, names, "Expected empty slice")
@@ -230,14 +219,14 @@ func TestDBService_GetUniqueNames_Empty(t *testing.T) {
 func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").
 		WillReturnError(sql.ErrConnDone)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetUniqueNames()
 	require.Error(t, err, "Expected error")
 	require.Nil(t, names, "Expected nil result on error")
@@ -249,16 +238,16 @@ func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 func TestDBService_GetUniqueNames_ScanError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Ivan").
 		AddRow(nil)
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetUniqueNames()
 	require.Error(t, err, "Expected error")
 	require.Nil(t, names, "Expected nil result on error")
@@ -270,16 +259,16 @@ func TestDBService_GetUniqueNames_ScanError(t *testing.T) {
 func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
 	rows.AddRow("Ivan")
 	rows.RowError(0, sql.ErrTxDone)
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(db)
+	service := db.New(dbConn)
 	names, err := service.GetUniqueNames()
 	require.Error(t, err, "Expected error")
 	require.Nil(t, names, "Expected nil result on error")

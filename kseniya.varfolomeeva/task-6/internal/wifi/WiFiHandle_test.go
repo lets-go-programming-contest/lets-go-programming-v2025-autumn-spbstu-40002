@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"fmt"
