@@ -9,8 +9,10 @@ import (
 	"sort"
 )
 
-const filePerm = 0o644
-const dirPerm = 0o755
+const (
+	filePerm = 0o644
+	dirPerm  = 0o755
+)
 
 var ErrNilCatalog = errors.New("currency catalog is nil")
 
@@ -32,6 +34,7 @@ func ExportToJSON(filePath string, catalog *CurrencyIndex) error {
 	}
 
 	dir := filepath.Dir(filePath)
+
 	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
