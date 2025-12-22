@@ -3,7 +3,6 @@ package jsonwriter
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -31,7 +30,7 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			log.Printf("warning: failed to close file: %v", err)
+			panic(fmt.Errorf("failed to close output file %s: %w", outputPath, err))
 		}
 	}()
 
