@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"strings"
 )
 
 func PrefixDecorator(ctx context.Context, in, out chan string) error {
