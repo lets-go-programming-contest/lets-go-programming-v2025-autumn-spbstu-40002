@@ -10,14 +10,21 @@ import (
 )
 
 func main() {
-	cfg := config.ParseFlags()
+	cfg, err := config.ParseFlags()
+	if err != nil {
+		log.Fatalf("failed to read config: %v", err)
+	}
 
-	xmlData, err := loader.LoadXML(cfg.InputFile)
+	if cfg.InputFile == "" || cfg.OutputFile == "" {
+		log.Fatalf("input-file or output-file is empty")
+	}
+
+	valCurs, err := loader.LoadXML(cfg.InputFile)
 	if err != nil {
 		log.Fatalf("failed to load XML: %v", err)
 	}
 
-	rates, err := processor.ProcessXML(xmlData)
+	rates, err := processor.ProcessXML(valCurs)
 	if err != nil {
 		log.Fatalf("failed to process XML: %v", err)
 	}
