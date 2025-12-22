@@ -102,12 +102,16 @@ func (c *Conveyer) RegisterSeparator(
 	})
 }
 
-func (c *Conveyer) Run(ctx context.Context) error {
-	ctx, cancelFunc := context.WithCancel(ctx)
-	defer cancelFunc()
+func (c *Conveyer) closeAllChannels() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-	errorChan := make(chan error, 1)
+	for _, channel := range c.channels {
+		close(channel)
+	}
+}
 
+func (c *Conveyer) runHandlers(ctx context.Context, errorChan chan error, doneChan chan struct{}) {
 	var waitGroup sync.WaitGroup
 
 	for _, registeredHandler := range c.handlers {
@@ -125,7 +129,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 			select {
 			case errorChan <- err:
-				cancelFunc()
 			default:
 			}
 		}
@@ -133,20 +136,25 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		go runHandler()
 	}
 
+	waitGroup.Wait()
+	close(doneChan)
+}
+
+func (c *Conveyer) Run(ctx context.Context) error {
+	ctx, cancelFunc := context.WithCancel(ctx)
+	defer cancelFunc()
+
+	errorChan := make(chan error, 1)
 	doneChan := make(chan struct{})
 
-	waitDone := func() {
-		waitGroup.Wait()
-		close(doneChan)
-	}
-
-	go waitDone()
+	go c.runHandlers(ctx, errorChan, doneChan)
 
 	var finalError error
 
 	select {
 	case err := <-errorChan:
 		finalError = err
+		cancelFunc()
 
 	case <-doneChan:
 		finalError = nil
@@ -157,11 +165,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	<-doneChan
 
-	c.mu.Lock()
-	for _, channel := range c.channels {
-		close(channel)
-	}
-	c.mu.Unlock()
+	c.closeAllChannels()
 
 	return finalError
 }
