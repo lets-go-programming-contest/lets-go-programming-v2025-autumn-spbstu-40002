@@ -2,18 +2,7 @@
 
 package config
 
-import (
-	_ "embed"
-	"log"
-)
+import _ "embed"
 
 //go:embed prod.yaml
-var prodConfig []byte
-
-func Load() *Config {
-	cfg, err := parse(prodConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return cfg
-}
+var cfgData []byte

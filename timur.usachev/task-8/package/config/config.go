@@ -1,6 +1,8 @@
 package config
 
 import (
+	"log"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -9,11 +11,11 @@ type Config struct {
 	LogLevel    string `yaml:"log_level"`
 }
 
-func parse(data []byte) (*Config, error) {
+func Load() *Config {
 	var cfg Config
-	err := yaml.Unmarshal(data, &cfg)
-	if err != nil {
-		return nil, err
+	if err := yaml.Unmarshal(cfgData, &cfg); err != nil {
+		log.Fatal(err)
 	}
-	return &cfg, nil
+
+	return &cfg
 }
