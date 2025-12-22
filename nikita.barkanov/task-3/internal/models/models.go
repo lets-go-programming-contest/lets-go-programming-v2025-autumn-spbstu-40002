@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,13 +21,14 @@ type Valute struct {
 
 func (v Valute) ValueFloat() (float64, error) {
 	cleaned := strings.ReplaceAll(v.Value, ",", ".")
+
 	return strconv.ParseFloat(cleaned, 64)
 }
 
 func (v Valute) MarshalJSON() ([]byte, error) {
 	value, err := v.ValueFloat()
 	if err != nil {
-		return nil, fmt.Errorf("convert value to float: %w", err)
+		return nil, err
 	}
 
 	type Alias struct {
@@ -37,21 +37,13 @@ func (v Valute) MarshalJSON() ([]byte, error) {
 		Value    float64 `json:"value"`
 	}
 
-	num, err := strconv.Atoi(v.NumCode)
-	if err != nil {
-		return nil, fmt.Errorf("convert NumCode to int: %w", err)
-	}
+	num, _ := strconv.Atoi(v.NumCode)
 
-	data, err := json.Marshal(Alias{
+	return json.Marshal(Alias{
 		NumCode:  num,
 		CharCode: v.CharCode,
 		Value:    value,
 	})
-	if err != nil {
-		return nil, fmt.Errorf("marshal Alias to JSON: %w", err)
-	}
-
-	return data, nil
 }
 
 func SortByValueDesc(curs *ValCurs) error {
@@ -60,16 +52,18 @@ func SortByValueDesc(curs *ValCurs) error {
 	}
 
 	sort.Slice(curs.Valutes, func(i, j int) bool {
-		vi, errI := curs.Valutes[i].ValueFloat()
-		vj, errJ := curs.Valutes[j].ValueFloat()
+		valuteI, errI := curs.Valutes[i].ValueFloat()
+		valuteJ, errJ := curs.Valutes[j].ValueFloat()
 
 		if errI != nil {
 			return false
 		}
+
 		if errJ != nil {
 			return true
 		}
-		return vi > vj
+
+		return valuteI > valuteJ
 	})
 
 	return nil
