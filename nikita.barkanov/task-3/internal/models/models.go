@@ -37,9 +37,12 @@ func (v Valute) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("convert Value '%s' to float: %w", v.Value, err)
 	}
 
-	num, err := strconv.Atoi(v.NumCode)
-	if err != nil {
-		return nil, fmt.Errorf("convert NumCode '%s' to int: %w", v.NumCode, err)
+	num := 0
+	if v.NumCode != "" {
+		num, err = strconv.Atoi(v.NumCode)
+		if err != nil {
+			return nil, fmt.Errorf("convert NumCode '%s' to int: %w", v.NumCode, err)
+		}
 	}
 
 	type Alias struct {
@@ -53,6 +56,7 @@ func (v Valute) MarshalJSON() ([]byte, error) {
 		CharCode: v.CharCode,
 		Value:    value,
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("marshal Alias to JSON: %w", err)
 	}
