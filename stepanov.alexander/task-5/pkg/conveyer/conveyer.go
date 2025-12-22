@@ -116,7 +116,6 @@ func (c *Conveyer) runHandlers(ctx context.Context, errorChan chan error, doneCh
 
 	for _, registeredHandler := range c.handlers {
 		currentHandler := registeredHandler
-
 		waitGroup.Add(1)
 
 		runHandler := func() {
@@ -149,25 +148,32 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	go c.runHandlers(ctx, errorChan, doneChan)
 
-	var finalError error
-
-	select {
-	case err := <-errorChan:
-		finalError = err
-		cancelFunc()
-
-	case <-doneChan:
-		finalError = nil
-
-	case <-ctx.Done():
-		finalError = nil
-	}
+	finalError := c.waitForCompletion(errorChan, doneChan, ctx, cancelFunc)
 
 	<-doneChan
-
 	c.closeAllChannels()
 
 	return finalError
+}
+
+func (c *Conveyer) waitForCompletion(
+	errorChan chan error,
+	doneChan chan struct{},
+	ctx context.Context,
+	cancelFunc context.CancelFunc,
+) error {
+	select {
+	case err := <-errorChan:
+		cancelFunc()
+
+		return err
+
+	case <-doneChan:
+		return nil
+
+	case <-ctx.Done():
+		return nil
+	}
 }
 
 func (c *Conveyer) Send(inputID string, data string) error {
