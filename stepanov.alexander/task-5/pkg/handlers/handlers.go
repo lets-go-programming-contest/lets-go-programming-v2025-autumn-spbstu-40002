@@ -2,70 +2,38 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"strings"
-	"sync"
 )
 
-func PrefixDecoratorFunc(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-) error {
-	const prefix = "decorated: "
-	const errorSubstr = "can't be decorated"
-
+func PrefixDecorator(ctx context.Context, in, out chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-input:
+			return nil
+		case data, ok := <-in:
 			if !ok {
 				return nil
 			}
-
-			if strings.Contains(data, "no decorator") {
-				return errors.New(errorSubstr)
-			}
-
-			prefixedData := data
-			if !strings.HasPrefix(data, prefix) {
-				prefixedData = prefix + data
-			}
-
 			select {
-			case output <- prefixedData:
+			case out <- "prefix: " + data:
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(
-	ctx context.Context,
-	inputs []chan string,
-	output chan string,
-) error {
-	var wg sync.WaitGroup
-
-	for i := range inputs {
-		wg.Add(1)
-		go func(input chan string) {
-			defer wg.Done()
+func Multiplexer(ctx context.Context, inputs []chan string, output chan string) error {
+	for _, input := range inputs {
+		go func(in chan string) {
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-input:
+				case data, ok := <-in:
 					if !ok {
 						return
 					}
-
-					if strings.Contains(data, "no multiplexer") {
-						continue
-					}
-
 					select {
 					case output <- data:
 					case <-ctx.Done():
@@ -73,49 +41,23 @@ func MultiplexerFunc(
 					}
 				}
 			}
-		}(inputs[i])
+		}(input)
 	}
-
-	wg.Wait()
 	return nil
 }
 
-func SeparatorFunc(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error {
-	if len(outputs) == 0 {
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case _, ok := <-input:
-				if !ok {
-					return nil
-				}
-			}
-		}
-	}
-
-	outputIndex := 0
+func Separator(ctx context.Context, input chan string, outputs []chan string) error {
+	idx := 0
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
-
-			currentOutput := outputs[outputIndex]
-
-			select {
-			case currentOutput <- data:
-				outputIndex = (outputIndex + 1) % len(outputs)
-			case <-ctx.Done():
-				return ctx.Err()
-			}
+			outputs[idx] <- data
+			idx = (idx + 1) % len(outputs)
 		}
 	}
 }
