@@ -1,6 +1,7 @@
+// internal/config/config.go
 package config
 
 type Config struct {
-    Environment string `yaml:"environment"`
-    LogLevel    string `yaml:"log_level"`
+	Environment string `yaml:"environment"`
+	LogLevel    string `yaml:"log_level"`
 }

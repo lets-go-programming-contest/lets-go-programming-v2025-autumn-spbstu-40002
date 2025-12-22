@@ -1,24 +1,24 @@
-//go:build prod
+//go:build !dev
 
 package config
 
 import (
-    "fmt"
+	_ "embed"
+	"fmt"
 
-    _ "embed"
-    "gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v3"
 )
 
 //go:embed prod.yaml
 var prodYaml []byte
 
 func Load() (Config, error) {
-    var cfg Config
+	var cfg Config
 
-    err := yaml.Unmarshal(prodYaml, &cfg)
-    if err != nil {
-        return Config{}, fmt.Errorf("failed to unmarshal prod config: %w", err)
-    }
+	err := yaml.Unmarshal(prodYaml, &cfg)
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to unmarshal prod config: %w", err)
+	}
 
-    return cfg, nil
+	return cfg, nil
 }
