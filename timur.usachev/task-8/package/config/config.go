@@ -1,8 +1,6 @@
 package config
 
 import (
-	"log"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,7 +12,7 @@ type Config struct {
 func Load() *Config {
 	var cfg Config
 	if err := yaml.Unmarshal(cfgData, &cfg); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return &cfg
