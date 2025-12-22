@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"task-8/internal/config"
+	"github.com/sonychello/task-8/internal/config"
 )
 
 func main() {
