@@ -6,6 +6,7 @@ import (
 
 	"stepanov.alexander/task-3/internal/processor"
 )
+
 func WriteJSON(filepath string, rates []processor.CurrencyRate) error {
 	data, err := json.MarshalIndent(rates, "", "  ")
 	if err != nil {
