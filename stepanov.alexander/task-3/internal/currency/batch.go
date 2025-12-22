@@ -16,6 +16,7 @@ func FetchCurrencyRates(filePath string) (*CurrencyIndex, error) {
 	}
 
 	decoder := charmap.Windows1251.NewDecoder()
+
 	decodedData, err := decoder.Bytes(data)
 	if err != nil {
 		return nil, fmt.Errorf("encoding conversion error: %w", err)
@@ -27,6 +28,7 @@ func FetchCurrencyRates(filePath string) (*CurrencyIndex, error) {
 	}
 
 	var catalog CurrencyIndex
+
 	if err := xml.Unmarshal([]byte(xmlStr), &catalog); err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
 	}

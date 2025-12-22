@@ -11,6 +11,7 @@ import (
 
 func main() {
 	var configPath string
+
 	flag.StringVar(&configPath, "config", "", "Path to YAML configuration file")
 	flag.Parse()
 
