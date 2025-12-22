@@ -3,6 +3,8 @@ package loader
 import (
 	"encoding/xml"
 	"os"
+
+	"golang.org/x/net/html/charset"
 )
 
 type ValCurs struct {
@@ -15,16 +17,19 @@ type Valute struct {
 	Value    string `xml:"Value"`
 }
 
-func LoadXML(filepath string) (*ValCurs, error) {
-	data, err := os.ReadFile(filepath)
+func LoadXML(path string) (*ValCurs, error) {
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
+
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
 
-	err = xml.Unmarshal(data, &valCurs)
-	if err != nil {
+	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, err
 	}
 
