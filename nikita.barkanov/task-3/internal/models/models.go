@@ -1,8 +1,8 @@
 package models
 
 import (
+	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -10,58 +10,61 @@ import (
 
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"Valute"`
+	Valutes []Valute `xml:"Valute" json:"-"`
 }
 
 type Valute struct {
-	ID        string `xml:"ID,attr"`
-	NumCode   string `xml:"NumCode"`
-	CharCode  string `xml:"CharCode"`
-	Nominal   int    `xml:"Nominal"`
-	Name      string `xml:"Name"`
-	Value     string `xml:"Value"`
-	VunitRate string `xml:"VunitRate"`
+	NumCode  string `xml:"NumCode"  json:"num_code"`
+	CharCode string `xml:"CharCode" json:"char_code"`
+	Value    string `xml:"Value"    json:"-"`
 }
 
-func (v *Valute) ValueFloat() (float64, error) {
+func (v Valute) ValueFloat() (float64, error) {
 	cleaned := strings.ReplaceAll(v.Value, ",", ".")
+	return strconv.ParseFloat(cleaned, 64)
+}
 
-	value, err := strconv.ParseFloat(cleaned, 64)
+func (v Valute) MarshalJSON() ([]byte, error) {
+	value, err := v.ValueFloat()
 	if err != nil {
-		return 0, fmt.Errorf("failed to parse float from %q: %w", cleaned, err)
+		return nil, err
 	}
 
-	return value, nil
+	type Alias struct {
+		NumCode  int     `json:"num_code"`
+		CharCode string  `json:"char_code"`
+		Value    float64 `json:"value"`
+	}
+
+	num, _ := strconv.Atoi(v.NumCode)
+
+	return jsonMarshal(Alias{
+		NumCode:  num,
+		CharCode: v.CharCode,
+		Value:    value,
+	})
+}
+
+var jsonMarshal = func(v any) ([]byte, error) {
+	return json.Marshal(v)
 }
 
 func SortByValueDesc(curs *ValCurs) error {
-	return sortValutes(curs, true)
-}
-
-func sortValutes(curs *ValCurs, desc bool) error {
 	if curs == nil || len(curs.Valutes) == 0 {
 		return nil
 	}
 
 	sort.Slice(curs.Valutes, func(i, j int) bool {
-		valuteI, errI := curs.Valutes[i].ValueFloat()
-		valuteJ, errJ := curs.Valutes[j].ValueFloat()
+		vi, errI := curs.Valutes[i].ValueFloat()
+		vj, errJ := curs.Valutes[j].ValueFloat()
 
 		if errI != nil {
 			return false
 		}
-
 		if errJ != nil {
 			return true
 		}
-
-		if desc {
-			return valuteI > valuteJ
-		}
-
-		return valuteI < valuteJ
+		return vi > vj
 	})
 
 	return nil

@@ -19,14 +19,9 @@ var (
 func ParseXML(path string) (*mdls.ValCurs, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("%w: Input file %s: %w", ErrXMLFileOpen, path, err)
+		return nil, fmt.Errorf("%w: input file %s: %w", ErrXMLFileOpen, path, err)
 	}
-
-	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
-			fmt.Fprintf(os.Stderr, "warning: failed to close XML file: %v\n", closeErr)
-		}
-	}()
+	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
