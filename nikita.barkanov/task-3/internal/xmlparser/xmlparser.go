@@ -21,7 +21,11 @@ func ParseXML(path string) (*mdls.ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: input file %s: %w", ErrXMLFileOpen, path, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(fmt.Errorf("failed to close XML file %s: %w", path, err))
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel

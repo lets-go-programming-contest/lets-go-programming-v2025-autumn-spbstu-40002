@@ -38,15 +38,11 @@ func (v Valute) MarshalJSON() ([]byte, error) {
 
 	num, _ := strconv.Atoi(v.NumCode)
 
-	return jsonMarshal(Alias{
+	return json.Marshal(Alias{
 		NumCode:  num,
 		CharCode: v.CharCode,
 		Value:    value,
 	})
-}
-
-var jsonMarshal = func(v any) ([]byte, error) {
-	return json.Marshal(v)
 }
 
 func SortByValueDesc(curs *ValCurs) error {

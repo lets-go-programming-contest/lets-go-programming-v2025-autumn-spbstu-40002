@@ -28,6 +28,7 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
+
 	defer func() {
 		if err := file.Close(); err != nil {
 			panic(fmt.Errorf("failed to close output file %s: %w", outputPath, err))
@@ -37,5 +38,9 @@ func WriteSortedReducedJSON(curs *models.ValCurs, outputPath string) error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 
-	return encoder.Encode(curs.Valutes)
+	if err := encoder.Encode(curs.Valutes); err != nil {
+		return fmt.Errorf("failed to encode currencies to JSON: %w", err)
+	}
+
+	return nil
 }
