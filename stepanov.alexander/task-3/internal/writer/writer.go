@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"stepanov.Alexander/task-3/internal/processor"
+	"stepanov.alexander/task-3/internal/processor"
 )
 
 func WriteJSON(path string, rates []processor.CurrencyRate) error {
