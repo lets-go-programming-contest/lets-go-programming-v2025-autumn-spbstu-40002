@@ -1,4 +1,4 @@
-module github.com/DariaKhokhryakova/task-6
+module github.com/eg0sha-0/task-6
 
 go 1.22.7
 
