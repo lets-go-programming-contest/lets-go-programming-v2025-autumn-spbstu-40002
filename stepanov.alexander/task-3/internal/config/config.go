@@ -1,7 +1,7 @@
 package config
 
 import (
-	"flag"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -12,29 +12,17 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func ParseFlags() (*Config, error) {
-	configPath := flag.String("config", "", "path to YAML config file")
-	flag.Parse()
-
-	cfg := &Config{
-		InputFile:  "",
-		OutputFile: "",
-	}
-
-	if configPath == nil || *configPath == "" {
-		// допускаем запуск без конфига: вернём пустой cfg и nil
-		return cfg, nil
-	}
-
-	data, err := os.ReadFile(*configPath)
+func ReadSettings(configPath string) (*Config, error) {
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return cfg, err
+		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	err = yaml.Unmarshal(data, cfg)
-	if err != nil {
-		return cfg, err
+	var config Config
+
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("failed to parse YAML: %w", err)
 	}
 
-	return cfg, nil
+	return &config, nil
 }
