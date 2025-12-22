@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,13 +23,23 @@ type Valute struct {
 func (v Valute) ValueFloat() (float64, error) {
 	cleaned := strings.ReplaceAll(v.Value, ",", ".")
 
-	return strconv.ParseFloat(cleaned, 64)
+	value, err := strconv.ParseFloat(cleaned, 64)
+	if err != nil {
+		return 0, fmt.Errorf("parse Value '%s' to float: %w", v.Value, err)
+	}
+
+	return value, nil
 }
 
 func (v Valute) MarshalJSON() ([]byte, error) {
 	value, err := v.ValueFloat()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("convert Value '%s' to float: %w", v.Value, err)
+	}
+
+	num, err := strconv.Atoi(v.NumCode)
+	if err != nil {
+		return nil, fmt.Errorf("convert NumCode '%s' to int: %w", v.NumCode, err)
 	}
 
 	type Alias struct {
@@ -37,13 +48,16 @@ func (v Valute) MarshalJSON() ([]byte, error) {
 		Value    float64 `json:"value"`
 	}
 
-	num, _ := strconv.Atoi(v.NumCode)
-
-	return json.Marshal(Alias{
+	data, err := json.Marshal(Alias{
 		NumCode:  num,
 		CharCode: v.CharCode,
 		Value:    value,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("marshal Alias to JSON: %w", err)
+	}
+
+	return data, nil
 }
 
 func SortByValueDesc(curs *ValCurs) error {
