@@ -116,6 +116,7 @@ func (c *Conveyer) runHandlers(ctx context.Context, errorChan chan error, doneCh
 
 	for _, registeredHandler := range c.handlers {
 		currentHandler := registeredHandler
+
 		waitGroup.Add(1)
 
 		runHandler := func() {
@@ -167,10 +168,8 @@ func (c *Conveyer) waitForCompletion(
 		cancelFunc()
 
 		return err
-
 	case <-doneChan:
 		return nil
-
 	case <-ctx.Done():
 		return nil
 	}
