@@ -1,4 +1,3 @@
-// cmd/service/main.go
 package main
 
 import (
@@ -12,6 +11,7 @@ func main() {
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "load config error: %v\n", err)
+
 		return
 	}
 
