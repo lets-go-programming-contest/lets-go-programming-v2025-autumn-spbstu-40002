@@ -26,10 +26,10 @@ func FetchCurrencyRates(filePath string) (*CurrencyIndex, error) {
 		xmlStr = xmlStr[idx+2:]
 	}
 
-	var currencyCatalog CurrencyIndex
-	if err := xml.Unmarshal([]byte(xmlStr), &currencyCatalog); err != nil {
+	var catalog CurrencyIndex
+	if err := xml.Unmarshal([]byte(xmlStr), &catalog); err != nil {
 		return nil, fmt.Errorf("failed to parse XML: %w", err)
 	}
 
-	return &currencyCatalog, nil
+	return &catalog, nil
 }
