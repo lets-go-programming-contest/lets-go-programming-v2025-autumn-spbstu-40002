@@ -7,42 +7,42 @@ import (
 	"github.com/mdlayher/wifi"
 )
 
-type WiFiInterface interface {
+type WiFiHandle interface {
 	Interfaces() ([]*wifi.Interface, error)
 }
 
-type WiFiManager struct {
-	Handler WiFiInterface
+type WiFiService struct {
+	WiFi WiFiHandle
 }
 
-func CreateManager(handler WiFiInterface) WiFiManager {
-	return WiFiManager{Handler: handler}
+func New(wifi WiFiHandle) WiFiService {
+	return WiFiService{WiFi: wifi}
 }
 
-func (manager WiFiManager) GetMACAddresses() ([]net.HardwareAddr, error) {
-	ifaces, err := manager.Handler.Interfaces()
+func (service WiFiService) GetAddresses() ([]net.HardwareAddr, error) {
+	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve interfaces: %w", err)
 	}
 
-	addresses := make([]net.HardwareAddr, 0, len(ifaces))
+	addrs := make([]net.HardwareAddr, 0, len(interfaces))
 
-	for _, iface := range ifaces {
-		addresses = append(addresses, iface.HardwareAddr)
+	for _, iface := range interfaces {
+		addrs = append(addrs, iface.HardwareAddr)
 	}
 
-	return addresses, nil
+	return addrs, nil
 }
 
-func (manager WiFiManager) GetInterfaceNames() ([]string, error) {
-	ifaces, err := manager.Handler.Interfaces()
+func (service WiFiService) GetNames() ([]string, error) {
+	interfaces, err := service.WiFi.Interfaces()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve interfaces: %w", err)
 	}
 
-	names := make([]string, 0, len(ifaces))
+	names := make([]string, 0, len(interfaces))
 
-	for _, iface := range ifaces {
+	for _, iface := range interfaces {
 		names = append(names, iface.Name)
 	}
 

@@ -5,56 +5,28 @@ import (
 	"fmt"
 )
 
-type DatabaseConn interface {
-	Query(query string, args ...interface{}) (*sql.Rows, error)
+type Database interface {
+	Query(query string, args ...any) (*sql.Rows, error)
 }
 
-type DBClient struct {
-	Conn DatabaseConn
+type DBService struct {
+	DB Database
 }
 
-func Create(conn DatabaseConn) DBClient {
-	return DBClient{Conn: conn}
+func New(db Database) DBService {
+	return DBService{DB: db}
 }
 
-func (client DBClient) GetAllNames() ([]string, error) {
-	sql := "SELECT name FROM users"
+func (service DBService) GetNames() ([]string, error) {
+	query := "SELECT name FROM users"
 
-	rows, err := client.Conn.Query(sql)
+	rows, err := service.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("query execution failed: %w", err)
 	}
 	defer rows.Close()
 
-	var result []string
-
-	for rows.Next() {
-		var n string
-
-		if err := rows.Scan(&n); err != nil {
-			return nil, fmt.Errorf("scanning row failed: %w", err)
-		}
-
-		result = append(result, n)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %w", err)
-	}
-
-	return result, nil
-}
-
-func (client DBClient) GetDistinctNames() ([]string, error) {
-	sql := "SELECT DISTINCT name FROM users"
-
-	rows, err := client.Conn.Query(sql)
-	if err != nil {
-		return nil, fmt.Errorf("query execution failed: %w", err)
-	}
-	defer rows.Close()
-
-	var uniqueNames []string
+	var names []string
 
 	for rows.Next() {
 		var name string
@@ -63,12 +35,40 @@ func (client DBClient) GetDistinctNames() ([]string, error) {
 			return nil, fmt.Errorf("scanning row failed: %w", err)
 		}
 
-		uniqueNames = append(uniqueNames, name)
+		names = append(names, name)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 
-	return uniqueNames, nil
+	return names, nil
+}
+
+func (service DBService) GetUniqueNames() ([]string, error) {
+	query := "SELECT DISTINCT name FROM users"
+
+	rows, err := service.DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("query execution failed: %w", err)
+	}
+	defer rows.Close()
+
+	var values []string
+
+	for rows.Next() {
+		var value string
+
+		if err := rows.Scan(&value); err != nil {
+			return nil, fmt.Errorf("scanning row failed: %w", err)
+		}
+
+		values = append(values, value)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return values, nil
 }

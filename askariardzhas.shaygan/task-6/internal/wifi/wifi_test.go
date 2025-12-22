@@ -11,18 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errIFace = errors.New("interface retrieval error")
+var errInterfaces = errors.New("interface retrieval error")
 
-func TestCreateManager(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockHandler := &wifi.MockWiFiHandle{}
-	manager := wifi.CreateManager(mockHandler)
+	mockHandle := &wifi.MockWiFiHandle{}
+	s := wifi.New(mockHandle)
 
-	assert.Equal(t, mockHandler, manager.Handler)
+	assert.Equal(t, mockHandle, s.WiFi)
 }
 
-func TestWiFiManager_GetMACAddresses(t *testing.T) {
+func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -32,7 +32,7 @@ func TestWiFiManager_GetMACAddresses(t *testing.T) {
 		errMsg   string
 	}{
 		{
-			name: "multiple interfaces",
+			name: "success multiple interfaces",
 			setup: func(mock *wifi.MockWiFiHandle) {
 				ifaces := []*mdlayherwifi.Interface{
 					{HardwareAddr: net.HardwareAddr{0x00, 0x11, 0x22, 0x33, 0x44, 0x55}},
@@ -46,16 +46,16 @@ func TestWiFiManager_GetMACAddresses(t *testing.T) {
 			},
 		},
 		{
-			name: "no interfaces",
+			name: "success empty",
 			setup: func(mock *wifi.MockWiFiHandle) {
 				mock.On("Interfaces").Return([]*mdlayherwifi.Interface{}, nil)
 			},
 			expected: []net.HardwareAddr{},
 		},
 		{
-			name: "interface error",
+			name: "error",
 			setup: func(mock *wifi.MockWiFiHandle) {
-				mock.On("Interfaces").Return([]*mdlayherwifi.Interface(nil), errIFace)
+				mock.On("Interfaces").Return([]*mdlayherwifi.Interface(nil), errInterfaces)
 			},
 			errMsg: "failed to retrieve interfaces: interface retrieval error",
 		},
@@ -65,27 +65,29 @@ func TestWiFiManager_GetMACAddresses(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			mockHandler := &wifi.MockWiFiHandle{}
-			tc.setup(mockHandler)
+			mockHandle := &wifi.MockWiFiHandle{}
+			tc.setup(mockHandle)
 
-			manager := wifi.CreateManager(mockHandler)
-			result, err := manager.GetMACAddresses()
+			s := wifi.New(mockHandle)
+			got, err := s.GetAddresses()
 
 			if tc.errMsg != "" {
 				require.Error(t, err)
+
 				assert.Equal(t, tc.errMsg, err.Error())
-				assert.Nil(t, result)
+				assert.Nil(t, got)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, tc.expected, result)
+
+				assert.Equal(t, tc.expected, got)
 			}
 
-			mockHandler.AssertExpectations(t)
+			mockHandle.AssertExpectations(t)
 		})
 	}
 }
 
-func TestWiFiManager_GetInterfaceNames(t *testing.T) {
+func TestWiFiService_GetNames(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -95,7 +97,7 @@ func TestWiFiManager_GetInterfaceNames(t *testing.T) {
 		errMsg   string
 	}{
 		{
-			name: "multiple interface names",
+			name: "success multiple interfaces",
 			setup: func(mock *wifi.MockWiFiHandle) {
 				ifaces := []*mdlayherwifi.Interface{
 					{Name: "eth0"},
@@ -106,16 +108,16 @@ func TestWiFiManager_GetInterfaceNames(t *testing.T) {
 			expected: []string{"eth0", "wlan0"},
 		},
 		{
-			name: "no interface names",
+			name: "success empty",
 			setup: func(mock *wifi.MockWiFiHandle) {
 				mock.On("Interfaces").Return([]*mdlayherwifi.Interface{}, nil)
 			},
 			expected: []string{},
 		},
 		{
-			name: "interface name error",
+			name: "error",
 			setup: func(mock *wifi.MockWiFiHandle) {
-				mock.On("Interfaces").Return([]*mdlayherwifi.Interface(nil), errIFace)
+				mock.On("Interfaces").Return([]*mdlayherwifi.Interface(nil), errInterfaces)
 			},
 			errMsg: "failed to retrieve interfaces: interface retrieval error",
 		},
@@ -125,22 +127,24 @@ func TestWiFiManager_GetInterfaceNames(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			mockHandler := &wifi.MockWiFiHandle{}
-			tc.setup(mockHandler)
+			mockHandle := &wifi.MockWiFiHandle{}
+			tc.setup(mockHandle)
 
-			manager := wifi.CreateManager(mockHandler)
-			result, err := manager.GetInterfaceNames()
+			s := wifi.New(mockHandle)
+			got, err := s.GetNames()
 
 			if tc.errMsg != "" {
 				require.Error(t, err)
+
 				assert.Equal(t, tc.errMsg, err.Error())
-				assert.Nil(t, result)
+				assert.Nil(t, got)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, tc.expected, result)
+
+				assert.Equal(t, tc.expected, got)
 			}
 
-			mockHandler.AssertExpectations(t)
+			mockHandle.AssertExpectations(t)
 		})
 	}
 }
