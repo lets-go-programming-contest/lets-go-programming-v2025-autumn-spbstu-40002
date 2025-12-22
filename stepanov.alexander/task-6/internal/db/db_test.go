@@ -67,7 +67,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		names, err := service.GetNames()
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "db query")
+		require.ErrorContains(t, err, "db query")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -87,7 +87,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		names, err := service.GetNames()
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "rows scanning")
+		require.ErrorContains(t, err, "rows scanning")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -109,7 +109,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		names, err := service.GetNames()
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "rows error")
+		require.ErrorContains(t, err, "rows error")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -171,7 +171,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		names, err := service.GetUniqueNames()
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "db query")
+		require.ErrorContains(t, err, "db query")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -191,7 +191,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		names, err := service.GetUniqueNames()
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "rows scanning")
+		require.ErrorContains(t, err, "rows scanning")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
@@ -213,7 +213,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		names, err := service.GetUniqueNames()
 		require.Error(t, err)
-		assert.ErrorContains(t, err, "rows error")
+		require.ErrorContains(t, err, "rows error")
 		assert.Nil(t, names)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})

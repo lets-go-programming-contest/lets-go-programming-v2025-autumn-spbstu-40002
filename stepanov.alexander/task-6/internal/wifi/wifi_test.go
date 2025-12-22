@@ -11,15 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakeWiFiHandle struct {
-	interfaces []*wifi.Interface
-	err        error
-}
-
-func (f *fakeWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
-	return f.interfaces, f.err
-}
-
 type rowTestSysInfo struct {
 	addrs       []string
 	names       []string
@@ -41,7 +32,17 @@ var testTable = []rowTestSysInfo{ //nolint:gochecknoglobals
 	},
 }
 
-var ErrExpected = errors.New("expected error") //nolint:gochecknoglobals
+var ErrExpected = errors.New("expected error")
+
+// простой фейковый WiFiHandle вместо моков mockery.
+type fakeWiFiHandle struct {
+	interfaces []*wifi.Interface
+	err        error
+}
+
+func (f *fakeWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
+	return f.interfaces, f.err
+}
 
 func TestGetAddresses(t *testing.T) {
 	t.Parallel()
@@ -50,22 +51,25 @@ func TestGetAddresses(t *testing.T) {
 		t.Run(fmt.Sprintf("row_%d", i), func(t *testing.T) {
 			t.Parallel()
 
-			ifaceSlice := helperMockIfaces(t, row.addrs)
-			fake := &fakeWiFiHandle{
-				interfaces: ifaceSlice,
+			ifaces := helperMockIfaces(t, row.addrs)
+			handle := &fakeWiFiHandle{
+				interfaces: ifaces,
 				err:        row.errExpected,
 			}
 
-			wifiService := mywifi.WiFiService{WiFi: fake}
+			wifiService := mywifi.WiFiService{WiFi: handle}
 
 			actualAddrs, err := wifiService.GetAddresses()
 			if row.errExpected != nil {
-				require.ErrorIs(t, err, row.errExpected)
+				require.ErrorIs(t, err, row.errExpected, "row: %d", i)
+
 				return
 			}
 
-			require.NoError(t, err)
-			require.Equal(t, helperParseMACs(t, row.addrs), actualAddrs)
+			require.NoError(t, err, "row: %d, error must be nil", i)
+			require.Equal(t, helperParseMACs(t, row.addrs), actualAddrs,
+				"row: %d, expected addrs: %v, actual addrs: %v",
+				i, helperParseMACs(t, row.addrs), actualAddrs)
 		})
 	}
 }
@@ -77,22 +81,25 @@ func TestGetNames(t *testing.T) {
 		t.Run(fmt.Sprintf("row_%d", i), func(t *testing.T) {
 			t.Parallel()
 
-			ifaceSlice := helperMockIfaces(t, row.addrs)
-			fake := &fakeWiFiHandle{
-				interfaces: ifaceSlice,
+			ifaces := helperMockIfaces(t, row.addrs)
+			handle := &fakeWiFiHandle{
+				interfaces: ifaces,
 				err:        row.errExpected,
 			}
 
-			wifiService := mywifi.WiFiService{WiFi: fake}
+			wifiService := mywifi.WiFiService{WiFi: handle}
 
 			actualNames, err := wifiService.GetNames()
 			if row.errExpected != nil {
-				require.ErrorIs(t, err, row.errExpected)
+				require.ErrorIs(t, err, row.errExpected, "row: %d", i)
+
 				return
 			}
 
-			require.NoError(t, err)
-			require.Equal(t, row.names, actualNames)
+			require.NoError(t, err, "row: %d, error must be nil", i)
+			require.Equal(t, row.names, actualNames,
+				"row: %d, expected names: %v, actual names: %v",
+				i, row.names, actualNames)
 		})
 	}
 }
@@ -100,10 +107,10 @@ func TestGetNames(t *testing.T) {
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	fake := &fakeWiFiHandle{}
-	wifiService := mywifi.New(fake)
+	handle := &fakeWiFiHandle{}
+	wifiService := mywifi.New(handle)
 
-	require.Equal(t, fake, wifiService.WiFi)
+	require.Equal(t, handle, wifiService.WiFi)
 }
 
 func helperMockIfaces(t *testing.T, addrs []string) []*wifi.Interface {
