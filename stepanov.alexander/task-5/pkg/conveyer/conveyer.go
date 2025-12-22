@@ -16,7 +16,6 @@ type Conveyer struct {
 	mu       sync.RWMutex
 	channels map[string]chan string
 
-	wg       sync.WaitGroup
 	handlers []func(ctx context.Context) error
 }
 
@@ -29,7 +28,6 @@ func New(size int) *Conveyer {
 		bufferSize: size,
 		mu:         sync.RWMutex{},
 		channels:   make(map[string]chan string),
-		wg:         sync.WaitGroup{},
 		handlers:   make([]func(ctx context.Context) error, 0),
 	}
 }
@@ -105,55 +103,3 @@ func (c *Conveyer) RegisterSeparator(
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	for _, registeredHandler := range c.handlers {
-		currentHandler := registeredHandler
-
-		c.wg.Add(1)
-		go func() {
-			defer c.wg.Done()
-
-			_ = currentHandler(ctx)
-		}()
-	}
-
-	c.wg.Wait()
-
-	c.mu.Lock()
-	for _, channel := range c.channels {
-		close(channel)
-	}
-	c.mu.Unlock()
-
-	return nil
-}
-
-func (c *Conveyer) Send(inputID string, data string) error {
-	c.mu.RLock()
-	channel, channelExists := c.channels[inputID]
-	c.mu.RUnlock()
-
-	if !channelExists {
-		return ErrChanNotFound
-	}
-
-	channel <- data
-
-	return nil
-}
-
-func (c *Conveyer) Recv(outputID string) (string, error) {
-	c.mu.RLock()
-	channel, channelExists := c.channels[outputID]
-	c.mu.RUnlock()
-
-	if !channelExists {
-		return "", ErrChanNotFound
-	}
-
-	data, open := <-channel
-	if !open {
-		return Undefined, nil
-	}
-
-	return data, nil
-}
