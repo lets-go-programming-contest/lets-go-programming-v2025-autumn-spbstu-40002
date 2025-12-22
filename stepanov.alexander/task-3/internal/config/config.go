@@ -1,8 +1,6 @@
 package config
 
-import (
-	"flag"
-)
+import "flag"
 
 type Config struct {
 	InputFile  string
@@ -12,7 +10,7 @@ type Config struct {
 func ParseFlags() *Config {
 	cfg := &Config{}
 
-	flag.StringVar(&cfg.InputFile, "config", "", "path to input XML file")
+	flag.StringVar(&cfg.InputFile, "input-file", "", "path to input XML file")
 	flag.StringVar(&cfg.OutputFile, "output-file", "", "path to output JSON file")
 	flag.Parse()
 
