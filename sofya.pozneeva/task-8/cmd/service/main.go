@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"task-8/internal/config"
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := config.Load(config.ConfigFile)
 	if err != nil {
-		fmt.Println("load config error: ", err)
-
-		return
+		log.Fatalf("Ошибка загрузки конфигурации: %v", err)
 	}
 
-	fmt.Print(cfg.Environment, " ", cfg.LogLevel)
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
