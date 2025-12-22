@@ -6,9 +6,9 @@ import (
 	"net"
 	"testing"
 
+	myWifi "platon.karyakin/task-6/internal/wifi"
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/require"
-	myWifi "platon.karyakin/task-6/internal/wifi"
 )
 
 //go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
