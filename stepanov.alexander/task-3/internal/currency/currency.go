@@ -28,7 +28,6 @@ func (exchangeRate *ExchangeRate) UnmarshalXML(decoder *xml.Decoder, startElemen
 	}
 
 	str = strings.Replace(str, ",", ".", 1)
-
 	value, err := strconv.ParseFloat(str, 64)
 	if err != nil {
 		return fmt.Errorf("parse float: %w", err)

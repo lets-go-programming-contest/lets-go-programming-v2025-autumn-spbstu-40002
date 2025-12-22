@@ -9,10 +9,8 @@ import (
 	"sort"
 )
 
-const (
-	filePerm = 0o644
-	dirPerm  = 0o755
-)
+const filePerm = 0o644
+const dirPerm = 0o755
 
 var ErrNilCatalog = errors.New("currency catalog is nil")
 
