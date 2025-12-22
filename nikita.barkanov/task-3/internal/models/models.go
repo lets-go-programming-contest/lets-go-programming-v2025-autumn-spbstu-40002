@@ -56,7 +56,6 @@ func (v Valute) MarshalJSON() ([]byte, error) {
 		CharCode: v.CharCode,
 		Value:    value,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("marshal Alias to JSON: %w", err)
 	}
