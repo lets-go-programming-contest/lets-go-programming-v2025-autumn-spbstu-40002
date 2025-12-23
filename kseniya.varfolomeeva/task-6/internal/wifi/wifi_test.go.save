@@ -1,0 +1,249 @@
+package wifi_test
+
+import (
+	"errors"
+	"net"
+	"testing"
+
+	internal/wifi/wifi_test.go:199:13: undefined: New
+FAIL    task-6/internal/wifi [build failed]
+FAIL
+xanaoxx@DESKTOP-RC90FHM:~/lets-go-programming-v2025-autumn-spbstu-40002/kseniya.varfolomeeva/task-6$ nano internal/db/db_test.go
+xanaoxx@DESKTOP-RC90FHM:~/lets-go-programming-v2025-autumn-spbstu-40002/kseniya.varfolomeeva/task-6$ nano internal/wifi/wifi_test.go
+xanaoxx@DESKTOP-RC90FHM:~/lets-go-programming-v2025-autumn-spbstu-40002/kseniya.varfolomeeva/task-6$ go test ./internal/db -cover
+# task-6/internal/db_test [task-6/internal/db.test]
+internal/db/db_test.go:21:13: undefined: New
+internal/db/db_test.go:40:13: undefined: New
+internal/db/db_test.go:69:13: undefined: New
+internal/db/db_test.go:89:13: undefined: New
+internal/db/db_test.go:107:13: undefined: New
+internal/db/db_test.go:128:13: undefined: New
+internal/db/db_test.go:149:13: undefined: New
+internal/db/db_test.go:175:13: undefined: New
+internal/db/db_test.go:201:13: undefined: New
+internal/db/db_test.go:223:13: undefined: New
+internal/db/db_test.go:223:13: too many errors
+FAIL    task-6/internal/db [build failed]
+FAIL
+xanaoxx@DESKTOP-RC90FHM:~/lets-go-programming-v2025-autumn-spbstu-40002/kseniya.varfolomeeva/task-6$ go test ./internal/wifi -cover
+# task-6/internal/wifi_test [task-6/internal/wifi.test]
+internal/wifi/wifi_test.go:9:2: wifi redeclared in this block
+        internal/wifi/wifi_test.go:4:9: other declaration of wifi
+internal/wifi/wifi_test.go:19:13: undefined: New
+internal/wifi/wifi_test.go:35:24: undefined: wifi.Interface
+internal/wifi/wifi_test.go:42:13: undefined: New
+internal/wifi/wifi_test.go:57:24: undefined: wifi.Interface
+internal/wifi/wifi_test.go:61:13: undefined: New
+internal/wifi/wifi_test.go:74:43: undefined: wifi.Interface
+internal/wifi/wifi_test.go:76:13: undefined: New
+internal/wifi/wifi_test.go:94:24: undefined: wifi.Interface
+internal/wifi/wifi_test.go:102:13: undefined: New
+internal/wifi/wifi_test.go:102:13: too many errors
+FAIL    task-6/internal/wifi [build failed]
+FAIL
+xanaoxx@DESKTOP-RC90FHM:~/lets-go-programming-v2025-autumn-spbstu-40002/kseniya.varfolomeeva/task-6$ cat internal/wifi/wifi_test.go
+package wifi_test
+
+import (
+        "task-6/internal/wifi"
+        "errors"
+        "net""github.com/mdlayher/wifi"
+	"github.com/stretchr/testify/require"
+)
+
+var ErrExpected = errors.New("expected error")
+
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+	service := New(mockWiFi)
+
+	require.Equal(t, mockWiFi, service.WiFi, "Expected WiFi to be set")
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_GetAddresses_Success(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+
+	hwAddr1, err := net.ParseMAC("00:11:22:33:44:55")
+	require.NoError(t, err)
+	hwAddr2, err := net.ParseMAC("aa:bb:cc:dd:ee:ff")
+	require.NoError(t, err)
+
+	interfaces := []*wifi.Interface{
+		{Name: "wlan0", HardwareAddr: hwAddr1},
+		{Name: "wlan1", HardwareAddr: hwAddr2},
+	}
+
+	mockWiFi.On("Interfaces").Return(interfaces, nil).Once()
+
+	service := New(mockWiFi)
+	addrs, err := service.GetAddresses()
+
+	require.NoError(t, err)
+	require.Len(t, addrs, 2)
+	require.Equal(t, hwAddr1, addrs[0])
+	require.Equal(t, hwAddr2, addrs[1])
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_GetAddresses_Empty(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+	interfaces := []*wifi.Interface{}
+
+	mockWiFi.On("Interfaces").Return(interfaces, nil).Once()
+
+	service := New(mockWiFi)
+	addrs, err := service.GetAddresses()
+
+	require.NoError(t, err)
+	require.Empty(t, addrs)
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_GetAddresses_Error(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected).Once()
+
+	service := New(mockWiFi)
+	addrs, err := service.GetAddresses()
+
+	require.Error(t, err)
+	require.Nil(t, addrs)
+	require.Contains(t, err.Error(), "getting interfaces")
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_GetNames_Success(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+
+	hwAddr, err := net.ParseMAC("00:11:22:33:44:55")
+	require.NoError(t, err)
+
+	interfaces := []*wifi.Interface{
+		{Name: "wlan0", HardwareAddr: hwAddr},
+		{Name: "wlan1", HardwareAddr: nil},
+		{Name: "eth0", HardwareAddr: nil},
+	}
+
+	mockWiFi.On("Interfaces").Return(interfaces, nil).Once()
+
+	service := New(mockWiFi)
+	names, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Len(t, names, 3)
+	require.Equal(t, []string{"wlan0", "wlan1", "eth0"}, names)
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_GetNames_Empty(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+	interfaces := []*wifi.Interface{}
+
+	mockWiFi.On("Interfaces").Return(interfaces, nil).Once()
+
+	service := New(mockWiFi)
+	names, err := service.GetNames()
+
+	require.NoError(t, err)
+	require.Empty(t, names)
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_GetNames_Error(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+	mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, ErrExpected).Once()
+
+	service := New(mockWiFi)
+	names, err := service.GetNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+	require.Contains(t, err.Error(), "getting interfaces")
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_BothMethodsSameData(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+
+	hwAddr1, err := net.ParseMAC("00:11:22:33:44:55")
+	require.NoError(t, err)
+	hwAddr2, err := net.ParseMAC("aa:bb:cc:dd:ee:ff")
+	require.NoError(t, err)
+	hwAddr3, err := net.ParseMAC("11:22:33:44:55:66")
+	require.NoError(t, err)
+
+	interfaces := []*wifi.Interface{
+		{Name: "wlan0", HardwareAddr: hwAddr1},
+		{Name: "wlan1", HardwareAddr: hwAddr2},
+		{Name: "eth0", HardwareAddr: hwAddr3},
+	}
+
+	mockWiFi.On("Interfaces").Return(interfaces, nil).Twice()
+
+	service := New(mockWiFi)
+
+	addresses, err := service.GetAddresses()
+	require.NoError(t, err, "GetAddresses error")
+	require.Len(t, addresses, 3, "Expected 3 addresses")
+
+	names, err := service.GetNames()
+	require.NoError(t, err, "GetNames error")
+	require.Len(t, names, 3, "Expected 3 names")
+
+	require.Equal(t, "wlan0", names[0], "First interface name mismatch")
+	require.Equal(t, "wlan1", names[1], "Second interface name mismatch")
+	require.Equal(t, "eth0", names[2], "Third interface name mismatch")
+
+	mockWiFi.AssertExpectations(t)
+}
+
+func TestWiFiService_NilHardwareAddr(t *testing.T) {
+	t.Parallel()
+
+	mockWiFi := new(MockWiFiHandle)
+
+	hwAddr, err := net.ParseMAC("aa:bb:cc:dd:ee:ff")
+	require.NoError(t, err)
+
+	interfaces := []*wifi.Interface{
+		{
+			Name:         "wlan0",
+			HardwareAddr: nil,
+		},
+		{Name: "wlan1", HardwareAddr: hwAddr},
+	}
+
+	mockWiFi.On("Interfaces").Return(interfaces, nil).Once()
+
+	service := New(mockWiFi)
+	addresses, err := service.GetAddresses()
+	require.NoError(t, err)
+	require.Len(t, addresses, 2, "Expected 2 addresses")
+	require.Nil(t, addresses[0], "Expected first address to be nil")
+	require.Equal(t, hwAddr.String(), addresses[1].String(), "Second address mismatch")
+
+	mockWiFi.AssertExpectations(t)
+}
