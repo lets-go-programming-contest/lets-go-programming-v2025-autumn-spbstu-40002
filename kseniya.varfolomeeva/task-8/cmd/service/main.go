@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Print("error")
 		os.Exit(1)
 	}
 	
-	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
+	fmt.Print(cfg.Environment, " ", cfg.LogLevel)
 }

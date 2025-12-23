@@ -7,8 +7,8 @@ import (
 )
 
 //go:embed dev.yaml
-var developmentConfig []byte
+var devConfig []byte
 
-func Load() (*Config, error) {
-	return parseYAML(developmentConfig)
+func LoadConfig() (*Config, error) {
+	return loadConfig(developmentConfig)
 }
