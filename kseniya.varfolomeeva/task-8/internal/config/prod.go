@@ -7,9 +7,9 @@ import (
 )
 
 //go:embed prod.yaml
-var productionConfig []byte
+var prodConfig []byte
 
 // Load returns production configuration
-func Load() (*Config, error) {
-	return parseYAML(productionConfig)
+func LoadConfig() (*Config, error) {
+	return loadConfig(prodConfig)
 }
