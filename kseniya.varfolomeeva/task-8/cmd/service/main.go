@@ -8,9 +8,12 @@ import (
 func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Print("error")
+		if cfg != nil && cfg.Environment != "" {
+			fmt.Print(cfg.Environment, " error")
+		} else {
+			fmt.Print("error")
+		}
 		return
 	}
-	
 	fmt.Print(cfg.Environment, " ", cfg.LogLevel)
 }
