@@ -8,8 +8,8 @@ import (
 )
 
 type Settings struct {
-	Env string `yaml:"environment"`
-	Log string `yaml:"log_level"`
+	Environment string `yaml:"environment"`
+	LogLevel    string `yaml:"log_level"`
 }
 
 func DisplayEnvironmentAndLogLevel() error {
@@ -20,7 +20,7 @@ func DisplayEnvironmentAndLogLevel() error {
 		return fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
-	fmt.Print(cfg.Env + " " + cfg.Log)
+	fmt.Print(cfg.Environment + " " + cfg.LogLevel)
 
 	return nil
 }
