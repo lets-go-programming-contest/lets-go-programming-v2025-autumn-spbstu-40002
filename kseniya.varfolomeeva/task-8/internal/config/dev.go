@@ -10,5 +10,5 @@ import (
 var devConfig []byte
 
 func LoadConfig() (*Config, error) {
-	return loadConfig(developmentConfig)
+	return loadConfig(devConfig)
 }
