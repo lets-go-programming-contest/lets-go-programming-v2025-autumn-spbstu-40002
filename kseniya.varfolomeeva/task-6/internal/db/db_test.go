@@ -8,7 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"task-6/internal/db"
 )
+
 const (
+queryGetNames       = "^SELECT name FROM users$"
+queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
+)
+
+var errExpected = errors.New("expected error")
 	queryGetNames       = "^SELECT name FROM users$"
 	queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
 )
