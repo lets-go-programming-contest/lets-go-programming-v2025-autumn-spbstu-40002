@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const errUnmarshalConfig = "failed to unmarshal config"
+const mes = "failed to unmarshal config"
 
 type Config struct {
 	Environment string `yaml:"environment"`
@@ -16,9 +16,9 @@ type Config struct {
 func Load() (*Config, error) {
 	var cfg Config
 	data := getConfigData()
-
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, fmt.Errorf("%s: %w", errUnmarshalConfig, err)
+		return nil, fmt.Errorf("%s: %w", mes, err)
 	}
+
 	return &cfg, nil
 }
