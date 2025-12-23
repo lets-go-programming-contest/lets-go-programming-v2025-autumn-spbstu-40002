@@ -1,0 +1,3 @@
+# internal/config/dev.yaml
+environment: dev
+log_level: debug

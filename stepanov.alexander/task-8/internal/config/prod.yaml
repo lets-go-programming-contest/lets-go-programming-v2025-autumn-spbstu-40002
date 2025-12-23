@@ -1,0 +1,3 @@
+# internal/config/prod.yaml
+environment: prod
+log_level: error
