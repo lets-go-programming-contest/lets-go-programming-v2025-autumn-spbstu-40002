@@ -72,6 +72,7 @@ func TestGetAddresses(t *testing.T) {
 			require.ErrorIs(t, err, tc.err, "case %d", i)
 			require.ErrorContains(t, err, "getting interfaces", "case %d", i)
 			require.Nil(t, got, "case %d", i)
+
 			continue
 		}
 
@@ -108,6 +109,7 @@ func TestGetNames(t *testing.T) {
 			require.ErrorIs(t, err, tc.err, "case %d", i)
 			require.ErrorContains(t, err, "getting interfaces", "case %d", i)
 			require.Nil(t, got, "case %d", i)
+
 			continue
 		}
 
@@ -123,6 +125,7 @@ func wantNames(addrs []string) []string {
 	for i := range addrs {
 		names = append(names, fmt.Sprintf("wlan%d", i+1))
 	}
+
 	return names
 }
 
@@ -165,5 +168,6 @@ func parseMAC(t *testing.T, macStr string) net.HardwareAddr {
 
 	hw, err := net.ParseMAC(macStr)
 	require.NoError(t, err)
+
 	return hw
 }
