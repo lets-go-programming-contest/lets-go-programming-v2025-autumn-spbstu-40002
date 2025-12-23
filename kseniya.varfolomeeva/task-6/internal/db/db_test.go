@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	queryGetNames	   = "^SELECT name FROM users$"
+	queryGetNames       = "^SELECT name FROM users$"
 	queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
 )
 
@@ -32,10 +32,10 @@ func TestGetNames(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		rows	   *sqlmock.Rows
+		rows       *sqlmock.Rows
 		queryErr   error
-		want	   []string
-		errIs	  error
+		want       []string
+		errIs      error
 		errContain string
 	}
 
@@ -52,11 +52,11 @@ func TestGetNames(t *testing.T) {
 		},
 		{
 			queryErr:   errExpected,
-			errIs:	  errExpected,
+			errIs:      errExpected,
 			errContain: "db query",
 		},
 		{
-			rows:	   sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			rows:       sqlmock.NewRows([]string{"name"}).AddRow(nil),
 			errContain: "rows scanning",
 		},
 		{
@@ -64,7 +64,7 @@ func TestGetNames(t *testing.T) {
 				AddRow("Ivan").
 				AddRow("Petr").
 				RowError(1, errExpected),
-			errIs:	  errExpected,
+			errIs:      errExpected,
 			errContain: "rows error",
 		},
 	}
@@ -110,10 +110,10 @@ func TestGetUniqueNames(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		rows	   *sqlmock.Rows
+		rows       *sqlmock.Rows
 		queryErr   error
-		want	   []string
-		errIs	  error
+		want       []string
+		errIs      error
 		errContain string
 	}
 
@@ -130,11 +130,11 @@ func TestGetUniqueNames(t *testing.T) {
 		},
 		{
 			queryErr:   errExpected,
-			errIs:	  errExpected,
+			errIs:      errExpected,
 			errContain: "db query",
 		},
 		{
-			rows:	   sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			rows:       sqlmock.NewRows([]string{"name"}).AddRow(nil),
 			errContain: "rows scanning",
 		},
 		{
@@ -142,7 +142,7 @@ func TestGetUniqueNames(t *testing.T) {
 				AddRow("Ivan").
 				AddRow("Petr").
 				RowError(1, errExpected),
-			errIs:	  errExpected,
+			errIs:      errExpected,
 			errContain: "rows error",
 		},
 	}
