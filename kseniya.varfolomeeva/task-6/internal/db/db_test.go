@@ -10,6 +10,11 @@ import (
 )
 
 const (
+queryGetNames       = "^SELECT name FROM users$"
+queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
+)
+
+var errExpected = errors.New("expected error")
 	queryGetNames       = "^SELECT name FROM users$"
 	queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
 )
