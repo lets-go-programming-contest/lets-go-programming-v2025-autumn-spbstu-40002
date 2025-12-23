@@ -1,15 +1,14 @@
 package db_test
 
 import (
-	"errors"
-	"testing"
+"errors"
+"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/require"
+"github.com/DATA-DOG/go-sqlmock"
+"github.com/stretchr/testify/require"
 
-	"task-6/internal/db"
+"task-6/internal/db"
 )
-
 const (
 	queryGetNames       = "^SELECT name FROM users$"
 	queryGetUniqueNames = "^SELECT DISTINCT name FROM users$"
