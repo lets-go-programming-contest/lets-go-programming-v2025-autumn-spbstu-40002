@@ -78,7 +78,7 @@ func TestGetAddresses(t *testing.T) {
 
 		require.NoError(t, err, "case %d", i)
 		require.Equal(t, parseMACs(t, tc.addrs), got, "case %d", i)
-		
+
 		mockHandle.AssertExpectations(t)
 	}
 }
@@ -115,7 +115,7 @@ func TestGetNames(t *testing.T) {
 
 		require.NoError(t, err, "case %d", i)
 		require.Equal(t, wantNames(tc.addrs), got, "case %d", i)
-		
+
 		mockHandle.AssertExpectations(t)
 	}
 }
