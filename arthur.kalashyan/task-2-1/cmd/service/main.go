@@ -40,7 +40,6 @@ func (t *TemperatureRange) Update(operator string, requested int) error {
 	default:
 		return ErrIncorrectOperator
 	}
-
 	return nil
 }
 
