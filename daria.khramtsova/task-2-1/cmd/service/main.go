@@ -82,7 +82,6 @@ func main() {
 
 	if departments < MinOfRange || departments > MaxOfRange {
 		fmt.Println("Error:", ErrDepOutOfRange)
-
 		return
 	}
 	for range departments {
@@ -95,7 +94,6 @@ func main() {
 
 		if employees < MinOfRange || employees > MaxOfRange {
 			fmt.Println("Error:", ErrEmpOutOfRange)
-
 			return
 		}
 
@@ -105,6 +103,7 @@ func main() {
 			
 			return
 		}
+		
 		for range employees {
 			var (
 				operator string
