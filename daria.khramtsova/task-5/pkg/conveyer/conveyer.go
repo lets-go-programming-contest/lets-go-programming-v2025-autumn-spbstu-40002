@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -26,6 +27,7 @@ func New(size int) *Conveyer {
 		channelSize: size,
 		channels:    make(map[string]chan string),
 		handlers:    make([]func(context.Context) error, 0),
+		mu:          sync.RWMutex{},
 	}
 }
 
@@ -47,6 +49,7 @@ func (c *Conveyer) getOrCreate(name string) chan string {
 
 	ch = make(chan string, c.channelSize)
 	c.channels[name] = ch
+	
 	return ch
 }
 
@@ -117,7 +120,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.mu.RUnlock()
 
 	for _, h := range handlers {
-		h := h
 		group.Go(func() error {
 			return h(gctx)
 		})
