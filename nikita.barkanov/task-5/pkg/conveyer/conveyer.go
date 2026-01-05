@@ -167,19 +167,20 @@ func (conv *conveyer) Run(ctx context.Context) error {
 		}()
 	}
 
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
 	select {
-	case err := <-errCh:
-		return err
+	case err, ok := <-errCh:
+		if ok {
+			return err
+		}
+		return nil
 	case <-ctx.Done():
-	default:
+		return ctx.Err()
 	}
-
-	wg.Wait()
-
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func New(size int) Conveyer {
