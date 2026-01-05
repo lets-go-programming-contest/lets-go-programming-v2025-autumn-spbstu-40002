@@ -11,6 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errExpectedTest = errors.New("ExpectedError")
+)
+
 //go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
 
 type rowTestSysInfo struct {
@@ -18,21 +22,25 @@ type rowTestSysInfo struct {
 	errExpected error
 }
 
-var testTable = []rowTestSysInfo{
+var testTable = []rowTestSysInfo{ //nolint:gochecknoglobals
 	{
 		addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"},
 	},
 	{
-		errExpected: errors.New("ExpectedError"),
+		errExpected: errExpectedTest,
 	},
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	mockWifi := NewWiFiHandle(t)
 	wifiService := myWifi.New(mockWifi)
 	require.NotNil(t, wifiService, "wifiService must not be nil")
 }
 func TestGetName(t *testing.T) {
+	t.Parallel()
+
 	mockWifi := NewWiFiHandle(t)
 	wifiService := myWifi.WiFiService{WiFi: mockWifi}
 
@@ -45,6 +53,7 @@ func TestGetName(t *testing.T) {
 		if row.errExpected != nil {
 			require.ErrorIs(t, err, row.errExpected, "row: %d, expected error:"+
 				"%w, actual error: %w", i, row.errExpected, err)
+
 			continue
 		}
 
@@ -56,6 +65,8 @@ func TestGetName(t *testing.T) {
 }
 
 func TestGetAddresses(t *testing.T) {
+	t.Parallel()
+
 	mockWifi := NewWiFiHandle(t)
 	wifiService := myWifi.WiFiService{WiFi: mockWifi}
 
@@ -108,6 +119,7 @@ func parseNames(ifaces []*wifi.Interface) []string {
 	for _, iface := range ifaces {
 		names = append(names, iface.Name)
 	}
+
 	return names
 }
 
