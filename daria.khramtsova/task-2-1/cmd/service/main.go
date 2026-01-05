@@ -69,7 +69,7 @@ func (t *TempData) adjustTemp(operator string, temp int) error {
 
 func main() {
 	var (
-		departments int 
+		departments int
 		employees   int
 	)
 
@@ -85,7 +85,6 @@ func main() {
 
 		return
 	}
-
 	for range departments {
 
 		if _, err := fmt.Scan(&employees); err != nil {
@@ -106,7 +105,6 @@ func main() {
 			
 			return
 		}
-
 		for range employees {
 			var (
 				operator string
