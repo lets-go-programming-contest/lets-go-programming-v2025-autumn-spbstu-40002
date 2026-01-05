@@ -60,11 +60,12 @@ func TestGetNames(t *testing.T) {
 func TestGetNames_ScanError(t *testing.T) {
 	t.Parallel()
 
-	mockDb, mock, err := sqlmock.New()
+	mockDB, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	dbService := myDb.DBService{DB: mockDb}
+
+	dbService := myDb.DBService{DB: mockDB}
 	// setting up the mock so that the query returns two columns
 	rows := sqlmock.NewRows([]string{"name", "ages"}).AddRow("Ivan", "18")
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
@@ -122,7 +123,9 @@ func TestDBGetUniqueNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+
 	dbService := myDb.DBService{DB: mockDb}
+
 	for i, row := range testTable {
 		mock.ExpectQuery("SELECT DISTINCT name FROM users").
 			WillReturnRows(mockDBRowsUnique(row.names)).WillReturnError(row.errExpected)
@@ -168,18 +171,18 @@ func TestGetUniqueNames_RowError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+
 	dbService := myDb.DBService{DB: mockDb}
 
 	// simulate a connection error when reading a row
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("Ivan").
-		AddRow("Gena228").RowError(1, errors.New("network problem"))
+		AddRow("Gena228").RowError(1, errNetwork)
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 	names, err := dbService.GetUniqueNames()
 
 	require.Error(t, err, "error must not be nil")
 	require.Containsf(t, err.Error(), "rows error: ", "error: %s", err)
 	require.Nil(t, names, "names must be nil")
-
 }
 
 func mockDBRowsUnique(names []string) *sqlmock.Rows {
@@ -189,6 +192,7 @@ func mockDBRowsUnique(names []string) *sqlmock.Rows {
 	for _, name := range names {
 		if !seen[name] {
 			seen[name] = true
+
 			unique = append(unique, name)
 		}
 	}

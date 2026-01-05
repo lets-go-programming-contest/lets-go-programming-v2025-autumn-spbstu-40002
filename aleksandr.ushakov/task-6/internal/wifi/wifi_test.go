@@ -38,6 +38,7 @@ func TestNew(t *testing.T) {
 	wifiService := myWifi.New(mockWifi)
 	require.NotNil(t, wifiService, "wifiService must not be nil")
 }
+
 func TestGetName(t *testing.T) {
 	t.Parallel()
 
@@ -79,6 +80,7 @@ func TestGetAddresses(t *testing.T) {
 		if row.errExpected != nil {
 			require.ErrorIs(t, err, row.errExpected, "row: %d, expected error:"+
 				"%w, actual error: %w", i, row.errExpected, err)
+
 			continue
 		}
 
@@ -90,7 +92,7 @@ func TestGetAddresses(t *testing.T) {
 }
 
 func mockIfaces(addrs []string) []*wifi.Interface {
-	var interfaces []*wifi.Interface
+	interfaces := make([]*wifi.Interface, len(addrs))
 
 	for i, addrStr := range addrs {
 		hwAddr := parseMAC(addrStr)
@@ -114,7 +116,7 @@ func mockIfaces(addrs []string) []*wifi.Interface {
 }
 
 func parseNames(ifaces []*wifi.Interface) []string {
-	var names []string
+	names := make([]string, 0, len(ifaces))
 
 	for _, iface := range ifaces {
 		names = append(names, iface.Name)
@@ -124,7 +126,7 @@ func parseNames(ifaces []*wifi.Interface) []string {
 }
 
 func parseMACs(macStr []string) []net.HardwareAddr {
-	var addrs []net.HardwareAddr
+	addrs := make([]net.HardwareAddr, 0, len(macStr))
 
 	for _, addr := range macStr {
 		addrs = append(addrs, parseMAC(addr))
@@ -137,5 +139,6 @@ func parseMAC(macStr string) net.HardwareAddr {
 	if err != nil {
 		return nil
 	}
+
 	return hwAddr
 }
