@@ -47,6 +47,7 @@ func TestGetName(t *testing.T) {
 		mockWifi.On("Interfaces").Unset()
 		mockWifi.On("Interfaces").Return(mockIfaces(row.addrs),
 			row.errExpected)
+
 		actualNames, err := wifiService.GetNames()
 
 		if row.errExpected != nil {
@@ -73,6 +74,7 @@ func TestGetAddresses(t *testing.T) {
 		mockWifi.On("Interfaces").Unset()
 		mockWifi.On("Interfaces").Return(mockIfaces(row.addrs),
 			row.errExpected)
+
 		actualAddrs, err := wifiService.GetAddresses()
 
 		if row.errExpected != nil {
