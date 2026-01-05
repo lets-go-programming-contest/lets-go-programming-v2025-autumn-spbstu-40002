@@ -29,7 +29,7 @@ var (
 
 func newTempData(max, min int) (*TempData, error) {
 	if min > max {
-		return nil, ErrTempOutOfRange
+		return -1, ErrTempOutOfRange
 	}
 
 	return &TempData{
