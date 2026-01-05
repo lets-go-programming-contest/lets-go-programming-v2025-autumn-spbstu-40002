@@ -82,6 +82,7 @@ func main() {
 
 		return
 	}
+	
 	for range departments {
 		var employees int
 
