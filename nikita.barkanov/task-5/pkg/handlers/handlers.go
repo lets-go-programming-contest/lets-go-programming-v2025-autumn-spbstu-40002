@@ -19,7 +19,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				return nil
 			}
 			if strings.Contains(data, "no decorator") {
-				return fmt.Errorf("can’t be decorated")
+				return fmt.Errorf("can't be decorated")
 			}
 			if !strings.HasPrefix(data, "decorated: ") {
 				data = "decorated: " + data
@@ -71,16 +71,18 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	var wg sync.WaitGroup
+	errCh := make(chan error, 1)
+
 	wg.Add(len(inputs))
 
-	for _, in := range inputs {
-		go func(inCh <-chan string) {
+	for _, inCh := range inputs {
+		go func(ch <-chan string) {
 			defer wg.Done()
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-inCh:
+				case data, ok := <-ch:
 					if !ok {
 						return
 					}
@@ -94,9 +96,22 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(in)
+		}(inCh)
 	}
 
-	wg.Wait()
-	return ctx.Err()
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	select {
+	case err := <-errCh:
+		if err != nil {
+			return err
+		}
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	return nil
 }
