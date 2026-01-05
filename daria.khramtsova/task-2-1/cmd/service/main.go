@@ -116,7 +116,7 @@ func main() {
 
 			err = tempRange.adjustTemp(operator, temp)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println(-1)
 			} else {
 				fmt.Println(tempRange.optimalTemp())
 			}
