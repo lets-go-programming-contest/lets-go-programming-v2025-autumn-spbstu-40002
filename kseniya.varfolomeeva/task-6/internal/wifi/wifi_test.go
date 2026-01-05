@@ -7,52 +7,34 @@ import (
 	"testing"
 
 	"github.com/mdlayher/wifi"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	mywifi "task-6/internal/wifi"
+	myWifi "task-6/internal/wifi"
 )
+
+//go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
 
 var errExpected = errors.New("expected error")
 
-type MockWiFiHandle struct {
-	mock.Mock
-}
-
-func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
-	args := m.Called()
-
-	var err error
-	if args.Error(1) != nil {
-		err = fmt.Errorf("mock error: %w", args.Error(1))
-	}
-
-	if args.Get(0) == nil {
-		return nil, err
-	}
-
-	if ifaces, ok := args.Get(0).([]*wifi.Interface); ok {
-		return ifaces, err
-	}
-
-	return nil, err
+type testCase struct {
+	addrs []string
+	err   error
 }
 
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	mockHandle := &MockWiFiHandle{}
-	service := mywifi.New(mockHandle)
-	require.Equal(t, mockHandle, service.WiFi)
+	t.Run("new", func(t *testing.T) {
+		t.Parallel()
+
+		mockHandle := NewWiFiHandle(t)
+		service := myWifi.New(mockHandle)
+		require.Equal(t, mockHandle, service.WiFi)
+	})
 }
 
 func TestGetAddresses(t *testing.T) {
 	t.Parallel()
-
-	type testCase struct {
-		addrs []string
-		err   error
-	}
 
 	cases := []testCase{
 		{addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"}},
@@ -61,36 +43,33 @@ func TestGetAddresses(t *testing.T) {
 	}
 
 	for i, tc := range cases {
-		mockHandle := &MockWiFiHandle{}
-		service := mywifi.WiFiService{WiFi: mockHandle}
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			t.Parallel()
 
-		mockHandle.On("Interfaces").Return(makeIfaces(t, tc.addrs), tc.err)
+			mockHandle := NewWiFiHandle(t)
+			service := myWifi.WiFiService{WiFi: mockHandle}
 
-		got, err := service.GetAddresses()
+			mockHandle.On("Interfaces").Return(makeIfaces(t, tc.addrs), tc.err)
 
-		if tc.err != nil {
-			require.ErrorIs(t, err, tc.err, "case %d", i)
-			require.ErrorContains(t, err, "getting interfaces", "case %d", i)
-			require.Nil(t, got, "case %d", i)
+			got, err := service.GetAddresses()
 
-			continue
-		}
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+				require.ErrorContains(t, err, "getting interfaces")
+				require.Nil(t, got)
 
-		require.NoError(t, err, "case %d", i)
-		require.Equal(t, parseMACs(t, tc.addrs), got, "case %d", i)
+				return
+			}
 
-		mockHandle.AssertExpectations(t)
+			require.NoError(t, err)
+			require.Equal(t, parseMACs(t, tc.addrs), got)
+		})
 	}
 }
 
 func TestGetNames(t *testing.T) {
 	t.Parallel()
 
-	type testCase struct {
-		addrs []string
-		err   error
-	}
-
 	cases := []testCase{
 		{addrs: []string{"00:11:22:33:44:55", "aa:bb:cc:dd:ee:ff"}},
 		{addrs: []string{}},
@@ -98,30 +77,35 @@ func TestGetNames(t *testing.T) {
 	}
 
 	for i, tc := range cases {
-		mockHandle := &MockWiFiHandle{}
-		service := mywifi.WiFiService{WiFi: mockHandle}
+		t.Run(fmt.Sprintf("case_%d", i), func(t *testing.T) {
+			t.Parallel()
 
-		mockHandle.On("Interfaces").Return(makeIfaces(t, tc.addrs), tc.err)
+			mockHandle := NewWiFiHandle(t)
+			service := myWifi.WiFiService{WiFi: mockHandle}
 
-		got, err := service.GetNames()
+			mockHandle.On("Interfaces").Return(makeIfaces(t, tc.addrs), tc.err)
 
-		if tc.err != nil {
-			require.ErrorIs(t, err, tc.err, "case %d", i)
-			require.ErrorContains(t, err, "getting interfaces", "case %d", i)
-			require.Nil(t, got, "case %d", i)
+			got, err := service.GetNames()
 
-			continue
-		}
+			if tc.err != nil {
+				require.ErrorIs(t, err, tc.err)
+				require.ErrorContains(t, err, "getting interfaces")
+				require.Nil(t, got)
 
-		require.NoError(t, err, "case %d", i)
-		require.Equal(t, wantNames(tc.addrs), got, "case %d", i)
+				return
+			}
 
-		mockHandle.AssertExpectations(t)
+			require.NoError(t, err)
+			require.Equal(t, wantNames(t, tc.addrs), got)
+		})
 	}
 }
 
-func wantNames(addrs []string) []string {
+func wantNames(t *testing.T, addrs []string) []string {
+	t.Helper()
+
 	names := make([]string, 0, len(addrs))
+
 	for i := range addrs {
 		names = append(names, fmt.Sprintf("wlan%d", i+1))
 	}
