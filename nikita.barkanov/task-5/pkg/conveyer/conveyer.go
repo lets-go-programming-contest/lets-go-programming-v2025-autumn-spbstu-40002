@@ -2,8 +2,11 @@ package conveyer
 
 import (
 	"context"
+	"errors"
 	"sync"
 )
+
+var errChanNotFound = errors.New("chan not found")
 
 type Conveyer interface {
 	RegisterDecorator(
@@ -27,40 +30,66 @@ type Conveyer interface {
 }
 
 type conveyer struct {
-	mu       sync.RWMutex
+	rwmu     sync.RWMutex
 	channels map[string]chan string
 	handlers []func(ctx context.Context) error
 	size     int
 }
 
-func (c *conveyer) Send(input string, data string) error {
+func (conv *conveyer) getChannel(name string) (chan string, bool) {
+	conv.rwmu.RLock()
+	defer conv.rwmu.RUnlock()
+	channel, isOkey := conv.channels[name]
+
+	return channel, isOkey
+}
+
+func (conv *conveyer) Send(input string, data string) error {
+	channel, exists := conv.getChannel(input)
+	if !exists {
+		return errChanNotFound
+	}
+
+	channel <- data
+
 	return nil
 }
 
-func (c *conveyer) Recv(output string) (string, error) {
-	return "", nil
+func (conv *conveyer) Recv(output string) (string, error) {
+	channel, exists := conv.getChannel(output)
+	if !exists {
+		return "", errChanNotFound
+	}
+
+	data, isOkey := <-channel
+	if !isOkey {
+		return "undefined", nil
+	}
+
+	return data, nil
 }
 
-func (c *conveyer) RegisterDecorator(
+func (conv *conveyer) RegisterDecorator(
 	fn func(context.Context, chan string, chan string) error,
 	input, output string,
 ) {
 
 }
 
-func (c *conveyer) RegisterMultiplexer(
+func (conv *conveyer) RegisterMultiplexer(
 	fn func(context.Context, []chan string, chan string) error,
 	inputs []string, output string,
 ) {
+
 }
 
-func (c *conveyer) RegisterSeparator(
+func (conv *conveyer) RegisterSeparator(
 	fn func(context.Context, chan string, []chan string) error,
 	input string, outputs []string,
 ) {
 }
 
-func (c *conveyer) Run(ctx context.Context) error {
+func (conv *conveyer) Run(ctx context.Context) error {
 	return nil
 }
 
