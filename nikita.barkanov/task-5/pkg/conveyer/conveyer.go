@@ -44,6 +44,19 @@ func (conv *conveyer) getChannel(name string) (chan string, bool) {
 	return channel, isOkey
 }
 
+func (conv *conveyer) createOrGetChannel(name string) chan string {
+	conv.rwmu.Lock()
+	defer conv.rwmu.Unlock()
+
+	if ch, ok := conv.channels[name]; ok {
+		return ch
+	}
+
+	ch := make(chan string, conv.size)
+	conv.channels[name] = ch
+	return ch
+}
+
 func (conv *conveyer) Send(input string, data string) error {
 	channel, exists := conv.getChannel(input)
 	if !exists {
@@ -73,23 +86,105 @@ func (conv *conveyer) RegisterDecorator(
 	fn func(context.Context, chan string, chan string) error,
 	input, output string,
 ) {
+	inCh := conv.createOrGetChannel(input)
+	outCh := conv.createOrGetChannel(output)
 
+	runner := func(ctx context.Context) error {
+		return fn(ctx, inCh, outCh)
+	}
+
+	conv.rwmu.Lock()
+	conv.handlers = append(conv.handlers, runner)
+	conv.rwmu.Unlock()
 }
 
 func (conv *conveyer) RegisterMultiplexer(
 	fn func(context.Context, []chan string, chan string) error,
 	inputs []string, output string,
 ) {
+	outCh := conv.createOrGetChannel(output)
 
+	inputChs := make([]chan string, 0, len(inputs))
+	for _, name := range inputs {
+		ch := conv.createOrGetChannel(name)
+		inputChs = append(inputChs, ch)
+	}
+
+	runner := func(ctx context.Context) error {
+		return fn(ctx, inputChs, outCh)
+	}
+
+	conv.rwmu.Lock()
+	conv.handlers = append(conv.handlers, runner)
+	conv.rwmu.Unlock()
 }
 
 func (conv *conveyer) RegisterSeparator(
 	fn func(context.Context, chan string, []chan string) error,
 	input string, outputs []string,
 ) {
+	inCh := conv.createOrGetChannel(input)
+
+	outputChs := make([]chan string, 0, len(outputs))
+	for _, name := range outputs {
+		ch := conv.createOrGetChannel(name)
+		outputChs = append(outputChs, ch)
+	}
+
+	runner := func(ctx context.Context) error {
+		return fn(ctx, inCh, outputChs)
+	}
+
+	conv.rwmu.Lock()
+	conv.handlers = append(conv.handlers, runner)
+	conv.rwmu.Unlock()
 }
 
 func (conv *conveyer) Run(ctx context.Context) error {
+	if len(conv.handlers) == 0 {
+		return nil
+	}
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, 1)
+
+	conv.rwmu.RLock()
+	handlers := make([]func(context.Context) error, len(conv.handlers))
+	copy(handlers, conv.handlers)
+	conv.rwmu.RUnlock()
+
+	for _, h := range handlers {
+		wg.Add(1)
+		handler := h
+		go func() {
+			defer wg.Done()
+			if err := handler(ctx); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}()
+	}
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+	default:
+	}
+
+	wg.Wait()
+
+	conv.rwmu.Lock()
+	for _, ch := range conv.channels {
+		close(ch)
+	}
+	conv.rwmu.Unlock()
+
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	return nil
 }
 
