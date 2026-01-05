@@ -106,9 +106,10 @@ func main() {
 		}
 
 		for range employees {
-			var operator string
-			
-			var temp int
+			var (
+				operator string
+				temp int
+				)
 
 			if _, err := fmt.Scan(&operator, &temp); err != nil {
 				fmt.Println("Error:", ErrIncorrectTemp)
