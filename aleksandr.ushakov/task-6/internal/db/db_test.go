@@ -36,11 +36,13 @@ func TestGetNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+
 	dbService := myDb.DBService{DB: mockDB}
 
 	for i, row := range testTable {
 		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(mockDBRows(row.names)).
 			WillReturnError(row.errExpected)
+
 		names, err := dbService.GetNames()
 
 		if row.errExpected != nil {
@@ -89,6 +91,7 @@ func TestGetNames_RowError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("Ivan").
 		AddRow("Gena228").RowError(1, errNetwork)
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
+
 	names, err := dbService.GetNames()
 
 	require.Error(t, err, "error must not be nil")
@@ -136,6 +139,7 @@ func TestDBGetUniqueNames(t *testing.T) {
 			require.ErrorIs(t, err, row.errExpected, "row: %d, expected error: %w, actual error: %w", i,
 				row.errExpected, err)
 			require.Nil(t, names, "row: %d, names must be nil", i)
+
 			continue
 		}
 
@@ -148,11 +152,11 @@ func TestDBGetUniqueNames(t *testing.T) {
 func TestGetUniqueNames_ScanError(t *testing.T) {
 	t.Parallel()
 
-	mockDb, mock, err := sqlmock.New()
+	mockDB, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	dbService := myDb.DBService{DB: mockDb}
+	dbService := myDb.DBService{DB: mockDB}
 
 	// setting up the mock so that the query returns two columns
 	rows := sqlmock.NewRows([]string{"name", "ages"}).AddRow("Ivan", "18")

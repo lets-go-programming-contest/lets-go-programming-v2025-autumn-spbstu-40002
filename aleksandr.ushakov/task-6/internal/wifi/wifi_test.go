@@ -11,9 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	errExpectedTest = errors.New("ExpectedError")
-)
+var errExpectedTest = errors.New("ExpectedError")
 
 //go:generate mockery --all --testonly --quiet --outpkg wifi_test --output .
 
@@ -92,7 +90,7 @@ func TestGetAddresses(t *testing.T) {
 }
 
 func mockIfaces(addrs []string) []*wifi.Interface {
-	interfaces := make([]*wifi.Interface, len(addrs))
+	interfaces := make([]*wifi.Interface, 0, len(addrs))
 
 	for i, addrStr := range addrs {
 		hwAddr := parseMAC(addrStr)
