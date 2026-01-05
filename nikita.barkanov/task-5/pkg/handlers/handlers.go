@@ -60,9 +60,9 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	defer close(output)
 
 	var wg sync.WaitGroup
+	wg.Add(len(inputs))
 
-	for _, in := range inputs {
-		wg.Add(1)
+	for _, inCh := range inputs {
 		go func(ch <-chan string) {
 			defer wg.Done()
 			for {
@@ -83,19 +83,9 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(in)
+		}(inCh)
 	}
 
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-done:
-		return nil
-	}
+	wg.Wait()
+	return ctx.Err()
 }

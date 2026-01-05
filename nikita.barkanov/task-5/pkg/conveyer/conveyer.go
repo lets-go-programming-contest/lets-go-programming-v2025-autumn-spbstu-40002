@@ -176,12 +176,6 @@ func (conv *conveyer) Run(ctx context.Context) error {
 
 	wg.Wait()
 
-	conv.rwmu.Lock()
-	for _, ch := range conv.channels {
-		close(ch)
-	}
-	conv.rwmu.Unlock()
-
 	if err := ctx.Err(); err != nil {
 		return err
 	}
