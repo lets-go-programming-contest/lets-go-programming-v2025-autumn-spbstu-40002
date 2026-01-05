@@ -31,7 +31,7 @@ func newTempData(maxTemp, minTemp int) (*TempData, error) {
 	if minTemp > maxTemp {
 		return nil, ErrTempOutOfRange
 	}
-	
+
 	return &TempData{
 		max: maxTemp,
 		min: minTemp,
@@ -42,7 +42,7 @@ func (t *TempData) optimalTemp() int {
 	if t.min > t.max {
 		return -1
 	}
-	
+
 	return t.min
 }
 
@@ -68,11 +68,8 @@ func (t *TempData) adjustTemp(operator string, temp int) error {
 }
 
 func main() {
-	var (
-		departments int
-		employees   int
-	)
-	
+	var departments int
+
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		fmt.Println("Error:", ErrIncorrectDepartments)
@@ -82,11 +79,11 @@ func main() {
 
 	if departments < MinOfRange || departments > MaxOfRange {
 		fmt.Println("Error:", ErrDepOutOfRange)
-		
+
 		return
 	}
-	
 	for range departments {
+		var employees int
 
 		if _, err := fmt.Scan(&employees); err != nil {
 			fmt.Println("Error:", ErrIncorrectEmployees)
@@ -96,29 +93,28 @@ func main() {
 
 		if employees < MinOfRange || employees > MaxOfRange {
 			fmt.Println("Error:", ErrEmpOutOfRange)
-			
+
 			return
 		}
 
 		tempRange, err := newTempData(MaxTemperature, MinTemperature)
 		if err != nil {
 			fmt.Println(err)
-			
+
 			return
 		}
-		
+
 		for range employees {
-			var (
-				operator string
-				temp     int
-			)
+			var operator string
+			
+			var temp int
 
 			if _, err := fmt.Scan(&operator, &temp); err != nil {
 				fmt.Println("Error:", ErrIncorrectTemp)
-				
+
 				return
 			}
-			
+
 			err = tempRange.adjustTemp(operator, temp)
 			if err != nil {
 				fmt.Println(-1)
