@@ -87,11 +87,11 @@ func MultiplexerFunc(
 	}
 
 	var waitGroup sync.WaitGroup
-	
+
 	waitGroup.Add(len(inputs))
 
 	for _, inputChannel := range inputs {
-		channel := inputChannel
+		inputChannel := inputChannel
 
 		go func() {
 			defer waitGroup.Done()
@@ -101,7 +101,7 @@ func MultiplexerFunc(
 				case <-ctx.Done():
 					return
 
-				case value, open := <-channel:
+				case value, open := <-inputChannel:
 					if !open {
 						return
 					}
@@ -121,7 +121,6 @@ func MultiplexerFunc(
 	}
 
 	done := make(chan struct{})
-
 	go func() {
 		waitGroup.Wait()
 		close(done)
