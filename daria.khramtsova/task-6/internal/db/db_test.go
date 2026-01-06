@@ -50,6 +50,8 @@ func TestDBServiceGetNames(t *testing.T) {
 				)
 			},
 			assert: func(t *testing.T, result []string, err error) {
+				t.Helper()
+
 				require.NoError(t, err)
 				require.Equal(t, []string{"Alice", "Bob"}, result)
 			},
@@ -64,6 +66,8 @@ func TestDBServiceGetNames(t *testing.T) {
 				)
 			},
 			assert: func(t *testing.T, result []string, err error) {
+				t.Helper()
+
 				require.NoError(t, err)
 				require.Empty(t, result)
 			},
@@ -76,6 +80,8 @@ func TestDBServiceGetNames(t *testing.T) {
 				)).WillReturnError(errQuery)
 			},
 			assert: func(t *testing.T, result []string, err error) {
+				t.Helper()
+
 				require.Error(t, err)
 				require.Nil(t, result)
 			},
@@ -90,6 +96,8 @@ func TestDBServiceGetNames(t *testing.T) {
 				)
 			},
 			assert: func(t *testing.T, result []string, err error) {
+				t.Helper()
+
 				require.Error(t, err)
 				require.Nil(t, result)
 			},
@@ -106,6 +114,8 @@ func TestDBServiceGetNames(t *testing.T) {
 				)
 			},
 			assert: func(t *testing.T, result []string, err error) {
+				t.Helper()
+
 				require.Error(t, err)
 				require.Nil(t, result)
 			},
@@ -113,7 +123,6 @@ func TestDBServiceGetNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -122,6 +131,7 @@ func TestDBServiceGetNames(t *testing.T) {
 			t.Cleanup(func() { _ = conn.Close() })
 
 			svc := db.New(conn)
+
 			tt.setup(mock)
 
 			result, err := svc.GetNames()
@@ -153,5 +163,29 @@ func TestDBServiceGetUniqueNames(t *testing.T) {
 
 	require.NoError(t, err)
 	require.ElementsMatch(t, []string{"Alice", "Bob"}, names)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
+	t.Parallel()
+
+	conn, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = conn.Close() })
+
+	svc := db.New(conn)
+
+	rows := sqlmock.NewRows([]string{"name"}).
+		AddRow("Alice")
+	rows.RowError(0, errRow)
+
+	mock.ExpectQuery(regexp.QuoteMeta(
+		"SELECT DISTINCT name FROM users",
+	)).WillReturnRows(rows)
+
+	names, err := svc.GetUniqueNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
