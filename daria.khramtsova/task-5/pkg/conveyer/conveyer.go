@@ -132,7 +132,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.mu.Unlock()
 
 	if err != nil {
-	return errors.Join(err)
+		return err
 	}
 	
 	return nil
