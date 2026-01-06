@@ -7,5 +7,6 @@ import (
 )
 
 func main() {
-	fmt.Println(config.Cnf.Environment + " " + config.Cnf.Log_level)
+	cnf := config.GetConfig()
+	fmt.Print(cnf.Environment + " " + cnf.Loglevel)
 }

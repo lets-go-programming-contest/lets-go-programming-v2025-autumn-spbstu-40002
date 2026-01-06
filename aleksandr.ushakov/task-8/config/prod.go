@@ -7,8 +7,6 @@ import (
 )
 
 //go:embed prod.yaml
-var conf_prod embed.FS
+var confFile embed.FS
 
-func init() {
-	Cnf = *ParseConfig(&conf_prod, "prod.yaml")
-}
+var filePath = "prod.yaml"
