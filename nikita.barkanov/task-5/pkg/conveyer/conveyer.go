@@ -10,7 +10,7 @@ import (
 
 var (
 	errChanNotFound = errors.New("chan not found")
-	errWaitConveyer = errors.New("conveyer wait error")
+	errWaitConveyer = errors.New("can't be decorated")
 )
 
 type Conveyer interface {
