@@ -90,8 +90,6 @@ func MultiplexerFunc(
 	wg.Add(len(inputs))
 
 	for _, ch := range inputs {
-		ch := ch
-
 		go func() {
 			defer wg.Done()
 
