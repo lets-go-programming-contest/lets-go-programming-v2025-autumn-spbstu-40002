@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var errChanNotFound = errors.New("chan not found")
@@ -145,42 +147,21 @@ func (conv *conveyer) Run(ctx context.Context) error {
 		return nil
 	}
 
-	var wg sync.WaitGroup
-	errCh := make(chan error, 1)
-
 	conv.rwmu.RLock()
 	handlers := make([]func(context.Context) error, len(conv.handlers))
 	copy(handlers, conv.handlers)
 	conv.rwmu.RUnlock()
 
+	g, gctx := errgroup.WithContext(ctx)
+
 	for _, h := range handlers {
-		wg.Add(1)
-		handler := h
-		go func() {
-			defer wg.Done()
-			if err := handler(ctx); err != nil {
-				select {
-				case errCh <- err:
-				default:
-				}
-			}
-		}()
+		h := h
+		g.Go(func() error {
+			return h(gctx)
+		})
 	}
 
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
-
-	select {
-	case err, ok := <-errCh:
-		if ok {
-			return err
-		}
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	return g.Wait()
 }
 
 func New(size int) Conveyer {

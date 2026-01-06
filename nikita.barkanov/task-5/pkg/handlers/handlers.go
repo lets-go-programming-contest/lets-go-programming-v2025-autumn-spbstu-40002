@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 )
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
@@ -70,12 +69,14 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
+	doneChan := make(chan struct{}, len(inputs))
 
 	for _, inCh := range inputs {
 		go func(ch <-chan string) {
-			defer wg.Done()
+			defer func() {
+				doneChan <- struct{}{}
+			}()
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -97,6 +98,13 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}(inCh)
 	}
 
-	wg.Wait()
+	for i := 0; i < len(inputs); i++ {
+		select {
+		case <-doneChan:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+
 	return nil
 }
