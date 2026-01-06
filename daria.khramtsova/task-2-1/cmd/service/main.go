@@ -76,7 +76,6 @@ func main() {
 		
 		return
 	}
-	
 	if departments < MinOfRange || departments > MaxOfRange {
 		fmt.Println("Error:", ErrDepOutOfRange)
 		
@@ -116,7 +115,7 @@ func main() {
 				
 				return
 			}
-			
+
 			err = tempRange.adjustTemp(operator, temp)
 			if err != nil {
 				fmt.Println(-1)
