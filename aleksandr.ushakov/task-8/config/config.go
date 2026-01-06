@@ -12,7 +12,7 @@ type Config struct {
 
 func GetConfig() *Config {
 	// read config
-	data, err := confFile.ReadFile(filePath)
+	data, err := confFile.ReadFile(getFilePath())
 	if err != nil {
 		panic(myerrors.ErrConfigRead)
 	}

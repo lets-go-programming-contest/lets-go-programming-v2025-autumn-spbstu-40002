@@ -10,3 +10,7 @@ import (
 var confFile embed.FS
 
 var filePath = "prod.yaml"
+
+func getFilePath() string {
+	return filePath
+}
