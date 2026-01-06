@@ -17,7 +17,8 @@ func SortCurrencies(currencies []xml.Currency) {
 
 func WriteJSON(currencies []xml.Currency, path string) {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		panic(err)
 	}
 
@@ -25,7 +26,12 @@ func WriteJSON(currencies []xml.Currency, path string) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	type Out struct {
 		NumCode  int     `json:"num_code"`
@@ -44,6 +50,7 @@ func WriteJSON(currencies []xml.Currency, path string) {
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+
 	if err := encoder.Encode(result); err != nil {
 		panic(err)
 	}
