@@ -21,7 +21,7 @@ func (m *mockWiFi) Interfaces() ([]*wifipackage.Interface, error) {
 	return m.interfaces()
 }
 
-func TestWiFiService_New(t *testing.T) {
+func TestWiFiServiceNew(t *testing.T) {
 	t.Parallel()
 
 	m := &mockWiFi{}
@@ -31,7 +31,7 @@ func TestWiFiService_New(t *testing.T) {
 	require.Same(t, m, svc.WiFi)
 }
 
-func TestWiFiService_GetAddresses(t *testing.T) {
+func TestWiFiServiceGetAddresses(t *testing.T) {
 	t.Parallel()
 
 	mac1, _ := net.ParseMAC("aa:bb:cc:11:22:33")
@@ -78,7 +78,6 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -89,6 +88,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "getting interfaces")
 				require.Nil(t, got)
+
 				return
 			}
 
@@ -98,7 +98,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	}
 }
 
-func TestWiFiService_GetNames(t *testing.T) {
+func TestWiFiServiceGetNames(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
@@ -142,7 +142,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -153,6 +152,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), "getting interfaces")
 				require.Nil(t, got)
+
 				return
 			}
 
