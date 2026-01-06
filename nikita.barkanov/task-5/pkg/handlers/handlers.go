@@ -71,40 +71,44 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	doneChan := make(chan struct{}, len(inputs))
 
-	for _, inCh := range inputs {
-		go func(ch <-chan string) {
-			defer func() {
-				doneChan <- struct{}{}
-			}()
-
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case data, ok := <-ch:
-					if !ok {
-						return
-					}
-					if strings.Contains(data, "no multiplexer") {
-						continue
-					}
-					select {
-					case output <- data:
-					case <-ctx.Done():
-						return
-					}
-				}
-			}
-		}(inCh)
+	for _, inputChannel := range inputs {
+		go processInput(ctx, inputChannel, output, doneChan)
 	}
 
-	for i := 0; i < len(inputs); i++ {
+	for range len(inputs) {
 		select {
 		case <-doneChan:
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		}
 	}
 
 	return nil
+}
+
+func processInput(ctx context.Context, inputChannel <-chan string, output chan<- string, doneChan chan<- struct{}) {
+	defer func() {
+		doneChan <- struct{}{}
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case data, ok := <-inputChannel:
+			if !ok {
+				return
+			}
+
+			if strings.Contains(data, "no multiplexer") {
+				continue
+			}
+
+			select {
+			case output <- data:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
 }
