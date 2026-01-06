@@ -91,8 +91,6 @@ func MultiplexerFunc(
 	waitGroup.Add(len(inputs))
 
 	for _, inputChannel := range inputs {
-		inputChannel := inputChannel
-
 		go func() {
 			defer waitGroup.Done()
 
