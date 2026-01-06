@@ -120,7 +120,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.mu.RUnlock()
 
 	for _, handler := range handlers {
-
 		group.Go(func() error {
 			return handler(groupCtx)
 		})
@@ -132,7 +131,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.closeChannels()
 	c.mu.Unlock()
 
-	return err
+	if err != nil {
+	return errors.Join(err)
+	}
+	
+	return nill
 }
 
 func (c *Conveyer) Send(name string, data string) error {
