@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -132,11 +133,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.mu.Unlock()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("conveyer run failed: %w", err)
 	}
-	
+
 	return nil
 }
+
 
 func (c *Conveyer) Send(name string, data string) error {
 	c.mu.RLock()
