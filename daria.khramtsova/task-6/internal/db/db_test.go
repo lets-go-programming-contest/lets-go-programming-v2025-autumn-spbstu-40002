@@ -189,3 +189,47 @@ func TestDBServiceGetUniqueNamesRowsError(t *testing.T) {
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestDBServiceGetUniqueNamesQueryError(t *testing.T) {
+	t.Parallel()
+
+	conn, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = conn.Close() })
+
+	svc := db.New(conn)
+
+	mock.ExpectQuery(regexp.QuoteMeta(
+		"SELECT DISTINCT name FROM users",
+	)).WillReturnError(errQuery)
+
+	names, err := svc.GetUniqueNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
+	t.Parallel()
+
+	conn, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = conn.Close() })
+
+	svc := db.New(conn)
+
+	mock.ExpectQuery(regexp.QuoteMeta(
+		"SELECT DISTINCT name FROM users",
+	)).WillReturnRows(
+		sqlmock.NewRows([]string{"name"}).
+			AddRow(nil),
+	)
+
+	names, err := svc.GetUniqueNames()
+
+	require.Error(t, err)
+	require.Nil(t, names)
+	require.NoError(t, mock.ExpectationsWereMet())
+}
+
