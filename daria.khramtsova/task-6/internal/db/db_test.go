@@ -232,4 +232,3 @@ func TestDBServiceGetUniqueNamesScanError(t *testing.T) {
 	require.Nil(t, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
-
