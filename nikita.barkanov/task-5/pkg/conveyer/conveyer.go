@@ -174,7 +174,7 @@ func (conv *conveyer) Run(ctx context.Context) error {
 	return nil
 }
 
-func New(size int) Conveyer {
+func New(size int) *conveyer {
 	return &conveyer{
 		channels: make(map[string]chan string),
 		size:     size,

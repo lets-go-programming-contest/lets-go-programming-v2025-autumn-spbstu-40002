@@ -48,6 +48,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	idx := 0
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -59,6 +60,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			select {
 			case outputs[idx%len(outputs)] <- data:
 			case <-ctx.Done():
+
 				return nil
 			}
 
@@ -80,7 +82,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		go processInput(ctx, inputChannel, output, doneChan)
 	}
 
-	for range len(inputs) {
+	for i := 0; i < len(inputs); i++ { //nolint:warnamelen
 		select {
 		case <-doneChan:
 		case <-ctx.Done():
