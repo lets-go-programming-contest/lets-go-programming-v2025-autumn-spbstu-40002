@@ -1,13 +1,15 @@
 package json
 
 import (
-	"encoding/json"
+	stdjson "encoding/json"
 	"os"
 	"path/filepath"
 	"sort"
 
 	"github.com/hehemka/task-3/internal/utils/xml"
 )
+
+const dirPerm = 0o755
 
 func SortCurrencies(currencies []xml.Currency) {
 	sort.Slice(currencies, func(i, j int) bool {
@@ -18,7 +20,7 @@ func SortCurrencies(currencies []xml.Currency) {
 func WriteJSON(currencies []xml.Currency, path string) {
 	dir := filepath.Dir(path)
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		panic(err)
 	}
 
@@ -48,7 +50,7 @@ func WriteJSON(currencies []xml.Currency, path string) {
 		})
 	}
 
-	encoder := json.NewEncoder(file)
+	encoder := stdjson.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 
 	if err := encoder.Encode(result); err != nil {
