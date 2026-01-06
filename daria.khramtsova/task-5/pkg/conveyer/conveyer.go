@@ -135,7 +135,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	return errors.Join(err)
 	}
 	
-	return nill
+	return nil
 }
 
 func (c *Conveyer) Send(name string, data string) error {
