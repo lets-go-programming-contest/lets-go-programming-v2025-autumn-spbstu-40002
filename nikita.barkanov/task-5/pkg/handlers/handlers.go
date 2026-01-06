@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 )
+
+var errCanNotBeDecorated = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	defer close(output)
@@ -14,12 +16,15 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		case <-ctx.Done():
 			return nil
 		case data, ok := <-input:
+
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(data, "no decorator") {
-				return fmt.Errorf("can't be decorated")
+				return errCanNotBeDecorated
 			}
+
 			if !strings.HasPrefix(data, "decorated: ") {
 				data = "decorated: " + data
 			}
@@ -58,6 +63,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 			idx++
+
 		}
 	}
 }
@@ -96,6 +102,7 @@ func processInput(ctx context.Context, inputChannel <-chan string, output chan<-
 		case <-ctx.Done():
 			return
 		case data, ok := <-inputChannel:
+
 			if !ok {
 				return
 			}

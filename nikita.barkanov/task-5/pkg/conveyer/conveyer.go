@@ -8,7 +8,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var errChanNotFound = errors.New("chan not found")
+var (
+	errChanNotFound = errors.New("chan not found")
+	errWaitConveyer = errors.New("conveyer wait error")
+)
 
 type Conveyer interface {
 	RegisterDecorator(
@@ -51,6 +54,7 @@ func (conv *conveyer) createOrGetChannel(name string) chan string {
 	defer conv.rwmu.Unlock()
 
 	if ch, ok := conv.channels[name]; ok {
+
 		return ch
 	}
 
@@ -62,6 +66,7 @@ func (conv *conveyer) createOrGetChannel(name string) chan string {
 func (conv *conveyer) Send(input string, data string) error {
 	channel, exists := conv.getChannel(input)
 	if !exists {
+
 		return errChanNotFound
 	}
 
@@ -73,11 +78,13 @@ func (conv *conveyer) Send(input string, data string) error {
 func (conv *conveyer) Recv(output string) (string, error) {
 	channel, exists := conv.getChannel(output)
 	if !exists {
+
 		return "", errChanNotFound
 	}
 
 	data, isOkey := <-channel
 	if !isOkey {
+
 		return "undefined", nil
 	}
 
@@ -155,18 +162,24 @@ func (conv *conveyer) Run(ctx context.Context) error {
 	g, gctx := errgroup.WithContext(ctx)
 
 	for _, h := range handlers {
-		h := h
+		handler := h
 		g.Go(func() error {
-			return h(gctx)
+			return handler(gctx)
 		})
 	}
 
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return errWaitConveyer
+	}
+
+	return nil
 }
 
 func New(size int) Conveyer {
 	return &conveyer{
 		channels: make(map[string]chan string),
 		size:     size,
+		rwmu:     sync.RWMutex{},
+		handlers: []func(ctx context.Context) error{},
 	}
 }
