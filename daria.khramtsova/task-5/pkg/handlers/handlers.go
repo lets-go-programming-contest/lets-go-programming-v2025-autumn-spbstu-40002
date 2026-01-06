@@ -23,8 +23,8 @@ func PrefixDecoratorFunc(
 		case <-ctx.Done():
 			return nil
 
-		case value, isOpen := <-input:
-			if !isOpen {
+		case value, open := <-input:
+			if !open {
 				return nil
 			}
 
@@ -61,8 +61,8 @@ func SeparatorFunc(
 		case <-ctx.Done():
 			return nil
 
-		case value, isOpen := <-input:
-			if !isOpen {
+		case value, open := <-input:
+			if !open {
 				return nil
 			}
 
@@ -87,11 +87,10 @@ func MultiplexerFunc(
 	}
 
 	var waitGroup sync.WaitGroup
-
 	waitGroup.Add(len(inputs))
 
 	for _, inputChannel := range inputs {
-		inputChannel := inputChannel
+		channel := inputChannel
 
 		go func() {
 			defer waitGroup.Done()
@@ -101,8 +100,8 @@ func MultiplexerFunc(
 				case <-ctx.Done():
 					return
 
-				case value, isOpen := <-inputChannel:
-					if !isOpen {
+				case value, open := <-channel:
+					if !open {
 						return
 					}
 
@@ -121,6 +120,7 @@ func MultiplexerFunc(
 	}
 
 	done := make(chan struct{})
+
 	go func() {
 		waitGroup.Wait()
 		close(done)
