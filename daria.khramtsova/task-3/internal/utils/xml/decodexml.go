@@ -16,7 +16,12 @@ func ReadXML(path string) []Currency {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	var list CurrencyList
 
