@@ -13,9 +13,11 @@ type Currency struct {
 
 func (c Currency) FloatValue() float64 {
 	value := strings.ReplaceAll(c.Value, ",", ".")
+
 	f, err := strconv.ParseFloat(value, 64)
 	if err != nil {
 		panic(err)
 	}
+
 	return f
 }
