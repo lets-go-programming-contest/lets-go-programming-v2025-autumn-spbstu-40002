@@ -30,7 +30,6 @@ func TestNew(t *testing.T) {
 
 	dbConn, _, err := sqlmock.New()
 	require.NoError(t, err)
-
 	defer dbConn.Close()
 
 	service := db.New(dbConn)
@@ -90,7 +89,6 @@ func TestGetNames(t *testing.T) {
 			}
 
 			got, err := service.GetNames()
-
 			if tc.errIs != nil || tc.errContain != "" {
 				require.Error(t, err, "case %d", i)
 
@@ -103,7 +101,6 @@ func TestGetNames(t *testing.T) {
 				}
 
 				require.Nil(t, got, "case %d", i)
-
 				return
 			}
 
@@ -166,7 +163,6 @@ func TestGetUniqueNames(t *testing.T) {
 			}
 
 			got, err := service.GetUniqueNames()
-
 			if tc.errIs != nil || tc.errContain != "" {
 				require.Error(t, err, "case %d", i)
 
@@ -179,7 +175,6 @@ func TestGetUniqueNames(t *testing.T) {
 				}
 
 				require.Nil(t, got, "case %d", i)
-
 				return
 			}
 
