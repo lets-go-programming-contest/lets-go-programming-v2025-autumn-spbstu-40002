@@ -102,6 +102,7 @@ func TestGetNames(t *testing.T) {
 				}
 
 				require.Nil(t, got, "case %d", i)
+
 				return
 			}
 
@@ -176,6 +177,7 @@ func TestGetUniqueNames(t *testing.T) {
 				}
 
 				require.Nil(t, got, "case %d", i)
+
 				return
 			}
 
