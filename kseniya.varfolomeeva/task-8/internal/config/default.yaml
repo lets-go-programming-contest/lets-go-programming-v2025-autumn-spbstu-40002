@@ -1,2 +1,2 @@
-environment: "dev"
-log_level: "debug"
+environment: "prod"
+log_level: "info"
