@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"database/sql"
@@ -8,6 +8,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	database "github.com/ControlShiftEscape/task-6/internal/db"
 )
 
 var (
@@ -28,9 +30,10 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 	db, _, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer db.Close()
 
-	service := New(db)
+	service := database.New(db)
 
 	require.NotNil(t, service)
 	require.Equal(t, db, service.DB)
@@ -47,6 +50,7 @@ func setupMockDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) { //nolint:ireturn
 
 func TestDBService_GetNames(t *testing.T) {
 	t.Parallel()
+
 	tests := []TestCase{
 		{
 			name: "success",
@@ -133,13 +137,14 @@ func TestDBService_GetNames(t *testing.T) {
 		},
 	}
 
-	runTests(t, tests, func(s *DBService) ([]string, error) {
+	runTests(t, tests, func(s *database.DBService) ([]string, error) {
 		return s.GetNames()
 	})
 }
 
 func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Parallel()
+
 	tests := []TestCase{
 		{
 			name: "success",
@@ -229,21 +234,22 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		},
 	}
 
-	runTests(t, tests, func(s *DBService) ([]string, error) {
+	runTests(t, tests, func(s *database.DBService) ([]string, error) {
 		return s.GetUniqueNames()
 	})
 }
 
-func runTests(t *testing.T, tests []TestCase, testFunc func(*DBService) ([]string, error)) {
+func runTests(t *testing.T, tests []TestCase, testFunc func(*database.DBService) ([]string, error)) {
 	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			db, mock := setupMockDB(t)
 			defer db.Close()
 
 			tt.setupMock(mock)
 
-			service := DBService{DB: db}
+			service := database.DBService{DB: db}
 			names, err := testFunc(&service)
 
 			if tt.wantErr {

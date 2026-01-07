@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
@@ -8,6 +8,8 @@ import (
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	customWifi "github.com/ControlShiftEscape/task-6/internal/wifi"
 )
 
 var (
@@ -103,8 +105,9 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			mock := tt.mockSetup()
-			service := New(mock)
+			service := customWifi.New(mock)
 
 			got, err := service.GetAddresses()
 
@@ -172,8 +175,9 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			mock := tt.mockSetup()
-			service := New(mock)
+			service := customWifi.New(mock)
 
 			got, err := service.GetNames()
 
