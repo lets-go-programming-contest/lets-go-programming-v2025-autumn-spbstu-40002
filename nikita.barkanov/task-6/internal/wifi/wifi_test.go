@@ -10,6 +10,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errPermissionDenied = errors.New("permission denied")
+	errIOTimeout        = errors.New("i/o timeout")
+)
+
 type mockWiFiHandle struct {
 	interfacesFunc func() ([]*wifi.Interface, error)
 }
@@ -18,10 +23,12 @@ func (m *mockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	if m.interfacesFunc != nil {
 		return m.interfacesFunc()
 	}
+
 	return nil, nil
 }
 
 func TestWiFiService_GetAddresses(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name          string
 		mockSetup     func() *mockWiFiHandle
@@ -66,7 +73,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 			mockSetup: func() *mockWiFiHandle {
 				return &mockWiFiHandle{
 					interfacesFunc: func() ([]*wifi.Interface, error) {
-						return nil, errors.New("permission denied")
+						return nil, errPermissionDenied
 					},
 				}
 			},
@@ -114,6 +121,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 }
 
 func TestWiFiService_GetNames(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name      string
 		mockSetup func() *mockWiFiHandle
@@ -153,7 +161,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 			mockSetup: func() *mockWiFiHandle {
 				return &mockWiFiHandle{
 					interfacesFunc: func() ([]*wifi.Interface, error) {
-						return nil, errors.New("i/o timeout")
+						return nil, errIOTimeout
 					},
 				}
 			},
@@ -185,5 +193,6 @@ func mac(s string) net.HardwareAddr {
 	if err != nil {
 		panic(err)
 	}
+
 	return addr
 }

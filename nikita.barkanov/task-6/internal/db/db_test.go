@@ -10,6 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errScanFailed     = errors.New("scan failed")
+	errIteratorFailed = errors.New("iterator error")
+	errCloseFailed    = errors.New("close failed")
+	errRowsIterator   = errors.New("rows iterator failed")
+)
+
 type TestCase struct {
 	name      string
 	setupMock func(sqlmock.Sqlmock)
@@ -18,6 +25,7 @@ type TestCase struct {
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	db, _, err := sqlmock.New()
 	require.NoError(t, err)
 	defer db.Close()
@@ -28,7 +36,7 @@ func TestNew(t *testing.T) {
 	require.Equal(t, db, service.DB)
 }
 
-func setupMockDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
+func setupMockDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) { //nolint:ireturn
 	t.Helper()
 
 	db, mock, err := sqlmock.New()
@@ -38,6 +46,7 @@ func setupMockDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 }
 
 func TestDBService_GetNames(t *testing.T) {
+	t.Parallel()
 	tests := []TestCase{
 		{
 			name: "success",
@@ -62,7 +71,7 @@ func TestDBService_GetNames(t *testing.T) {
 			name: "scan_error",
 			setupMock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
-					RowError(0, errors.New("scan failed"))
+					RowError(0, errScanFailed)
 				mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 			},
 			wantNames: nil,
@@ -73,7 +82,7 @@ func TestDBService_GetNames(t *testing.T) {
 			setupMock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
 					AddRow("Alexander").
-					RowError(1, errors.New("iterator error"))
+					RowError(1, errIteratorFailed)
 				mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 			},
 			wantNames: nil,
@@ -93,7 +102,7 @@ func TestDBService_GetNames(t *testing.T) {
 			setupMock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
 					AddRow("Alexander").
-					CloseError(errors.New("close failed"))
+					CloseError(errCloseFailed)
 				mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 			},
 			wantNames: nil,
@@ -117,7 +126,7 @@ func TestDBService_GetNames(t *testing.T) {
 					AddRow("Petr")
 				mock.ExpectQuery("SELECT name FROM users").
 					WillReturnRows(rows).
-					WillReturnError(errors.New("rows iterator failed"))
+					WillReturnError(errRowsIterator)
 			},
 			wantNames: nil,
 			wantErr:   true,
@@ -130,6 +139,7 @@ func TestDBService_GetNames(t *testing.T) {
 }
 
 func TestDBService_GetUniqueNames(t *testing.T) {
+	t.Parallel()
 	tests := []TestCase{
 		{
 			name: "success",
@@ -157,7 +167,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			name: "scan_error",
 			setupMock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
-					RowError(0, errors.New("scan failed"))
+					RowError(0, errScanFailed)
 				mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 			},
 			wantNames: nil,
@@ -168,7 +178,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			setupMock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
 					AddRow("Alexander").
-					RowError(1, errors.New("iterator error"))
+					RowError(1, errRowsIterator)
 				mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 			},
 			wantNames: nil,
@@ -188,7 +198,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			setupMock: func(mock sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"name"}).
 					AddRow("Alexander").
-					CloseError(errors.New("close failed"))
+					CloseError(errCloseFailed)
 				mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 			},
 			wantNames: nil,
@@ -212,7 +222,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 					AddRow("Petr")
 				mock.ExpectQuery("SELECT DISTINCT name FROM users").
 					WillReturnRows(rows).
-					WillReturnError(errors.New("rows iterator failed"))
+					WillReturnError(errRowsIterator)
 			},
 			wantNames: nil,
 			wantErr:   true,
@@ -225,6 +235,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 }
 
 func runTests(t *testing.T, tests []TestCase, testFunc func(*DBService) ([]string, error)) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db, mock := setupMockDB(t)
