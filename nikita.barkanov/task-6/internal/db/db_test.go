@@ -28,6 +28,7 @@ type TestCase struct {
 
 func TestNew(t *testing.T) {
 	t.Parallel()
+
 	db, _, err := sqlmock.New()
 	require.NoError(t, err)
 
@@ -244,7 +245,9 @@ func runTests(t *testing.T, tests []TestCase, testFunc func(*database.DBService)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			db, mock := setupMockDB(t)
+
 			defer db.Close()
 
 			tt.setupMock(mock)

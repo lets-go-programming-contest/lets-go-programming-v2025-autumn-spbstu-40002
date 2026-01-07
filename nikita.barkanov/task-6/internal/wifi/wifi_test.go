@@ -31,6 +31,7 @@ func (m *mockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name          string
 		mockSetup     func() *mockWiFiHandle
@@ -125,6 +126,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 func TestWiFiService_GetNames(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name      string
 		mockSetup func() *mockWiFiHandle
@@ -176,6 +178,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			mock := tt.mockSetup()
 			service := customWifi.New(mock)
 
