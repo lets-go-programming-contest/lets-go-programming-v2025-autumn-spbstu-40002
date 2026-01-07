@@ -5,9 +5,9 @@ import (
 	"net"
 	"testing"
 
-	MWifi "kseniya.varfolomeeva/task-6/internal/wifi"
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/require"
+	MWifi "kseniya.varfolomeeva/task-6/internal/wifi"
 )
 
 var ErrExpected = errors.New("expected error")
