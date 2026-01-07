@@ -124,6 +124,23 @@ func TestGetUniqueNames(t *testing.T) {
 			rows: sqlmock.NewRows([]string{"name"}),
 			want: nil,
 		},
+		{
+			queryErr:   errExpected,
+			errIs:      errExpected,
+			errContain: "db query",
+		},
+		{
+			rows:       sqlmock.NewRows([]string{"name"}).AddRow(nil),
+			errContain: "rows scanning",
+		},
+		{
+			rows: sqlmock.NewRows([]string{"name"}).
+				AddRow("Ivan").
+				AddRow("Petr").
+				RowError(1, errExpected),
+			errIs:      errExpected,
+			errContain: "rows error",
+		},
 	}
 
 	for i, tc := range cases {
@@ -139,9 +156,29 @@ func TestGetUniqueNames(t *testing.T) {
 
 			service := db.DBService{DB: dbConn}
 
-			mock.ExpectQuery(queryGetUniqueNames).WillReturnRows(tc.rows)
+			if tc.queryErr != nil {
+				mock.ExpectQuery(queryGetUniqueNames).WillReturnError(tc.queryErr)
+			} else {
+				mock.ExpectQuery(queryGetUniqueNames).WillReturnRows(tc.rows)
+			}
 
 			got, err := service.GetUniqueNames()
+			if tc.errIs != nil || tc.errContain != "" {
+				require.Error(t, err, "case %d", i)
+
+				if tc.errIs != nil {
+					require.ErrorIs(t, err, tc.errIs, "case %d", i)
+				}
+
+				if tc.errContain != "" {
+					require.ErrorContains(t, err, tc.errContain, "case %d", i)
+				}
+
+				require.Nil(t, got, "case %d", i)
+
+				return
+			}
+
 			require.NoError(t, err, "case %d", i)
 			require.Equal(t, tc.want, got, "case %d", i)
 		}()
