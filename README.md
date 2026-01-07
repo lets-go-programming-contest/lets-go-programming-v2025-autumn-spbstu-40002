@@ -121,3 +121,4 @@
 а исходных код решения добавляется в `main` ветку root-репозитория.
 
 **Enjoy the course and May the odds be ever in your favor!**
+PR test - temporary change
