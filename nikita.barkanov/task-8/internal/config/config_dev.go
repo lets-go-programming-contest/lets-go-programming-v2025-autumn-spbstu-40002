@@ -17,5 +17,6 @@ func Load() (*Config, error) {
 	if err := yaml.Unmarshal(devConfigData, &cfg); err != nil {
 		return nil, err
 	}
+
 	return &cfg, nil
 }
