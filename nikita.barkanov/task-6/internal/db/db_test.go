@@ -242,6 +242,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 func runTests(t *testing.T, tests []TestCase, testFunc func(*database.DBService) ([]string, error)) {
 	t.Helper()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
