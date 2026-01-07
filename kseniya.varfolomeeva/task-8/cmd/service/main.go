@@ -8,7 +8,7 @@ import (
 func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Print("prod error")
+		fmt.Print("error: ", err)
 
 		return
 	}
