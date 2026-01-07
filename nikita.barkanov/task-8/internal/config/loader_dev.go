@@ -10,11 +10,11 @@ import (
 )
 
 //go:embed dev.yaml
-var devConfig []byte
+var devConfigData []byte
 
-func load() (*Config, error) {
+func Load() (*Config, error) {
 	var cfg Config
-	if err := yaml.Unmarshal(devConfig, &cfg); err != nil {
+	if err := yaml.Unmarshal(devConfigData, &cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil

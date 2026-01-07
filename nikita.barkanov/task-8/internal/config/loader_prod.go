@@ -10,11 +10,11 @@ import (
 )
 
 //go:embed prod.yaml
-var prodConfig []byte
+var prodConfigData []byte
 
-func load() (*Config, error) {
+func Load() (*Config, error) {
 	var cfg Config
-	if err := yaml.Unmarshal(prodConfig, &cfg); err != nil {
+	if err := yaml.Unmarshal(prodConfigData, &cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil
