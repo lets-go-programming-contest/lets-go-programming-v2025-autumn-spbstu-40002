@@ -57,7 +57,6 @@ func TestGetAddresses(t *testing.T) {
 				require.ErrorIs(t, err, tc.err)
 				require.ErrorContains(t, err, "getting interfaces")
 				require.Nil(t, got)
-
 				return
 			}
 
@@ -91,7 +90,6 @@ func TestGetNames(t *testing.T) {
 				require.ErrorIs(t, err, tc.err)
 				require.ErrorContains(t, err, "getting interfaces")
 				require.Nil(t, got)
-
 				return
 			}
 
