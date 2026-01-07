@@ -98,6 +98,19 @@ func TestDBService_GetNames(t *testing.T) {
 			wantNames: nil,
 			wantErr:   true,
 		},
+		{
+			name: "rows_err_after_successful_query",
+			setupMock: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"}).
+					AddRow("Alexander").
+					AddRow("Petr")
+				mock.ExpectQuery("SELECT name FROM users").
+					WillReturnRows(rows).
+					WillReturnError(errors.New("rows iterator failed"))
+			},
+			wantNames: nil,
+			wantErr:   true,
+		},
 	}
 
 	runTests(t, tests, func(s *DBService) ([]string, error) {
@@ -176,6 +189,19 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"name"}).
 					AddRow(nil)
 				mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
+			},
+			wantNames: nil,
+			wantErr:   true,
+		},
+		{
+			name: "rows_err_after_successful_query",
+			setupMock: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"name"}).
+					AddRow("Alexander").
+					AddRow("Petr")
+				mock.ExpectQuery("SELECT DISTINCT name FROM users").
+					WillReturnRows(rows).
+					WillReturnError(errors.New("rows iterator failed"))
 			},
 			wantNames: nil,
 			wantErr:   true,
