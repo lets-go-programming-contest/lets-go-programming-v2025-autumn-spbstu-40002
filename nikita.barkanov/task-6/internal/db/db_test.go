@@ -17,6 +17,17 @@ type TestCase struct {
 	wantErr   bool
 }
 
+func TestNew(t *testing.T) {
+	db, _, err := sqlmock.New()
+	require.NoError(t, err)
+	defer db.Close()
+
+	service := New(db)
+
+	require.NotNil(t, service)
+	require.Equal(t, db, service.DB)
+}
+
 func setupMockDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 	t.Helper()
 
