@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
+	"task-6/internal/db"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
-	"task-6/internal/db"
 )
 
 const (
