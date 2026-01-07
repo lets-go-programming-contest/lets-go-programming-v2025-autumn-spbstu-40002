@@ -15,6 +15,5 @@ func loadConfig(data []byte) (*Config, error) {
     err := yaml.Unmarshal(data, &cfg)
     if err != nil {
         return nil, fmt.Errorf("error in unmarshal file: %w", err)
-    }
     return &cfg, nil
 }

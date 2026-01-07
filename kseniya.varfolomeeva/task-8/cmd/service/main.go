@@ -8,10 +8,8 @@ import (
 func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Print("error: ", err)
-
+		fmt.Println("Err with the loading file: ", err)
 		return
 	}
-
 	fmt.Print(cfg.Environment, " ", cfg.LogLevel)
 }
