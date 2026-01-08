@@ -94,22 +94,20 @@ func ProcessDepartment() error {
 
 	for range make([]struct{}, employeeCount) {
 		var operator string
+
 		var temperature int
 
 		if _, err := fmt.Scan(&operator, &temperature); err != nil {
-			fmt.Println(-1)
-
-			continue
+			return ErrInvalidTempInput
 		}
 
 		err = tempRange.UpdateRange(operator, temperature)
+
 		if err != nil {
 			fmt.Println(-1)
-
-			continue
+		} else {
+			fmt.Println(tempRange.GetOptimalTemp())
 		}
-
-		fmt.Println(tempRange.GetOptimalTemp())
 	}
 
 	return nil
@@ -131,8 +129,7 @@ func main() {
 	}
 
 	for range make([]struct{}, departmentCount) {
-		err := ProcessDepartment()
-		if err != nil {
+		if err := ProcessDepartment(); err != nil {
 			fmt.Println("Error:", err)
 
 			return
