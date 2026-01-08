@@ -32,6 +32,7 @@ var (
 
 func NewTemperatureRange(maxTemp, minTemp int) (*TemperatureRange, error) {
 	if minTemp > maxTemp {
+
 		return nil, ErrInvalidTempRange
 	}
 
@@ -43,6 +44,7 @@ func NewTemperatureRange(maxTemp, minTemp int) (*TemperatureRange, error) {
 
 func (tr *TemperatureRange) GetOptimalTemp() int {
 	if tr.minimum > tr.maximum {
+
 		return -1
 	}
 
@@ -51,6 +53,7 @@ func (tr *TemperatureRange) GetOptimalTemp() int {
 
 func (tr *TemperatureRange) UpdateRange(operator string, temp int) error {
 	if temp < MinAllowedTemp || temp > MaxAllowedTemp {
+
 		return ErrTempOutOfBounds
 	}
 
@@ -64,10 +67,12 @@ func (tr *TemperatureRange) UpdateRange(operator string, temp int) error {
 			tr.maximum = temp
 		}
 	default:
+
 		return ErrInvalidOperator
 	}
 
 	if tr.minimum > tr.maximum {
+
 		return ErrInvalidTempRange
 	}
 
@@ -77,15 +82,18 @@ func (tr *TemperatureRange) UpdateRange(operator string, temp int) error {
 func ProcessDepartment() error {
 	var employeeCount int
 	if _, err := fmt.Scan(&employeeCount); err != nil {
+
 		return ErrInvalidEmpCount
 	}
 
 	if employeeCount < MinEmployees || employeeCount > MaxEmployees {
+
 		return ErrEmpCountOutOfRange
 	}
 
 	tempRange, err := NewTemperatureRange(MaxAllowedTemp, MinAllowedTemp)
 	if err != nil {
+
 		return err
 	}
 
@@ -94,6 +102,7 @@ func ProcessDepartment() error {
 		var temperature int
 
 		if _, err := fmt.Scan(&operator, &temperature); err != nil {
+
 			return ErrInvalidTempInput
 		}
 
@@ -114,11 +123,13 @@ func main() {
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		fmt.Println("Error:", ErrInvalidDeptCount)
+
 		return
 	}
 
 	if departmentCount < MinDepartments || departmentCount > MaxDepartments {
 		fmt.Println("Error:", ErrDeptCountOutOfRange)
+
 		return
 	}
 
@@ -126,6 +137,7 @@ func main() {
 		err := ProcessDepartment()
 		if err != nil {
 			fmt.Println("Error:", err)
+
 			return
 		}
 	}
