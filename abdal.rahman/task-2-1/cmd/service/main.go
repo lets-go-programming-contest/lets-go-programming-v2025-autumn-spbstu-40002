@@ -45,6 +45,7 @@ func (tr *TemperatureRange) GetOptimalTemp() int {
 	if tr.minimum > tr.maximum {
 		return -1
 	}
+
 	return tr.minimum
 }
 
@@ -89,7 +90,8 @@ func ProcessDepartment() error {
 		return err
 	}
 
-	for i := 0; i < employeeCount; i++ {
+	for range employeeCount {
+
 		var operator string
 		var temperature int
 
@@ -114,18 +116,21 @@ func main() {
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		fmt.Println("Error:", ErrInvalidDeptCount)
+
 		return
 	}
 
 	if departmentCount < MinDepartments || departmentCount > MaxDepartments {
 		fmt.Println("Error:", ErrDeptCountOutOfRange)
+
 		return
 	}
 
-	for i := 0; i < departmentCount; i++ {
+	for range departmentCount {
 		err := ProcessDepartment()
 		if err != nil {
 			fmt.Println("Error:", err)
+
 			return
 		}
 	}
