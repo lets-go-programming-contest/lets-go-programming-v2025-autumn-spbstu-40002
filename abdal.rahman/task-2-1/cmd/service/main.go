@@ -59,10 +59,12 @@ func (tr *TemperatureRange) UpdateRange(operator string, temp int) error {
 		if temp > tr.minimum {
 			tr.minimum = temp
 		}
+
 	case "<=":
 		if temp < tr.maximum {
 			tr.maximum = temp
 		}
+
 	default:
 		return ErrInvalidOperator
 	}
@@ -90,7 +92,7 @@ func ProcessDepartment() error {
 		return err
 	}
 
-	for range make([]struct{}, employeeCount) {
+	for i := 0; i < employeeCount; i++ {
 		var operator string
 		var temperature int
 
@@ -98,7 +100,9 @@ func ProcessDepartment() error {
 			return ErrInvalidTempInput
 		}
 
-		if err := tempRange.UpdateRange(operator, temperature); err != nil {
+		err = tempRange.UpdateRange(operator, temperature)
+
+		if err != nil {
 			fmt.Println(-1)
 		} else {
 			fmt.Println(tempRange.GetOptimalTemp())
@@ -121,7 +125,7 @@ func main() {
 		return
 	}
 
-	for range make([]struct{}, departmentCount) {
+	for i := 0; i < departmentCount; i++ {
 		if err := ProcessDepartment(); err != nil {
 			fmt.Println("Error:", err)
 			return
