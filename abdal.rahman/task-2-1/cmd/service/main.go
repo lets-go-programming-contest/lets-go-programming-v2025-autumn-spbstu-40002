@@ -98,6 +98,7 @@ func ProcessDepartment() error {
 	}
 
 	for range employeeCount {
+
 		var operator string
 		var temperature int
 
