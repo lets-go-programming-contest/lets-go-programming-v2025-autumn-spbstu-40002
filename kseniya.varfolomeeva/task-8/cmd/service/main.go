@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"task-8/internal/config"
+	"kseniya.varfolomeeva/task-8/internal/config"
 )
 
 func main() {
