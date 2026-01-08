@@ -98,12 +98,14 @@ func ProcessDepartment() error {
 
 		if _, err := fmt.Scan(&operator, &temperature); err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
 		err = tempRange.UpdateRange(operator, temperature)
 		if err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -118,11 +120,13 @@ func main() {
 
 	if _, err := fmt.Scan(&departmentCount); err != nil {
 		fmt.Println("Error:", ErrInvalidDeptCount)
+
 		return
 	}
 
 	if departmentCount < MinDepartments || departmentCount > MaxDepartments {
 		fmt.Println("Error:", ErrDeptCountOutOfRange)
+
 		return
 	}
 
@@ -130,6 +134,7 @@ func main() {
 		err := ProcessDepartment()
 		if err != nil {
 			fmt.Println("Error:", err)
+
 			return
 		}
 	}
