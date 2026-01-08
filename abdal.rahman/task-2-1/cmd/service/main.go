@@ -76,7 +76,6 @@ func (tr *TemperatureRange) UpdateRange(operator string, temp int) error {
 
 func ProcessDepartment() error {
 	var employeeCount int
-
 	if _, err := fmt.Scan(&employeeCount); err != nil {
 		return ErrInvalidEmpCount
 	}
@@ -91,7 +90,6 @@ func ProcessDepartment() error {
 	}
 
 	for range employeeCount {
-
 		var operator string
 		var temperature int
 
@@ -116,13 +114,11 @@ func main() {
 	_, err := fmt.Scan(&departmentCount)
 	if err != nil {
 		fmt.Println("Error:", ErrInvalidDeptCount)
-
 		return
 	}
 
 	if departmentCount < MinDepartments || departmentCount > MaxDepartments {
 		fmt.Println("Error:", ErrDeptCountOutOfRange)
-
 		return
 	}
 
@@ -130,7 +126,6 @@ func main() {
 		err := ProcessDepartment()
 		if err != nil {
 			fmt.Println("Error:", err)
-
 			return
 		}
 	}
