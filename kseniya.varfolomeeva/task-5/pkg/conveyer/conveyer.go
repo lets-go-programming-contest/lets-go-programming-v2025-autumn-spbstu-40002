@@ -1,183 +1,182 @@
 package conveyer
 
 import (
-    "context"
-    "errors"
-    "fmt"
-    "sync"
-
-    "golang.org/x/sync/errgroup"
+	"context"
+	"errors"
+	"fmt"
+	"sync"
+	"golang.org/x/sync/errgroup"
 )
 
-var ErrChanMissing = errors.New("channel missing")
+var ErrNoSuchChannel = errors.New("no such channel")
 
-const UndefinedData = "undefined"
+const EmptyValue = "undefined"
 
-type ConveyerInterface interface {
-    AddHandler(handler func(context.Context, chan string, chan string) error, inName, outName string)
-    AddCombiner(handler func(context.Context, []chan string, chan string) error, inNames []string, outName string)
-    AddDivider(handler func(context.Context, chan string, []chan string) error, inName string, outNames []string)
-    Execute(ctx context.Context) error
-    Insert(inName string, data string) error
-    Extract(outName string) (string, error)
+type ConveyerAPI interface {
+	RegisterDataHandler(handler func(context.Context, chan string, chan string) error, inputName, outputName string)
+	RegisterCombiner(handler func(context.Context, []chan string, chan string) error, inputNames []string, outputName string)
+	RegisterSplitter(handler func(context.Context, chan string, []chan string) error, inputName string, outputNames []string)
+	RunPipeline(ctx context.Context) error
+	SendData(input string, data string) error
+	ReceiveData(output string) (string, error)
 }
 
-type operation func(context.Context) error
+type pipelineTask func(context.Context) error
 
-type StreamProcessor struct {
-    capacity   int
-    streams    map[string]chan string
-    operations []operation
-    lock       sync.RWMutex
+type Pipeline struct {
+	queueSize  int
+	dataPipes  map[string]chan string
+	tasks      []pipelineTask
+	pipeLock   sync.RWMutex
 }
 
-func Build(size int) *StreamProcessor {
-    return &StreamProcessor{
-        capacity:   size,
-        streams:    make(map[string]chan string),
-        operations: make([]operation, 0),
-        lock:       sync.RWMutex{},
-    }
+func New(size int) *Pipeline {
+	return &Pipeline{
+		queueSize: size,
+		dataPipes: make(map[string]chan string),
+		tasks:     make([]pipelineTask, 0),
+		pipeLock:  sync.RWMutex{},
+	}
 }
 
-func (sp *StreamProcessor) getStream(name string) chan string {
-    sp.lock.Lock()
-    defer sp.lock.Unlock()
+func (p *Pipeline) getPipe(name string) chan string {
+	p.pipeLock.Lock()
+	defer p.pipeLock.Unlock()
 
-    if stream, present := sp.streams[name]; present {
-        return stream
-    }
+	if pipe, exists := p.dataPipes[name]; exists {
+		return pipe
+	}
 
-    newStream := make(chan string, sp.capacity)
-    sp.streams[name] = newStream
-    return newStream
+	newPipe := make(chan string, p.queueSize)
+	p.dataPipes[name] = newPipe
+	return newPipe
 }
 
-func (sp *StreamProcessor) findStream(name string) (chan string, error) {
-    sp.lock.RLock()
-    defer sp.lock.RUnlock()
+func (p *Pipeline) findPipe(name string) (chan string, error) {
+	p.pipeLock.RLock()
+	defer p.pipeLock.RUnlock()
 
-    if stream, present := sp.streams[name]; present {
-        return stream, nil
-    }
+	if pipe, exists := p.dataPipes[name]; exists {
+		return pipe, nil
+	}
 
-    return nil, ErrChanMissing
+	return nil, ErrNoSuchChannel
 }
 
-func (sp *StreamProcessor) AddHandler(
-    handler func(context.Context, chan string, chan string) error,
-    input, output string,
+func (p *Pipeline) RegisterDataHandler(
+	handler func(context.Context, chan string, chan string) error,
+	input, output string,
 ) {
-    inStream := sp.getStream(input)
-    outStream := sp.getStream(output)
+	inPipe := p.getPipe(input)
+	outPipe := p.getPipe(output)
 
-    op := func(ctx context.Context) error {
-        return handler(ctx, inStream, outStream)
-    }
+	task := func(ctx context.Context) error {
+		return handler(ctx, inPipe, outPipe)
+	}
 
-    sp.addOperation(op)
+	p.addTask(task)
 }
 
-func (sp *StreamProcessor) AddCombiner(
-    handler func(context.Context, []chan string, chan string) error,
-    inputs []string,
-    output string,
+func (p *Pipeline) RegisterCombiner(
+	handler func(context.Context, []chan string, chan string) error,
+	inputs []string,
+	output string,
 ) {
-    inStreams := make([]chan string, len(inputs))
-    for i, name := range inputs {
-        inStreams[i] = sp.getStream(name)
-    }
+	inPipes := make([]chan string, len(inputs))
+	for i, name := range inputs {
+		inPipes[i] = p.getPipe(name)
+	}
 
-    outStream := sp.getStream(output)
+	outPipe := p.getPipe(output)
 
-    op := func(ctx context.Context) error {
-        return handler(ctx, inStreams, outStream)
-    }
+	task := func(ctx context.Context) error {
+		return handler(ctx, inPipes, outPipe)
+	}
 
-    sp.addOperation(op)
+	p.addTask(task)
 }
 
-func (sp *StreamProcessor) AddDivider(
-    handler func(context.Context, chan string, []chan string) error,
-    input string,
-    outputs []string,
+func (p *Pipeline) RegisterSplitter(
+	handler func(context.Context, chan string, []chan string) error,
+	input string,
+	outputs []string,
 ) {
-    inStream := sp.getStream(input)
+	inPipe := p.getPipe(input)
 
-    outStreams := make([]chan string, len(outputs))
-    for i, name := range outputs {
-        outStreams[i] = sp.getStream(name)
-    }
+	outPipes := make([]chan string, len(outputs))
+	for i, name := range outputs {
+		outPipes[i] = p.getPipe(name)
+	}
 
-    op := func(ctx context.Context) error {
-        return handler(ctx, inStream, outStreams)
-    }
+	task := func(ctx context.Context) error {
+		return handler(ctx, inPipe, outPipes)
+	}
 
-    sp.addOperation(op)
+	p.addTask(task)
 }
 
-func (sp *StreamProcessor) Insert(inName string, data string) error {
-    stream, err := sp.findStream(inName)
-    if err != nil {
-        return err
-    }
+func (p *Pipeline) SendData(input string, data string) error {
+	pipe, err := p.findPipe(input)
+	if err != nil {
+		return err
+	}
 
-    select {
-    case stream <- data:
-        return nil
-    default:
-        return fmt.Errorf("stream %s overflow", inName)
-    }
+	select {
+	case pipe <- data:
+		return nil
+	default:
+		return fmt.Errorf("pipe %s is full", input)
+	}
 }
 
-func (sp *StreamProcessor) Extract(outName string) (string, error) {
-    stream, err := sp.findStream(outName)
-    if err != nil {
-        return "", err
-    }
+func (p *Pipeline) ReceiveData(output string) (string, error) {
+	pipe, err := p.findPipe(output)
+	if err != nil {
+		return "", err
+	}
 
-    value, active := <-stream
-    if !active {
-        return UndefinedData, nil
-    }
+	value, ok := <-pipe
+	if !ok {
+		return EmptyValue, nil
+	}
 
-    return value, nil
+	return value, nil
 }
 
-func (sp *StreamProcessor) shutdownStreams() {
-    sp.lock.Lock()
-    defer sp.lock.Unlock()
+func (p *Pipeline) closeAllPipes() {
+	p.pipeLock.Lock()
+	defer p.pipeLock.Unlock()
 
-    for _, stream := range sp.streams {
-        close(stream)
-    }
+	for _, pipe := range p.dataPipes {
+		close(pipe)
+	}
 }
 
-func (sp *StreamProcessor) Execute(ctx context.Context) error {
-    sp.lock.RLock()
-    defer sp.lock.RUnlock()
+func (p *Pipeline) RunPipeline(ctx context.Context) error {
+	p.pipeLock.RLock()
+	defer p.pipeLock.RUnlock()
 
-    group, ctx := errgroup.WithContext(ctx)
+	group, ctx := errgroup.WithContext(ctx)
 
-    for _, op := range sp.operations {
-        currentOp := op
-        group.Go(func() error {
-            return currentOp(ctx)
-        })
-    }
+	for _, task := range p.tasks {
+		currentTask := task
+		group.Go(func() error {
+			return currentTask(ctx)
+		})
+	}
 
-    err := group.Wait()
-    sp.shutdownStreams()
+	err := group.Wait()
+	p.closeAllPipes()
 
-    if err != nil {
-        return fmt.Errorf("stream processing failed: %w", err)
-    }
+	if err != nil {
+		return fmt.Errorf("pipeline execution failed: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
-func (sp *StreamProcessor) addOperation(op operation) {
-    sp.lock.Lock()
-    defer sp.lock.Unlock()
-    sp.operations = append(sp.operations, op)
+func (p *Pipeline) addTask(task pipelineTask) {
+	p.pipeLock.Lock()
+	defer p.pipeLock.Unlock()
+	p.tasks = append(p.tasks, task)
 }

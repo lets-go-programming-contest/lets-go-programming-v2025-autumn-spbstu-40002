@@ -1,113 +1,113 @@
 package handlers
 
 import (
-    "context"
-    "errors"
-    "strings"
-    "sync"
+	"context"
+	"errors"
+	"strings"
+	"sync"
 )
 
 const (
-    TagToPrepend = "decorated: "
-    NoTagSignal  = "no tag"
-    SkipMixSignal = "skip mix"
+	DecorPrefix   = "decorated: "
+	SkipDecorFlag = "no decorator"
+	SkipMergeFlag = "no multiplexer"
 )
 
 var (
-    ErrTagRejected = errors.New("tag rejected")
-    ErrEmptyTargets = errors.New("empty targets")
+	ErrDecorFailed = errors.New("can't be decorated")
+	ErrNoDest      = errors.New("outputs slice must not be empty")
 )
 
-func ApplyTagFunc(ctx context.Context, input, output chan string) error {
-    for {
-        select {
-        case <-ctx.Done():
-            return nil
-        case item, active := <-input:
-            if !active {
-                return nil
-            }
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case item, ok := <-input:
+			if !ok {
+				return nil
+			}
 
-            if strings.Contains(item, NoTagSignal) {
-                return ErrTagRejected
-            }
+			if strings.Contains(item, SkipDecorFlag) {
+				return ErrDecorFailed
+			}
 
-            if !strings.HasPrefix(item, TagToPrepend) {
-                item = TagToPrepend + item
-            }
+			if !strings.HasPrefix(item, DecorPrefix) {
+				item = DecorPrefix + item
+			}
 
-            select {
-            case output <- item:
-            case <-ctx.Done():
-                return nil
-            }
-        }
-    }
+			select {
+			case output <- item:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
 }
 
-func MixStreamsFunc(ctx context.Context, inputs []chan string, output chan string) error {
-    if len(inputs) == 0 {
-        return ErrEmptyTargets
-    }
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return ErrNoDest
+	}
 
-    var mixer sync.WaitGroup
-    mixer.Add(len(inputs))
+	var wg sync.WaitGroup
+	wg.Add(len(inputs))
 
-    for _, source := range inputs {
-        go func(inChan chan string) {
-            defer mixer.Done()
+	for _, src := range inputs {
+		go func(inChan chan string) {
+			defer wg.Done()
 
-            for {
-                select {
-                case <-ctx.Done():
-                    return
-                case content, active := <-inChan:
-                    if !active {
-                        return
-                    }
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case data, ok := <-inChan:
+					if !ok {
+						return
+					}
 
-                    if strings.Contains(content, SkipMixSignal) {
-                        continue
-                    }
+					if strings.Contains(data, SkipMergeFlag) {
+						continue
+					}
 
-                    select {
-                    case output <- content:
-                    case <-ctx.Done():
-                        return
-                    }
-                }
-            }
-        }(source)
-    }
+					select {
+					case output <- data:
+					case <-ctx.Done():
+						return
+					}
+				}
+			}
+		}(src)
+	}
 
-    mixer.Wait()
-    return nil
+	wg.Wait()
+	return nil
 }
 
-func RouteStreamFunc(ctx context.Context, input chan string, outputs []chan string) error {
-    if len(outputs) == 0 {
-        return ErrEmptyTargets
-    }
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	if len(outputs) == 0 {
+		return ErrNoDest
+	}
 
-    counter := 0
+	idx := 0
 
-    for {
-        select {
-        case <-ctx.Done():
-            return nil
-        case element, active := <-input:
-            if !active {
-                return nil
-            }
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
 
-            route := outputs[counter%len(outputs)]
-            counter++
+			target := outputs[idx%len(outputs)]
+			idx++
 
-            select {
-            case route <- element:
-            case <-ctx.Done():
-                return nil
-            }
-        }
-    }
+			select {
+			case target <- data:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
 }
