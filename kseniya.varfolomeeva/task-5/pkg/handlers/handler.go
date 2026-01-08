@@ -8,36 +8,36 @@ import (
 )
 
 const (
-	DecorPrefix   = "decorated: "
-	SkipDecorFlag = "no decorator"
-	SkipMergeFlag = "no multiplexer"
+	prefixToAdd   = "decorated: "
+	triggerNoDeco = "no decorator"
+	triggerNoMult = "no multiplexer"
 )
 
 var (
-	ErrDecorFailed = errors.New("can't be decorated")
-	ErrNoDest      = errors.New("outputs slice must not be empty")
+	ErrCantDecorate = errors.New("can't be decorated")
+	ErrEmptyOutputs = errors.New("empty outputs")
 )
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case item, ok := <-input:
+		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(item, SkipDecorFlag) {
-				return ErrDecorFailed
+			if strings.Contains(data, triggerNoDeco) {
+				return ErrCantDecorate
 			}
 
-			if !strings.HasPrefix(item, DecorPrefix) {
-				item = DecorPrefix + item
+			if !strings.HasPrefix(data, prefixToAdd) {
+				data = prefixToAdd + data
 			}
 
 			select {
-			case output <- item:
+			case output <- data:
 			case <-ctx.Done():
 				return nil
 			}
@@ -47,26 +47,26 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
-		return ErrNoDest
+		return ErrEmptyOutputs
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
+	waitGroup := sync.WaitGroup{}
+	waitGroup.Add(len(inputs))
 
-	for _, src := range inputs {
-		go func(inChan chan string) {
-			defer wg.Done()
+	for _, chanal := range inputs {
+		go func(inputChan chan string) {
+			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-inChan:
+				case data, ok := <-inputChan:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(data, SkipMergeFlag) {
+					if strings.Contains(data, triggerNoMult) {
 						continue
 					}
 
@@ -77,19 +77,20 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(src)
+		}(chanal)
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
+
 	return nil
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
-		return ErrNoDest
+		return ErrEmptyOutputs
 	}
 
-	idx := 0
+	currentIndex := 0
 
 	for {
 		select {
@@ -100,11 +101,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			target := outputs[idx%len(outputs)]
-			idx++
+			targetIndex := currentIndex % len(outputs)
+			currentIndex++
 
 			select {
-			case target <- data:
+			case outputs[targetIndex] <- data:
 			case <-ctx.Done():
 				return nil
 			}
