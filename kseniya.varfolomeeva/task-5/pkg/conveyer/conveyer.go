@@ -1,185 +1,183 @@
 package conveyer
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"sync"
-	"golang.org/x/sync/errgroup"
+    "context"
+    "errors"
+    "fmt"
+    "sync"
+
+    "golang.org/x/sync/errgroup"
 )
 
-var ErrChannelUnavailable = errors.New("channel unavailable")
+var ErrChanMissing = errors.New("channel missing")
 
-const NoValuePlaceholder = "undefined"
+const UndefinedData = "undefined"
 
 type ConveyerInterface interface {
-	RegisterDataHandler(handler func(context.Context, chan string, chan string) error, inputName, outputName string)
-	RegisterCombiner(handler func(context.Context, []chan string, chan string) error, inputNames []string, outputName string)
-	RegisterSplitter(handler func(context.Context, chan string, []chan string) error, inputName string, outputNames []string)
-	RunPipeline(ctx context.Context) error
-	SendData(input string, data string) error
-	ReceiveData(output string) (string, error)
+    AddHandler(handler func(context.Context, chan string, chan string) error, inName, outName string)
+    AddCombiner(handler func(context.Context, []chan string, chan string) error, inNames []string, outName string)
+    AddDivider(handler func(context.Context, chan string, []chan string) error, inName string, outNames []string)
+    Execute(ctx context.Context) error
+    Insert(inName string, data string) error
+    Extract(outName string) (string, error)
 }
 
-type taskHandler func(context.Context) error
+type operation func(context.Context) error
 
-type Conveyor struct {
-	bufferSize int
-	channels   map[string]chan string
-	tasks      []taskHandler
-	mutex      sync.RWMutex
+type StreamProcessor struct {
+    capacity   int
+    streams    map[string]chan string
+    operations []operation
+    lock       sync.RWMutex
 }
 
-func NewConveyor(size int) *Conveyor {
-	return &Conveyor{
-		bufferSize: size,
-		channels:   make(map[string]chan string),
-		tasks:      make([]taskHandler, 0),
-		mutex:      sync.RWMutex{},
-	}
+func Build(size int) *StreamProcessor {
+    return &StreamProcessor{
+        capacity:   size,
+        streams:    make(map[string]chan string),
+        operations: make([]operation, 0),
+        lock:       sync.RWMutex{},
+    }
 }
 
-func (c *Conveyor) getOrCreateChannel(name string) chan string {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+func (sp *StreamProcessor) getStream(name string) chan string {
+    sp.lock.Lock()
+    defer sp.lock.Unlock()
 
-	if existingChan, found := c.channels[name]; found {
-		return existingChan
-	}
+    if stream, present := sp.streams[name]; present {
+        return stream
+    }
 
-	newChan := make(chan string, c.bufferSize)
-	c.channels[name] = newChan
-
-	return newChan
+    newStream := make(chan string, sp.capacity)
+    sp.streams[name] = newStream
+    return newStream
 }
 
-func (c *Conveyor) getChannel(name string) (chan string, error) {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
+func (sp *StreamProcessor) findStream(name string) (chan string, error) {
+    sp.lock.RLock()
+    defer sp.lock.RUnlock()
 
-	if ch, found := c.channels[name]; found {
-		return ch, nil
-	}
+    if stream, present := sp.streams[name]; present {
+        return stream, nil
+    }
 
-	return nil, ErrChannelUnavailable
+    return nil, ErrChanMissing
 }
 
-func (c *Conveyor) RegisterDataHandler(
-	handler func(context.Context, chan string, chan string) error,
-	input, output string,
+func (sp *StreamProcessor) AddHandler(
+    handler func(context.Context, chan string, chan string) error,
+    input, output string,
 ) {
-	inChan := c.getOrCreateChannel(input)
-	outChan := c.getOrCreateChannel(output)
+    inStream := sp.getStream(input)
+    outStream := sp.getStream(output)
 
-	task := func(ctx context.Context) error {
-		return handler(ctx, inChan, outChan)
-	}
+    op := func(ctx context.Context) error {
+        return handler(ctx, inStream, outStream)
+    }
 
-	c.addTask(task)
+    sp.addOperation(op)
 }
 
-func (c *Conveyor) RegisterCombiner(
-	handler func(context.Context, []chan string, chan string) error,
-	inputs []string,
-	output string,
+func (sp *StreamProcessor) AddCombiner(
+    handler func(context.Context, []chan string, chan string) error,
+    inputs []string,
+    output string,
 ) {
-	inChannels := make([]chan string, len(inputs))
-	for i, name := range inputs {
-		inChannels[i] = c.getOrCreateChannel(name)
-	}
+    inStreams := make([]chan string, len(inputs))
+    for i, name := range inputs {
+        inStreams[i] = sp.getStream(name)
+    }
 
-	outChan := c.getOrCreateChannel(output)
+    outStream := sp.getStream(output)
 
-	task := func(ctx context.Context) error {
-		return handler(ctx, inChannels, outChan)
-	}
+    op := func(ctx context.Context) error {
+        return handler(ctx, inStreams, outStream)
+    }
 
-	c.addTask(task)
+    sp.addOperation(op)
 }
 
-func (c *Conveyor) RegisterSplitter(
-	handler func(context.Context, chan string, []chan string) error,
-	input string,
-	outputs []string,
+func (sp *StreamProcessor) AddDivider(
+    handler func(context.Context, chan string, []chan string) error,
+    input string,
+    outputs []string,
 ) {
-	inChan := c.getOrCreateChannel(input)
+    inStream := sp.getStream(input)
 
-	outChannels := make([]chan string, len(outputs))
-	for i, name := range outputs {
-		outChannels[i] = c.getOrCreateChannel(name)
-	}
+    outStreams := make([]chan string, len(outputs))
+    for i, name := range outputs {
+        outStreams[i] = sp.getStream(name)
+    }
 
-	task := func(ctx context.Context) error {
-		return handler(ctx, inChan, outChannels)
-	}
+    op := func(ctx context.Context) error {
+        return handler(ctx, inStream, outStreams)
+    }
 
-	c.addTask(task)
+    sp.addOperation(op)
 }
 
-func (c *Conveyor) SendData(input string, data string) error {
-	ch, err := c.getChannel(input)
-	if err != nil {
-		return err
-	}
+func (sp *StreamProcessor) Insert(inName string, data string) error {
+    stream, err := sp.findStream(inName)
+    if err != nil {
+        return err
+    }
 
-	select {
-	case ch <- data:
-		return nil
-	default:
-		return fmt.Errorf("channel buffer is full for %s", input)
-	}
+    select {
+    case stream <- data:
+        return nil
+    default:
+        return fmt.Errorf("stream %s overflow", inName)
+    }
 }
 
-func (c *Conveyor) ReceiveData(output string) (string, error) {
-	ch, err := c.getChannel(output)
-	if err != nil {
-		return "", err
-	}
+func (sp *StreamProcessor) Extract(outName string) (string, error) {
+    stream, err := sp.findStream(outName)
+    if err != nil {
+        return "", err
+    }
 
-	data, ok := <-ch
-	if !ok {
-		return NoValuePlaceholder, nil
-	}
+    value, active := <-stream
+    if !active {
+        return UndefinedData, nil
+    }
 
-	return data, nil
+    return value, nil
 }
 
-func (c *Conveyor) closeChannels() {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+func (sp *StreamProcessor) shutdownStreams() {
+    sp.lock.Lock()
+    defer sp.lock.Unlock()
 
-	for _, ch := range c.channels {
-		close(ch)
-	}
+    for _, stream := range sp.streams {
+        close(stream)
+    }
 }
 
-func (c *Conveyor) RunPipeline(ctx context.Context) error {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
+func (sp *StreamProcessor) Execute(ctx context.Context) error {
+    sp.lock.RLock()
+    defer sp.lock.RUnlock()
 
-	group, ctx := errgroup.WithContext(ctx)
+    group, ctx := errgroup.WithContext(ctx)
 
-	for _, task := range c.tasks {
-		taskCopy := task
-		group.Go(func() error {
-			return taskCopy(ctx)
-		})
-	}
+    for _, op := range sp.operations {
+        currentOp := op
+        group.Go(func() error {
+            return currentOp(ctx)
+        })
+    }
 
-	err := group.Wait()
+    err := group.Wait()
+    sp.shutdownStreams()
 
-	c.closeChannels()
+    if err != nil {
+        return fmt.Errorf("stream processing failed: %w", err)
+    }
 
-	if err != nil {
-		return fmt.Errorf("conveyor pipeline failed: %w", err)
-	}
-
-	return nil
+    return nil
 }
 
-func (c *Conveyor) addTask(task taskHandler) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	c.tasks = append(c.tasks, task)
+func (sp *StreamProcessor) addOperation(op operation) {
+    sp.lock.Lock()
+    defer sp.lock.Unlock()
+    sp.operations = append(sp.operations, op)
 }
-
