@@ -14,8 +14,8 @@ const NoValuePlaceholder = "undefined"
 
 type ConveyerInterface interface {
     RegisterDecorator(handler func(context.Context, chan string, chan string) error, inputName, outputName string)
-    RegisterCombiner(handler func(context.Context, []chan string, chan string) error, inputNames []string, outputName string)
-    RegisterSplitter(handler func(context.Context, chan string, []chan string) error, inputName string, outputNames []string)
+    RegisterMultiplexer(handler func(context.Context, []chan string, chan string) error, inputNames []string, outputName string)
+    RegisterSeparator(handler func(context.Context, chan string, []chan string) error, inputName string, outputNames []string)
     Run(ctx context.Context) error
     Send(input string, data string) error
     Recv(output string) (string, error)
@@ -77,7 +77,7 @@ func (c *Conveyer) RegisterDecorator(
     c.addTask(task)
 }
 
-func (c *Conveyer) RegisterCombiner(
+func (c *Conveyer) RegisterMultiplexer(
     handler func(context.Context, []chan string, chan string) error,
     inputs []string,
     output string,
@@ -96,7 +96,7 @@ func (c *Conveyer) RegisterCombiner(
     c.addTask(task)
 }
 
-func (c *Conveyer) RegisterSplitter(
+func (c *Conveyer) RegisterSeparator(
     handler func(context.Context, chan string, []chan string) error,
     input string,
     outputs []string,
