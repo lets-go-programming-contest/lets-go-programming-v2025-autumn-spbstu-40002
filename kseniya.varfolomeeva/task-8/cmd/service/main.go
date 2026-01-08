@@ -10,6 +10,7 @@ func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Err with the loading file: ", err)
+
 		return
 	}
 
