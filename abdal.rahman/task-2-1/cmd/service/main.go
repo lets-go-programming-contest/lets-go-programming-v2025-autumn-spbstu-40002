@@ -92,8 +92,10 @@ func ProcessDepartment() error {
 		return err
 	}
 
-	for i := 0; i < employeeCount; i++ {
+	for range make([]struct{}, employeeCount) {
+
 		var operator string
+
 		var temperature int
 
 		if _, err := fmt.Scan(&operator, &temperature); err != nil {
@@ -125,7 +127,8 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departmentCount; i++ {
+	for range make([]struct{}, departmentCount) {
+
 		if err := ProcessDepartment(); err != nil {
 			fmt.Println("Error:", err)
 			return
