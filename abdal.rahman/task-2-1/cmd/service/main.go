@@ -57,14 +57,12 @@ func (tr *TemperatureRange) Optimal() int {
 	if tr.Min > tr.Max {
 		return -1
 	}
-
 	return tr.Min
 }
 
 func main() {
 	var departments int
-	_, err := fmt.Scan(&departments)
-	if err != nil {
+	if _, err := fmt.Scan(&departments); err != nil {
 		fmt.Println(ErrReadingInput)
 		return
 	}
@@ -76,8 +74,7 @@ func main() {
 
 	for departmentIndex := 0; departmentIndex < departments; departmentIndex++ {
 		var employees int
-		_, err := fmt.Scan(&employees)
-		if err != nil {
+		if _, err := fmt.Scan(&employees); err != nil {
 			fmt.Println(ErrReadingInput)
 			return
 		}
@@ -93,14 +90,12 @@ func main() {
 			var operator string
 			var temperature int
 
-			_, err := fmt.Scan(&operator, &temperature)
-			if err != nil {
+			if _, err := fmt.Scan(&operator, &temperature); err != nil {
 				fmt.Println(ErrReadingInput)
 				return
 			}
 
-			err = tempRange.Adjust(operator, temperature)
-			if err != nil {
+			if err := tempRange.Adjust(operator, temperature); err != nil {
 				fmt.Println(-1)
 			} else {
 				fmt.Println(tempRange.Optimal())
