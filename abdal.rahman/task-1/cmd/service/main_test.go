@@ -1,8 +1,6 @@
 package main
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestOnePlusOne(t *testing.T) {
 	result := 1 + 1
@@ -13,6 +11,5 @@ func TestOnePlusOne(t *testing.T) {
 }
 
 func TestProgramStructure(t *testing.T) {
-
 	t.Log("Basic test passed - program structure exists")
 }
