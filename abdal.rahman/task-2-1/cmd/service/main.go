@@ -1,8 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 const (
 	MinTempConst   = 15
@@ -11,12 +9,12 @@ const (
 	MaxCorrectData = 1000
 )
 
-func isDataValidity(data int) bool {
-	return data >= MinCorrectData && data <= MaxCorrectData
+func isDataValid(x int) bool {
+	return x >= MinCorrectData && x <= MaxCorrectData
 }
 
-func findTheOptimalTemp(minTemp int, maxTemp int, operator string, temp int) (int, int) {
-	switch operator {
+func adjustTemp(minTemp, maxTemp int, op string, temp int) (int, int) {
+	switch op {
 	case ">=":
 		if temp > minTemp {
 			minTemp = temp
@@ -32,35 +30,39 @@ func findTheOptimalTemp(minTemp int, maxTemp int, operator string, temp int) (in
 func main() {
 	var departments int
 	_, err := fmt.Scan(&departments)
-	if err != nil || !isDataValidity(departments) {
+	if err != nil || !isDataValid(departments) {
 		return
 	}
 
-	for i := 0; i < departments; i++ {
+	for range make([]struct{}, departments) {
 		minTemp := MinTempConst
 		maxTemp := MaxTempConst
 
 		var workers int
-		_, err = fmt.Scan(&workers)
-		if err != nil || !isDataValidity(workers) {
+		_, err := fmt.Scan(&workers)
+		if err != nil || !isDataValid(workers) {
 			return
 		}
 
-		for j := 0; j < workers; j++ {
-			var operator string
-			_, err = fmt.Scan(&operator)
+		for range make([]struct{}, workers) {
+			var op string
+			_, err = fmt.Scan(&op)
 			if err != nil {
 				return
 			}
 
 			var temp int
 			_, err = fmt.Scan(&temp)
-			if err != nil || temp < MinTempConst || temp > MaxTempConst {
+			if err != nil {
+				return
+			}
+
+			if temp < MinTempConst || temp > MaxTempConst {
 				fmt.Println(-1)
 				continue
 			}
 
-			minTemp, maxTemp = findTheOptimalTemp(minTemp, maxTemp, operator, temp)
+			minTemp, maxTemp = adjustTemp(minTemp, maxTemp, op, temp)
 
 			if minTemp <= maxTemp {
 				fmt.Println(minTemp)
