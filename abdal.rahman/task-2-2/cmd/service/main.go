@@ -8,40 +8,44 @@ import (
 )
 
 func main() {
-	var totalDishes int
-	var rankChoice int
+	var numDish int
 
-	_, err := fmt.Scan(&totalDishes)
-	if err != nil {
-		fmt.Println("Error:", err)
+	_, err := fmt.Scan(&numDish)
+	if err != nil || numDish <= 0 {
+
 		return
 	}
 
-	dishValues := make([]int, totalDishes)
-	for i := range dishValues {
-		_, err = fmt.Scan(&dishValues[i])
+	dishes := make([]int, numDish)
+
+	for i := range dishes {
+		_, err = fmt.Scan(&dishes[i])
 		if err != nil {
-			fmt.Println("Error:", err)
+
 			return
 		}
 	}
+
+	var rankChoice int
 
 	_, err = fmt.Scan(&rankChoice)
 	if err != nil || rankChoice <= 0 {
-		fmt.Println("Error:", err)
+
 		return
 	}
 
-	priorityHeap := myheap.NumHeap(dishValues)
-	heap.Init(&priorityHeap)
+	dishHeap := myheap.NumHeap(dishes)
+	heap.Init(&dishHeap)
 
 	var selectedDish int
+
 	for i := 0; i < rankChoice; i++ {
-		val, ok := heap.Pop(&priorityHeap).(int)
+		val, ok := heap.Pop(&dishHeap).(int)
 		if !ok {
-			fmt.Println("Error: invalid type")
+
 			return
 		}
+
 		selectedDish = val
 	}
 
