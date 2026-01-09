@@ -32,10 +32,7 @@ func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 		return nil, ErrTempOutOfBounds
 	}
 
-	return &Temperature{
-		MaxTemp: maxTemp,
-		MinTemp: minTemp,
-	}, nil
+	return &Temperature{MaxTemp: maxTemp, MinTemp: minTemp}, nil
 }
 
 func (t *Temperature) Optimal() int {
@@ -68,11 +65,13 @@ func main() {
 
 	if _, err := fmt.Scan(&numDepartments); err != nil {
 		fmt.Println("Error:", ErrInvalidDepartments)
+
 		return
 	}
 
 	if numDepartments < RangeMin || numDepartments > RangeMax {
 		fmt.Println("Error:", ErrDepartmentsOutRange)
+
 		return
 	}
 
@@ -81,17 +80,20 @@ func main() {
 
 		if _, err := fmt.Scan(&numEmployees); err != nil {
 			fmt.Println("Error:", ErrInvalidEmployees)
+
 			return
 		}
 
 		if numEmployees < RangeMin || numEmployees > RangeMax {
 			fmt.Println("Error:", ErrEmployeesOutRange)
+
 			return
 		}
 
 		tempData, err := NewTemperature(TempMaxAllowed, TempMinAllowed)
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 
@@ -101,6 +103,7 @@ func main() {
 
 			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
 				fmt.Println("Error:", ErrInvalidTemperature)
+
 				return
 			}
 
