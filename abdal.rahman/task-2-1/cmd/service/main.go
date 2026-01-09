@@ -65,6 +65,7 @@ func (t *TempData) adjustTemp(operator string, temp int) error {
 
 func main() {
 	var departments int
+
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		fmt.Println(ErrIncorrectDepartments)
@@ -76,9 +77,10 @@ func main() {
 		return
 	}
 
-	for range make([]struct{}, departments) {
+	for d := 0; d < departments; d++ {
 		var employees int
-		_, err := fmt.Scan(&employees)
+
+		_, err = fmt.Scan(&employees)
 		if err != nil {
 			fmt.Println(ErrIncorrectEmployees)
 			return
@@ -91,11 +93,11 @@ func main() {
 
 		tempRange := newTempData(MaxTemperature, MinTemperature)
 
-		for range make([]struct{}, employees) {
+		for e := 0; e < employees; e++ {
 			var operator string
 			var temp int
 
-			_, err := fmt.Scan(&operator, &temp)
+			_, err = fmt.Scan(&operator, &temp)
 			if err != nil {
 				fmt.Println(ErrIncorrectTemp)
 				return
@@ -104,10 +106,12 @@ func main() {
 			err = tempRange.adjustTemp(operator, temp)
 			if err != nil {
 				fmt.Println(-1)
+				fmt.Println()
 				continue
 			}
 
 			fmt.Println(tempRange.optimalTemp())
+			fmt.Println()
 		}
 	}
 }
