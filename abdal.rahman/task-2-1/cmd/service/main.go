@@ -36,7 +36,7 @@ func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 }
 
 func (t *Temperature) Optimal() int {
-	return t.MinTemp
+	return t.MaxTemp
 }
 
 func (t *Temperature) Adjust(operator string, tempValue int) error {
@@ -46,12 +46,12 @@ func (t *Temperature) Adjust(operator string, tempValue int) error {
 
 	switch operator {
 	case ">=":
-		if tempValue > t.MinTemp {
-			t.MinTemp = tempValue
+		if tempValue > t.MaxTemp {
+			t.MaxTemp = tempValue
 		}
 	case "<=":
-		if tempValue < t.MaxTemp {
-			t.MaxTemp = tempValue
+		if tempValue < t.MinTemp {
+			t.MinTemp = tempValue
 		}
 	default:
 		return ErrInvalidOperator
@@ -75,7 +75,7 @@ func main() {
 		return
 	}
 
-	for range make([]struct{}, numDepartments) {
+	for i := 0; i < numDepartments; i++ {
 		var numEmployees int
 
 		if _, err := fmt.Scan(&numEmployees); err != nil {
@@ -97,7 +97,7 @@ func main() {
 			return
 		}
 
-		for range make([]struct{}, numEmployees) {
+		for j := 0; j < numEmployees; j++ {
 			var operator string
 
 			var tempValue int
