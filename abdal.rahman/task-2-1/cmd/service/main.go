@@ -65,13 +65,11 @@ func main() {
 
 	if _, err := fmt.Scan(&numDepartments); err != nil {
 		fmt.Println("Error:", ErrInvalidDepartments)
-
 		return
 	}
 
 	if numDepartments < RangeMin || numDepartments > RangeMax {
 		fmt.Println("Error:", ErrDepartmentsOutRange)
-
 		return
 	}
 
@@ -80,30 +78,27 @@ func main() {
 
 		if _, err := fmt.Scan(&numEmployees); err != nil {
 			fmt.Println("Error:", ErrInvalidEmployees)
-
 			return
 		}
 
 		if numEmployees < RangeMin || numEmployees > RangeMax {
 			fmt.Println("Error:", ErrEmployeesOutRange)
-
 			return
 		}
 
 		tempData, err := NewTemperature(TempMaxAllowed, TempMinAllowed)
 		if err != nil {
 			fmt.Println(err)
-
 			return
 		}
 
 		for range make([]struct{}, numEmployees) {
 			var operator string
+
 			var tempValue int
 
 			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
 				fmt.Println("Error:", ErrInvalidTemperature)
-
 				return
 			}
 
