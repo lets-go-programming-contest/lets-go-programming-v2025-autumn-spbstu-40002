@@ -6,112 +6,122 @@ import (
 )
 
 const (
-	MinTemp  = 15
-	MaxTemp  = 30
-	MinRange = 1
-	MaxRange = 1000
+	MinTemperature = 15
+	MaxTemperature = 30
+	MinOfRange     = 1
+	MaxOfRange     = 1000
 )
 
-type Temperature struct {
-	Min int
-	Max int
+type TempData struct {
+	max int
+	min int
 }
 
 var (
-	ErrInvalidSign    = errors.New("invalid sign")
-	ErrTempOutOfRange = errors.New("temperature out of range")
-	ErrDeptOutOfRange = errors.New("departments out of range")
-	ErrEmpOutOfRange  = errors.New("employees out of range")
-	ErrReadingInput   = errors.New("error reading input")
+	ErrIncorrectSign        = errors.New("incorrect sign")
+	ErrTempOutOfRange       = errors.New("temperature out of range")
+	ErrIncorrectDepartments = errors.New("incorrect amount of departments")
+	ErrIncorrectEmployees   = errors.New("incorrect amount of employees")
+	ErrDepOutOfRange        = errors.New("departments out of range")
+	ErrEmpOutOfRange        = errors.New("employees out of range")
+	ErrIncorrectTemp        = errors.New("incorrect temperature")
 )
 
-func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
+func newTempData(maxTemp, minTemp int) (*TempData, error) {
 	if minTemp > maxTemp {
 		return nil, ErrTempOutOfRange
 	}
 
-	return &Temperature{
-		Max: maxTemp,
-		Min: minTemp,
+	return &TempData{
+		max: maxTemp,
+		min: minTemp,
 	}, nil
 }
 
-func (t *Temperature) Optimal() int {
-	if t.Min > t.Max {
+func (t *TempData) optimalTemp() int {
+	if t.min > t.max {
 		return -1
 	}
 
-	return t.Min
+	return t.min
 }
 
-func (t *Temperature) Adjust(operatorStr string, temperatureVal int) error {
-	if temperatureVal < MinTemp || temperatureVal > MaxTemp {
+func (t *TempData) adjustTemp(operator string, temp int) error {
+	if temp < MinTemperature || temp > MaxTemperature {
 		return ErrTempOutOfRange
 	}
 
-	switch operatorStr {
+	switch operator {
 	case ">=":
-		if temperatureVal > t.Min {
-			t.Min = temperatureVal
+		if temp > t.min {
+			t.min = temp
 		}
 	case "<=":
-		if temperatureVal < t.Max {
-			t.Max = temperatureVal
+		if temp < t.max {
+			t.max = temp
 		}
 	default:
-		return ErrInvalidSign
+		return ErrIncorrectSign
 	}
 
 	return nil
 }
 
 func main() {
-	var totalDepts int
-	_, err := fmt.Scan(&totalDepts)
+	var departments int
+
+	_, err := fmt.Scan(&departments)
 	if err != nil {
-		fmt.Println(ErrReadingInput)
+		fmt.Println("Error:", ErrIncorrectDepartments)
+
 		return
 	}
 
-	if totalDepts < MinRange || totalDepts > MaxRange {
-		fmt.Println(ErrDeptOutOfRange)
+	if departments < MinOfRange || departments > MaxOfRange {
+		fmt.Println("Error:", ErrDepOutOfRange)
+
 		return
 	}
 
-	for dept := 0; dept < totalDepts; dept++ {
-		var totalEmps int
-		_, err := fmt.Scan(&totalEmps)
-		if err != nil {
-			fmt.Println(ErrReadingInput)
+	for range departments {
+		var employees int
+
+		if _, err := fmt.Scan(&employees); err != nil {
+			fmt.Println("Error:", ErrIncorrectEmployees)
+
 			return
 		}
 
-		if totalEmps < MinRange || totalEmps > MaxRange {
-			fmt.Println(ErrEmpOutOfRange)
+		if employees < MinOfRange || employees > MaxOfRange {
+			fmt.Println("Error:", ErrEmpOutOfRange)
+
 			return
 		}
 
-		tempRange, err := NewTemperature(MaxTemp, MinTemp)
+		tempRange, err := newTempData(MaxTemperature, MinTemperature)
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 
-		for emp := 0; emp < totalEmps; emp++ {
-			var operatorStr string
-			var temperatureVal int
+		for range employees {
+			var (
+				operator string
+				temp     int
+			)
 
-			_, err := fmt.Scan(&operatorStr, &temperatureVal)
-			if err != nil {
-				fmt.Println(ErrReadingInput)
+			if _, err := fmt.Scan(&operator, &temp); err != nil {
+				fmt.Println("Error:", ErrIncorrectTemp)
+
 				return
 			}
 
-			err = tempRange.Adjust(operatorStr, temperatureVal)
+			err = tempRange.adjustTemp(operator, temp)
 			if err != nil {
 				fmt.Println(-1)
 			} else {
-				fmt.Println(tempRange.Optimal())
+				fmt.Println(tempRange.optimalTemp())
 			}
 		}
 	}
