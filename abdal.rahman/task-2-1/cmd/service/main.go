@@ -12,50 +12,51 @@ const (
 	MaxRange = 1000
 )
 
-type TempRange struct {
+type Temperature struct {
 	Min int
 	Max int
 }
 
 var (
-	ErrInvalidSign     = errors.New("invalid sign")
-	ErrTempOutOfBounds = errors.New("temperature out of range")
-	ErrDeptOutOfBounds = errors.New("departments out of range")
-	ErrEmpOutOfBounds  = errors.New("employees out of range")
-	ErrReadingInput    = errors.New("error reading input")
+	ErrInvalidSign    = errors.New("invalid sign")
+	ErrTempOutOfRange = errors.New("temperature out of range")
+	ErrDeptOutOfRange = errors.New("departments out of range")
+	ErrEmpOutOfRange  = errors.New("employees out of range")
+	ErrReadingInput   = errors.New("error reading input")
 )
 
-func newTempRange(maxTemp, minTemp int) (*TempRange, error) {
+func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 	if minTemp > maxTemp {
-		return nil, ErrTempOutOfBounds
+		return nil, ErrTempOutOfRange
 	}
 
-	return &TempRange{
+	return &Temperature{
 		Max: maxTemp,
 		Min: minTemp,
 	}, nil
 }
 
-func (tr *TempRange) Optimal() int {
-	if tr.Min > tr.Max {
+func (t *Temperature) Optimal() int {
+	if t.Min > t.Max {
 		return -1
 	}
-	return tr.Min
+
+	return t.Min
 }
 
-func (tr *TempRange) Adjust(operator string, value int) error {
+func (t *Temperature) Adjust(operator string, value int) error {
 	if value < MinTemp || value > MaxTemp {
-		return ErrTempOutOfBounds
+		return ErrTempOutOfRange
 	}
 
 	switch operator {
 	case ">=":
-		if value > tr.Min {
-			tr.Min = value
+		if value > t.Min {
+			t.Min = value
 		}
 	case "<=":
-		if value < tr.Max {
-			tr.Max = value
+		if value < t.Max {
+			t.Max = value
 		}
 	default:
 		return ErrInvalidSign
@@ -64,45 +65,48 @@ func (tr *TempRange) Adjust(operator string, value int) error {
 }
 
 func main() {
-	var totalDepts int
-	if _, err := fmt.Scan(&totalDepts); err != nil {
+	var numDepts int
+	_, err := fmt.Scan(&numDepts)
+	if err != nil {
 		fmt.Println(ErrReadingInput)
 		return
 	}
 
-	if totalDepts < MinRange || totalDepts > MaxRange {
-		fmt.Println(ErrDeptOutOfBounds)
+	if numDepts < MinRange || numDepts > MaxRange {
+		fmt.Println(ErrDeptOutOfRange)
 		return
 	}
 
-	for dept := 0; dept < totalDepts; dept++ {
-		var totalEmps int
-		if _, err := fmt.Scan(&totalEmps); err != nil {
+	for d := 0; d < numDepts; d++ {
+		var numEmps int
+		_, err := fmt.Scan(&numEmps)
+		if err != nil {
 			fmt.Println(ErrReadingInput)
 			return
 		}
 
-		if totalEmps < MinRange || totalEmps > MaxRange {
-			fmt.Println(ErrEmpOutOfBounds)
+		if numEmps < MinRange || numEmps > MaxRange {
+			fmt.Println(ErrEmpOutOfRange)
 			return
 		}
 
-		tempRange, err := newTempRange(MaxTemp, MinTemp)
+		tempRange, err := NewTemperature(MaxTemp, MinTemp)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		for emp := 0; emp < totalEmps; emp++ {
-			var operator string
-			var value int
+		for e := 0; e < numEmps; e++ {
+			var op string
+			var val int
 
-			if _, err := fmt.Scan(&operator, &value); err != nil {
+			_, err := fmt.Scan(&op, &val)
+			if err != nil {
 				fmt.Println(ErrReadingInput)
 				return
 			}
 
-			if err := tempRange.Adjust(operator, value); err != nil {
+			if err := tempRange.Adjust(op, val); err != nil {
 				fmt.Println(-1)
 			} else {
 				fmt.Println(tempRange.Optimal())
