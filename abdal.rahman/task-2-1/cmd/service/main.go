@@ -15,7 +15,7 @@ func isDataValid(data int) bool {
 	return data >= MinCorrectData && data <= MaxCorrectData
 }
 
-func findOptimalTemp(minTemp int, maxTemp int, operator string, temp int) (int, int) {
+func adjustTemp(minTemp, maxTemp int, operator string, temp int) (int, int) {
 	switch operator {
 	case ">=":
 		if temp > minTemp {
@@ -26,13 +26,11 @@ func findOptimalTemp(minTemp int, maxTemp int, operator string, temp int) (int, 
 			maxTemp = temp
 		}
 	}
-
 	return minTemp, maxTemp
 }
 
 func main() {
 	var departments int
-
 	_, err := fmt.Scan(&departments)
 	if err != nil {
 		return
@@ -42,12 +40,12 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departments; i++ {
+	for range departments {
 		minTemp := MinTempConst
 		maxTemp := MaxTempConst
+		valid := true
 
 		var workers int
-
 		_, err = fmt.Scan(&workers)
 		if err != nil {
 			return
@@ -57,31 +55,35 @@ func main() {
 			return
 		}
 
-		for j := 0; j < workers; j++ {
+		for range workers {
 			var operator string
 			_, err = fmt.Scan(&operator)
 			if err != nil {
-				continue
+				return
 			}
 
 			var temp int
 			_, err = fmt.Scan(&temp)
 			if err != nil {
-				continue
+				return
 			}
 
 			if temp < MinTempConst || temp > MaxTempConst {
-				fmt.Println(-1)
+				valid = false
 				continue
 			}
 
-			minTemp, maxTemp = findOptimalTemp(minTemp, maxTemp, operator, temp)
+			minTemp, maxTemp = adjustTemp(minTemp, maxTemp, operator, temp)
 
-			if minTemp <= maxTemp {
-				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
+			if minTemp > maxTemp {
+				valid = false
 			}
+		}
+
+		if valid && minTemp <= maxTemp {
+			fmt.Println(minTemp)
+		} else {
+			fmt.Println(-1)
 		}
 	}
 }
