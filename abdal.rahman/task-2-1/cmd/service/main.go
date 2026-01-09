@@ -82,8 +82,9 @@ func main() {
 		return
 	}
 
-	for d := 0; d < numDepartments; d++ {
+	for i := 0; i < numDepartments; i++ {
 		var numEmployees int
+
 		if _, err := fmt.Scan(&numEmployees); err != nil {
 			fmt.Println("Error:", ErrInvalidEmployees)
 
@@ -103,7 +104,7 @@ func main() {
 			return
 		}
 
-		for e := 0; e < numEmployees; e++ {
+		for j := 0; j < numEmployees; j++ {
 			var operator string
 			var tempValue int
 
