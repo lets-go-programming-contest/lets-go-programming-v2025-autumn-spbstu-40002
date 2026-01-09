@@ -5,90 +5,90 @@ import (
 )
 
 const (
-	minTemperatureConditioner = 15
-	maxTemperatureConditioner = 30
-	minDepartments            = 1
-	maxDepartments            = 1000
-	minEmployees              = 1
-	maxEmployees              = 1000
+	minTempCond = 15
+	maxTempCond = 30
+	minDept     = 1
+	maxDept     = 1000
+	minEmp      = 1
+	maxEmp      = 1000
 )
 
-type TemperatureRange struct {
-	minTemp int
-	maxTemp int
+type TempRange struct {
+	min int
+	max int
 }
 
-func NewTemperatureRange() *TemperatureRange {
-	return &TemperatureRange{
-		minTemp: minTemperatureConditioner,
-		maxTemp: maxTemperatureConditioner,
-	}
+func newTempRange() *TempRange {
+	return &TempRange{min: minTempCond, max: maxTempCond}
 }
 
-func (tr *TemperatureRange) Update(operator string, temperature int) bool {
-	if operator != ">=" && operator != "<=" {
+func (t *TempRange) update(op string, val int) bool {
+	if val < minTempCond || val > maxTempCond {
 		return false
 	}
-
-	if temperature < minTemperatureConditioner || temperature > maxTemperatureConditioner {
-		return false
-	}
-
-	switch operator {
+	switch op {
 	case ">=":
-		if temperature > tr.minTemp {
-			tr.minTemp = temperature
+		if val > t.min {
+			t.min = val
 		}
 	case "<=":
-		if temperature < tr.maxTemp {
-			tr.maxTemp = temperature
+		if val < t.max {
+			t.max = val
 		}
+	default:
+		return false
 	}
-
 	return true
 }
 
-func (tr *TemperatureRange) GetResult() int {
-	if tr.minTemp <= tr.maxTemp {
-		return tr.minTemp
+func (t *TempRange) result() int {
+	if t.min <= t.max {
+		return t.min
 	}
-
 	return -1
 }
 
 func main() {
 	var departments int
 	_, err := fmt.Scan(&departments)
-	if err != nil || departments < minDepartments || departments > maxDepartments {
+	if err != nil {
+		return
+	}
+
+	if departments < minDept || departments > maxDept {
 		return
 	}
 
 	for i := 0; i < departments; i++ {
 		var employees int
-		_, err = fmt.Scan(&employees)
-		if err != nil || employees < minEmployees || employees > maxEmployees {
+		_, err := fmt.Scan(&employees)
+		if err != nil {
 			return
 		}
 
-		tempRange := NewTemperatureRange()
+		if employees < minEmp || employees > maxEmp {
+			return
+		}
+
+		tr := newTempRange()
 
 		for j := 0; j < employees; j++ {
-			var operator string
-			var temperature int
+			var op string
+			var val int
 
-			_, err = fmt.Scan(&operator, &temperature)
+			_, err := fmt.Scan(&op, &val)
 			if err != nil {
 				fmt.Println(-1)
 
 				continue
 			}
 
-			ok := tempRange.Update(operator, temperature)
+			ok := tr.update(op, val)
 			if !ok {
 				fmt.Println(-1)
 
 			} else {
-				fmt.Println(tempRange.GetResult())
+				fmt.Println(tr.result())
 
 			}
 		}
