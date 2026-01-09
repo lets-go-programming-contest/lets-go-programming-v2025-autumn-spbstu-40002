@@ -1,3 +1,3 @@
 module github.com/xkoex/task-2-2
 
-go 1.22.7
+go 1.22
