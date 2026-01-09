@@ -32,7 +32,10 @@ func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 		return nil, ErrTempOutOfBounds
 	}
 
-	return &Temperature{MaxTemp: maxTemp, MinTemp: minTemp}, nil
+	return &Temperature{
+		MaxTemp: maxTemp,
+		MinTemp: minTemp,
+	}, nil
 }
 
 func (t *Temperature) Optimal() int {
@@ -55,10 +58,6 @@ func (t *Temperature) Adjust(operator string, tempValue int) error {
 		}
 	default:
 		return ErrInvalidOperator
-	}
-
-	if t.MinTemp > t.MaxTemp {
-		return ErrTempOutOfBounds
 	}
 
 	return nil
