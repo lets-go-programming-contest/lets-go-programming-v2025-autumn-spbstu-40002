@@ -31,6 +31,7 @@ func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 	if minTemp > maxTemp {
 		return nil, ErrTempOutOfBounds
 	}
+
 	return &Temperature{MaxTemp: maxTemp, MinTemp: minTemp}, nil
 }
 
@@ -65,6 +66,7 @@ func (t *Temperature) Adjust(operator string, tempValue int) error {
 
 func main() {
 	var numDepartments int
+
 	if _, err := fmt.Scan(&numDepartments); err != nil {
 		fmt.Println("Error:", ErrInvalidDepartments)
 		return
@@ -77,6 +79,7 @@ func main() {
 
 	for range make([]struct{}, numDepartments) {
 		var numEmployees int
+
 		if _, err := fmt.Scan(&numEmployees); err != nil {
 			fmt.Println("Error:", ErrInvalidEmployees)
 			return
