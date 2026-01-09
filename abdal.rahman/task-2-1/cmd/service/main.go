@@ -9,28 +9,34 @@ const (
 	MaxCorrectData = 1000
 )
 
-func isDataValid(x int) bool {
-	return x >= MinCorrectData && x <= MaxCorrectData
+func isDataValid(value int) bool {
+	return value >= MinCorrectData && value <= MaxCorrectData
 }
 
-func adjustTemp(minTemp, maxTemp int, op string, temp int) (int, int) {
-	switch op {
+func adjustTemperature(minTemp, maxTemp int, operator string, temperature int) (int, int) {
+	switch operator {
 	case ">=":
-		if temp > minTemp {
-			minTemp = temp
+		if temperature > minTemp {
+			minTemp = temperature
 		}
 	case "<=":
-		if temp < maxTemp {
-			maxTemp = temp
+		if temperature < maxTemp {
+			maxTemp = temperature
 		}
 	}
+
 	return minTemp, maxTemp
 }
 
 func main() {
 	var departments int
 	_, err := fmt.Scan(&departments)
-	if err != nil || !isDataValid(departments) {
+
+	if err != nil {
+		return
+	}
+
+	if !isDataValid(departments) {
 		return
 	}
 
@@ -39,30 +45,38 @@ func main() {
 		maxTemp := MaxTempConst
 
 		var workers int
-		_, err := fmt.Scan(&workers)
-		if err != nil || !isDataValid(workers) {
+		_, err = fmt.Scan(&workers)
+
+		if err != nil {
+			return
+		}
+
+		if !isDataValid(workers) {
 			return
 		}
 
 		for range make([]struct{}, workers) {
-			var op string
-			_, err = fmt.Scan(&op)
+			var operator string
+			_, err = fmt.Scan(&operator)
+
 			if err != nil {
 				return
 			}
 
-			var temp int
-			_, err = fmt.Scan(&temp)
+			var temperature int
+			_, err = fmt.Scan(&temperature)
+
 			if err != nil {
 				return
 			}
 
-			if temp < MinTempConst || temp > MaxTempConst {
+			if temperature < MinTempConst || temperature > MaxTempConst {
 				fmt.Println(-1)
+
 				continue
 			}
 
-			minTemp, maxTemp = adjustTemp(minTemp, maxTemp, op, temp)
+			minTemp, maxTemp = adjustTemperature(minTemp, maxTemp, operator, temperature)
 
 			if minTemp <= maxTemp {
 				fmt.Println(minTemp)
