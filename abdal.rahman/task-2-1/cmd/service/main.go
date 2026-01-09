@@ -28,21 +28,17 @@ var (
 )
 
 func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
-
 	if minTemp > maxTemp {
 		return nil, ErrTempOutOfBounds
 	}
-
 	return &Temperature{MaxTemp: maxTemp, MinTemp: minTemp}, nil
 }
 
 func (t *Temperature) Optimal() int {
-
 	return t.MinTemp
 }
 
 func (t *Temperature) Adjust(operator string, tempValue int) error {
-
 	if tempValue < TempMinAllowed || tempValue > TempMaxAllowed {
 		return ErrTempOutOfBounds
 	}
@@ -69,48 +65,40 @@ func (t *Temperature) Adjust(operator string, tempValue int) error {
 
 func main() {
 	var numDepartments int
-
 	if _, err := fmt.Scan(&numDepartments); err != nil {
 		fmt.Println("Error:", ErrInvalidDepartments)
-
 		return
 	}
 
 	if numDepartments < RangeMin || numDepartments > RangeMax {
 		fmt.Println("Error:", ErrDepartmentsOutRange)
-
 		return
 	}
 
-	for _ = range make([]struct{}, numDepartments) {
+	for range make([]struct{}, numDepartments) {
 		var numEmployees int
-
 		if _, err := fmt.Scan(&numEmployees); err != nil {
 			fmt.Println("Error:", ErrInvalidEmployees)
-
 			return
 		}
 
 		if numEmployees < RangeMin || numEmployees > RangeMax {
 			fmt.Println("Error:", ErrEmployeesOutRange)
-
 			return
 		}
 
 		tempData, err := NewTemperature(TempMaxAllowed, TempMinAllowed)
 		if err != nil {
 			fmt.Println(err)
-
 			return
 		}
 
-		for _ = range make([]struct{}, numEmployees) {
+		for range make([]struct{}, numEmployees) {
 			var operator string
 			var tempValue int
 
 			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
 				fmt.Println("Error:", ErrInvalidTemperature)
-
 				return
 			}
 
