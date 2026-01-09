@@ -27,7 +27,6 @@ var (
 	ErrInvalidTemperature  = errors.New("invalid temperature input")
 )
 
-// NewTemperature creates a Temperature struct ensuring Min <= Max
 func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 	if minTemp > maxTemp {
 		return nil, ErrTempOutOfBounds
@@ -39,31 +38,28 @@ func NewTemperature(maxTemp, minTemp int) (*Temperature, error) {
 	}, nil
 }
 
-// Optimal returns the current optimal temperature (MinTemp in this task)
 func (t *Temperature) Optimal() int {
 	return t.MinTemp
 }
 
-// Adjust updates MinTemp or MaxTemp based on operator and temperature input
-func (t *Temperature) Adjust(op string, temp int) error {
-	if temp < TempMinAllowed || temp > TempMaxAllowed {
+func (t *Temperature) Adjust(operator string, tempValue int) error {
+	if tempValue < TempMinAllowed || tempValue > TempMaxAllowed {
 		return ErrTempOutOfBounds
 	}
 
-	switch op {
+	switch operator {
 	case ">=":
-		if temp > t.MinTemp {
-			t.MinTemp = temp
+		if tempValue > t.MinTemp {
+			t.MinTemp = tempValue
 		}
 	case "<=":
-		if temp < t.MaxTemp {
-			t.MaxTemp = temp
+		if tempValue < t.MaxTemp {
+			t.MaxTemp = tempValue
 		}
 	default:
 		return ErrInvalidOperator
 	}
 
-	// Ensure MinTemp does not exceed MaxTemp
 	if t.MinTemp > t.MaxTemp {
 		return ErrTempOutOfBounds
 	}
@@ -76,11 +72,13 @@ func main() {
 
 	if _, err := fmt.Scan(&numDepartments); err != nil {
 		fmt.Println("Error:", ErrInvalidDepartments)
+
 		return
 	}
 
 	if numDepartments < RangeMin || numDepartments > RangeMax {
 		fmt.Println("Error:", ErrDepartmentsOutRange)
+
 		return
 	}
 
@@ -88,29 +86,34 @@ func main() {
 		var numEmployees int
 		if _, err := fmt.Scan(&numEmployees); err != nil {
 			fmt.Println("Error:", ErrInvalidEmployees)
+
 			return
 		}
 
 		if numEmployees < RangeMin || numEmployees > RangeMax {
 			fmt.Println("Error:", ErrEmployeesOutRange)
+
 			return
 		}
 
 		tempData, err := NewTemperature(TempMaxAllowed, TempMinAllowed)
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 
 		for e := 0; e < numEmployees; e++ {
-			var op string
-			var temp int
-			if _, err := fmt.Scan(&op, &temp); err != nil {
+			var operator string
+			var tempValue int
+
+			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
 				fmt.Println("Error:", ErrInvalidTemperature)
+
 				return
 			}
 
-			err = tempData.Adjust(op, temp)
+			err = tempData.Adjust(operator, tempValue)
 			if err != nil {
 				fmt.Println(-1)
 			} else {
