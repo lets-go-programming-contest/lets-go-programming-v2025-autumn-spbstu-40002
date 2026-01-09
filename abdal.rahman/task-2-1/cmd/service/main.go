@@ -1,47 +1,61 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
 const (
-	minTempCond = 15
-	maxTempCond = 30
-	minDept     = 1
-	maxDept     = 1000
-	minEmp      = 1
-	maxEmp      = 1000
+	MinTemperature = 15
+	MaxTemperature = 30
+	MinOfRange     = 1
+	MaxOfRange     = 1000
 )
 
-type TempRange struct {
+type TempData struct {
 	min int
 	max int
 }
 
-func newTempRange() *TempRange {
-	return &TempRange{min: minTempCond, max: maxTempCond}
+var (
+	ErrIncorrectSign        = errors.New("incorrect sign")
+	ErrTempOutOfRange       = errors.New("temperature out of range")
+	ErrIncorrectDepartments = errors.New("incorrect amount of departments")
+	ErrIncorrectEmployees   = errors.New("incorrect amount of employees")
+	ErrDepOutOfRange        = errors.New("departments out of range")
+	ErrEmpOutOfRange        = errors.New("employees out of range")
+	ErrIncorrectTemp        = errors.New("incorrect temperature")
+)
+
+func NewTempData() *TempData {
+	return &TempData{
+		min: MinTemperature,
+		max: MaxTemperature,
+	}
 }
 
-func (t *TempRange) update(op string, val int) bool {
-	if val < minTempCond || val > maxTempCond {
-		return false
+func (t *TempData) Adjust(operator string, temp int) error {
+	if temp < MinTemperature || temp > MaxTemperature {
+		return ErrTempOutOfRange
 	}
-	switch op {
+
+	switch operator {
 	case ">=":
-		if val > t.min {
-			t.min = val
+		if temp > t.min {
+			t.min = temp
 		}
 	case "<=":
-		if val < t.max {
-			t.max = val
+		if temp < t.max {
+			t.max = temp
 		}
 	default:
-		return false
+		return ErrIncorrectSign
 	}
-	return true
+
+	return nil
 }
 
-func (t *TempRange) result() int {
+func (t *TempData) Result() int {
 	if t.min <= t.max {
 		return t.min
 	}
@@ -50,46 +64,32 @@ func (t *TempRange) result() int {
 
 func main() {
 	var departments int
-	_, err := fmt.Scan(&departments)
-	if err != nil {
-		return
-	}
-
-	if departments < minDept || departments > maxDept {
+	if _, err := fmt.Scan(&departments); err != nil || departments < MinOfRange || departments > MaxOfRange {
+		fmt.Println(ErrIncorrectDepartments)
 		return
 	}
 
 	for i := 0; i < departments; i++ {
 		var employees int
-		_, err := fmt.Scan(&employees)
-		if err != nil {
+		if _, err := fmt.Scan(&employees); err != nil || employees < MinOfRange || employees > MaxOfRange {
+			fmt.Println(ErrIncorrectEmployees)
 			return
 		}
 
-		if employees < minEmp || employees > maxEmp {
-			return
-		}
-
-		tr := newTempRange()
+		tempRange := NewTempData()
 
 		for j := 0; j < employees; j++ {
-			var op string
-			var val int
-
-			_, err := fmt.Scan(&op, &val)
-			if err != nil {
-				fmt.Println(-1)
-
-				continue
+			var operator string
+			var temp int
+			if _, err := fmt.Scan(&operator, &temp); err != nil {
+				fmt.Println(ErrIncorrectTemp)
+				return
 			}
 
-			ok := tr.update(op, val)
-			if !ok {
+			if err := tempRange.Adjust(operator, temp); err != nil {
 				fmt.Println(-1)
-
 			} else {
-				fmt.Println(tr.result())
-
+				fmt.Println(tempRange.Result())
 			}
 		}
 	}
