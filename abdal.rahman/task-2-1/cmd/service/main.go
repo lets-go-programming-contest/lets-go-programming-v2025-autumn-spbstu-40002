@@ -31,11 +31,9 @@ func adjustTemperature(minTemp, maxTemp int, operator string, temperature int) (
 func main() {
 	var departments int
 	_, err := fmt.Scan(&departments)
-
 	if err != nil {
 		return
 	}
-
 	if !isDataValid(departments) {
 		return
 	}
@@ -46,11 +44,9 @@ func main() {
 
 		var workers int
 		_, err = fmt.Scan(&workers)
-
 		if err != nil {
 			return
 		}
-
 		if !isDataValid(workers) {
 			return
 		}
@@ -58,21 +54,18 @@ func main() {
 		for range make([]struct{}, workers) {
 			var operator string
 			_, err = fmt.Scan(&operator)
-
 			if err != nil {
 				return
 			}
 
 			var temperature int
 			_, err = fmt.Scan(&temperature)
-
 			if err != nil {
 				return
 			}
 
 			if temperature < MinTempConst || temperature > MaxTempConst {
 				fmt.Println(-1)
-
 				continue
 			}
 
