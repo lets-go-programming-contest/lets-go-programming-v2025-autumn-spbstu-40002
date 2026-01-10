@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<ValCurs Date="02.03.2002" name="Foreign Currency Market">
+  <Valute ID="R01010">
+    <NumCode>036</NumCode>
+    <CharCode>AUD</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Австралийский доллар</Name>
+    <Value>16,0102</Value>
+  </Valute>
+  <Valute ID="R01035">
+    <NumCode>826</NumCode>
+    <CharCode>GBP</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Фунт стерлингов Соединенного королевства</Name>
+    <Value>43,8254</Value>
+  </Valute>
+  <Valute ID="R01235">
+    <NumCode>840</NumCode>
+    <CharCode>USD</CharCode>
+    <Nominal>1</Nominal>
+    <Name>Доллар США</Name>
+    <Value>30,9436</Value>
+  </Valute>
+</ValCurs>
+
