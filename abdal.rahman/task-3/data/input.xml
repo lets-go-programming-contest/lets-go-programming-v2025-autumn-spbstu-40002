@@ -1,0 +1,17 @@
+<ValCurs>
+    <Valute>
+        <NumCode>840</NumCode>
+        <CharCode>USD</CharCode>
+        <Value>75,50</Value>
+    </Valute>
+    <Valute>
+        <NumCode>978</NumCode>
+        <CharCode>EUR</CharCode>
+        <Value>82,30</Value>
+    </Valute>
+    <Valute>
+        <NumCode>643</NumCode>
+        <CharCode>RUB</CharCode>
+        <Value>1,00</Value>
+    </Valute>
+</ValCurs>
